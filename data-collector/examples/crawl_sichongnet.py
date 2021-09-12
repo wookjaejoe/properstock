@@ -13,7 +13,7 @@ def crawl():
     headers = ['순위', '기업명&티커', '시가총액', '국가']
 
     # 페이지 내 데이터 크롤링
-    html = requests.get('https://sichongnet.tistory.com/1?category=932118').text
+    html = requests.get('https://sichongnet.tistory.com/3?category=932121').text
     contents = pd.read_html(html)
     content: pd.DataFrame = contents[0]
 
@@ -33,7 +33,7 @@ def crawl():
         logger.info(f'[{list(content.index).index(symbol) + 1}/{len(list(content.index))}] {symbol}')
         ticker = yf.Ticker(symbol)
         info: dict = ticker.info
-        price_history: pd.DataFrame = ticker.history(period='max', interval='3mo', actions=False)
+        price_history: pd.DataFrame = ticker.history(period='max', interval='1mo', actions=False)
         close = price_history['Close']
         close = close[[i for i in close.index if i.day == 1 and i.month in [3, 6, 9, 12]]]
         currency = info.get('currency')
@@ -41,13 +41,12 @@ def crawl():
             # USD로 변환
             exchange_symbol = f'{currency}USD=X'
             exchange_ticker = yf.Ticker(exchange_symbol)
-            exchange_history = exchange_ticker.history(period='max', interval='3mo', actions=False)
+            exchange_history = exchange_ticker.history(period='max', interval='1mo', actions=False)
             for i in close.index:
                 try:
                     close[i] = close[i] * exchange_history['Close'][i]
                 except BaseException as e:
-                    close[i] = np.NaN
-                    logger.warning(str(e))
+                    close[i] = close[i] * exchange_history['Close'][exchange_history.index[0]]
 
         shares_outstanding = info.get('sharesOutstanding')
         market_cap_history = close * shares_outstanding
@@ -59,7 +58,7 @@ def crawl():
         }
 
         basic.update(market_cap_history.to_dict())
-        new_df = pd.DataFrame(index=[symbol], columns=basic.keys(), data=basic)
+        new_df = pd.DataFrame(basic, index=[symbol])
         df = pd.concat([df, new_df])
 
     whitelist = set()
@@ -69,8 +68,10 @@ def crawl():
             whitelist.add(w)
 
     df = df.loc[df.index.isin(whitelist)]
-    df.columns = df.columns.tolist()[:3] + [t.strftime('%b') + ' ' + t.strftime('%Y') for t in
-                                            sorted(df.columns.tolist()[3:])]
+    sorted_columns = df.columns.to_list()[:3] + sorted(df.columns.to_list()[3:])
+    df = df[sorted_columns]
+    df.columns = df.columns.to_list()[:3] + [t.strftime('%b') + ' ' + t.strftime('%Y') for t in
+                                             df.columns.to_list()[3:]]
     df.to_csv('top100.csv')
 
 
