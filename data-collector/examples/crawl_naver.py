@@ -9,14 +9,13 @@ def get_url(aspect: str, code: str):
 
 
 def crawl(code: str):
-    # url = get_url('main', code)
-    url = get_url('coinfo', code)
-    print(url)
-    html = requests.get(url).text
-    contents = pd.read_html(html)
-    for content in contents:
-        print(content)
-        print()
+    html = requests.get('https://navercomp.wisereport.co.kr/v2/company/ajax/cF1001.aspx?cmp_cd=005930&fin_typ=0&freq_typ=Y&encparam=Sm92dHk5eVlzRTdGRkRiZ3ArS0g4QT09&id=aFVlanREZS').text
+    print(html)
+
+    # contents = pd.read_html(html)
+    # for content in contents:
+    #     print(content)
+    #     print()
 
 
 def main():

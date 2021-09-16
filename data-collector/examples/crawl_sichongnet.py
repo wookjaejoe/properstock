@@ -13,7 +13,7 @@ def crawl():
     headers = ['순위', '기업명&티커', '시가총액', '국가']
 
     # 페이지 내 데이터 크롤링
-    html = requests.get('https://sichongnet.tistory.com/3?category=932121').text
+    html = requests.get('https://sichongnet.tistory.com/1?category=932118').text
     contents = pd.read_html(html)
     content: pd.DataFrame = contents[0]
 
