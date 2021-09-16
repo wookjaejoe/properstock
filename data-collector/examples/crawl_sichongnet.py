@@ -1,6 +1,5 @@
 import logging
 
-import numpy as np
 import pandas as pd
 import requests
 import yfinance as yf
@@ -9,11 +8,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def remove_peek(df: pd.DataFrame, column_name: str):
+    return df[column_name].resample('1W', how='mean')
+
+
 def crawl():
     headers = ['순위', '기업명&티커', '시가총액', '국가']
 
     # 페이지 내 데이터 크롤링
-    html = requests.get('https://sichongnet.tistory.com/1?category=932118').text
+    html = requests.get('https://sichongnet.tistory.com/4?category=932341').text
     contents = pd.read_html(html)
     content: pd.DataFrame = contents[0]
 
@@ -29,7 +32,8 @@ def crawl():
 
     df = pd.DataFrame()
     symbols = content.index
-    for symbol in symbols:
+    # symbols = ['000270.KS']
+    for symbol in [s for s in symbols if s not in ['NAS.OL']]:
         logger.info(f'[{list(content.index).index(symbol) + 1}/{len(list(content.index))}] {symbol}')
         ticker = yf.Ticker(symbol)
         info: dict = ticker.info
@@ -37,19 +41,33 @@ def crawl():
         close = price_history['Close']
         close = close[[i for i in close.index if i.day == 1 and i.month in [3, 6, 9, 12]]]
         currency = info.get('currency')
+        logger.info(f'currency: {currency}')
         if currency != 'USD':
             # USD로 변환
             exchange_symbol = f'{currency}USD=X'
             exchange_ticker = yf.Ticker(exchange_symbol)
             exchange_history = exchange_ticker.history(period='max', interval='1mo', actions=False)
+
+            # 노이즈 필터링
+            exchange_history['Close'] = exchange_history['Close'].rolling(10, center=True, min_periods=1).median()
             for i in close.index:
                 try:
-                    close[i] = close[i] * exchange_history['Close'][i]
-                except BaseException as e:
-                    close[i] = close[i] * exchange_history['Close'][exchange_history.index[0]]
+                    ex = exchange_history['Close'][i]
+                except:
+                    ex = exchange_history['Close'][exchange_history.index[0]]
 
-        shares_outstanding = info.get('sharesOutstanding')
-        market_cap_history = close * shares_outstanding
+                logger.info(f'{i} {close[i]} * {ex}')
+                close[i] = close[i] * ex
+                logger.info(f'= {close[i]}')
+
+        current_price = info.get('currentPrice')
+        market_cap = info.get('marketCap')
+        if not market_cap:
+            continue
+
+        shares = market_cap / current_price
+        market_cap_history = close * shares
+        market_cap_history.round()
 
         basic = {
             'symbol': symbol,
