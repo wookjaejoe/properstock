@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.seleniumhq.selenium:selenium-java:3.141.59")
     testImplementation(kotlin("test-junit"))
 }
 
