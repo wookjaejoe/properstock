@@ -1,9 +1,13 @@
 package app.properstock.crawl.nf
 
 import app.properstock.model.Market
+import org.jsoup.Jsoup
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.interactions.Actions
+
+const val INNER_HTML = "innerHTML"
+const val OUTER_HTML = "outerHTML"
 
 class NaverFinanceCrawler(
     private val driver: ChromeDriver
@@ -13,9 +17,20 @@ class NaverFinanceCrawler(
 
     fun crawlTickers(market: Market, page: Int = 1) {
         val url = urls.tickers(market, page)
-        println(url)
+
+        // 페이지 접속
         driver.get(url)
-        println(driver.findElement(By.tagName("html")).getAttribute("outerHTML"))
+
+        // 테이블 탐색
+        val table = driver.findElements(By.tagName("table")).find {
+            try {
+                it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "코스피"
+            } catch (e: Throwable) {
+                false
+            }
+        }
+
+        println(table!!.getAttribute(OUTER_HTML))
     }
 
     fun crawlCoInfo(code: String) {
@@ -32,12 +47,12 @@ class NaverFinanceCrawler(
 
         val finance = driver.findElements(By.tagName("table")).find {
             try {
-                it.findElement(By.tagName("caption")).getAttribute("innerHTML") == "주요재무정보"
+                it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
             } catch (e: Throwable) {
                 false
             }
         }
 
-        println(finance!!.getAttribute("outerHTML"))
+        println(finance!!.getAttribute(OUTER_HTML))
     }
 }

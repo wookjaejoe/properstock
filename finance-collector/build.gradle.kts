@@ -14,11 +14,12 @@ repositories {
 
 dependencies {
     implementation("org.seleniumhq.selenium:selenium-java:3.141.59")
-    testImplementation(kotlin("test-junit"))
+    implementation("org.jsoup:jsoup:1.14.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.0")
 }
 
 tasks.test {
-    useJUnit()
+    useJUnitPlatform()
 }
 
 tasks.withType<KotlinCompile>() {
