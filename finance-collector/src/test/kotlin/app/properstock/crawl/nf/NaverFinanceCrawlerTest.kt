@@ -1,5 +1,6 @@
 package app.properstock.crawl.nf
 
+import app.properstock.crawl.HtmlTableReader
 import app.properstock.model.Market
 import org.junit.jupiter.api.Test
 import org.openqa.selenium.chrome.ChromeDriver
@@ -21,7 +22,17 @@ internal class NaverFinanceCrawlerTest {
     @Test
     fun testCrawlTickers() {
         val crawler = NaverFinanceCrawler(driver)
-        crawler.crawlTickers(Market.KOSPI, 1)
+        var page = 1
+
+        while (true) {
+            val tickers = crawler.crawlTickers(Market.KOSPI, page)
+            if (tickers.isEmpty()) {
+                break
+            }
+
+            println(tickers)
+            page++
+        }
     }
 
     @Test

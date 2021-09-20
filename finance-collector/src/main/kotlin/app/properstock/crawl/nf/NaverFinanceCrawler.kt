@@ -1,7 +1,9 @@
 package app.properstock.crawl.nf
 
+import app.properstock.crawl.HtmlTable
+import app.properstock.crawl.HtmlTableReader
+import app.properstock.crawl.nf.model.Ticker
 import app.properstock.model.Market
-import org.jsoup.Jsoup
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.interactions.Actions
@@ -15,25 +17,36 @@ class NaverFinanceCrawler(
     private val actions = Actions(driver)
     private val urls = NaverFinanceUrls()
 
-    fun crawlTickers(market: Market, page: Int = 1) {
+    fun crawlTickers(market: Market, page: Int = 1): List<Ticker> {
         val url = urls.tickers(market, page)
 
         // 페이지 접속
         driver.get(url)
 
         // 테이블 탐색
-        val table = driver.findElements(By.tagName("table")).find {
-            try {
-                it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "코스피"
-            } catch (e: Throwable) {
-                false
-            }
-        }
+        val htmlTable = driver.findElements(By.tagName("table"))
+            .find {
+                try {
+                    it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "코스피"
+                } catch (e: Throwable) {
+                    false
+                }
+            }!!
+            .getAttribute(OUTER_HTML)
 
-        println(table!!.getAttribute(OUTER_HTML))
+        val table = HtmlTableReader(htmlTable).read()
+        return (0 until table.rows.size)
+            .map { index ->
+                Ticker(
+                    name = table.get(index, "종목명"),
+                    price = table.get(index, "현재가").replace(",", "").toInt(),
+                    marketCap = table.get(index, "시가총액").replace(",", "").toLong(),
+                    shares = table.get(index, "상장주식수").replace(",", "").toInt()
+                )
+            }
     }
 
-    fun crawlCoInfo(code: String) {
+    fun crawlCoInfo(code: String): String {
         // 네이버 파이낸스 접속
         driver.get(urls.coInfo(code))
 
@@ -45,7 +58,7 @@ class NaverFinanceCrawler(
         val quarterTap = driver.findElement(By.id("cns_Tab22"))
         actions.click(quarterTap).build().perform()
 
-        val finance = driver.findElements(By.tagName("table")).find {
+        val html = driver.findElements(By.tagName("table")).find {
             try {
                 it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
             } catch (e: Throwable) {
@@ -53,6 +66,6 @@ class NaverFinanceCrawler(
             }
         }
 
-        println(finance!!.getAttribute(OUTER_HTML))
+        return html!!.getAttribute(OUTER_HTML)
     }
 }
