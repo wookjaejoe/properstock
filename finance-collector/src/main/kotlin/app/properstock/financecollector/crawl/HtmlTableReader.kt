@@ -1,4 +1,4 @@
-package app.properstock.crawl
+package app.properstock.financecollector.crawl
 
 import org.jsoup.Jsoup
 
@@ -14,7 +14,8 @@ data class HtmlTable(
     val header: HtmlTableHeaders,
     val rows: List<HtmlTableRow>
 ) {
-    fun get(index: Int, col: String): String = rows[index].values[header.values.indexOf(col)]
+    fun get(index: Int, col: String): String = get(rows[index], col)
+    fun get(row: HtmlTableRow, col: String): String = row.values[header.values.indexOf(col)]
 }
 
 class HtmlTableReader(val html: String) {

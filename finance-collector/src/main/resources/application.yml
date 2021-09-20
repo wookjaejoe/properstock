@@ -1,0 +1,6 @@
+spring:
+  data:
+    mongodb:
+      host: 218.147.138.41
+      database: finance
+      auto-index-creation: true

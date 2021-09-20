@@ -1,0 +1,6 @@
+package app.properstock.financecollector.repository
+
+import app.properstock.financecollector.model.DatabaseSequence
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository
+
+interface DatabaseSequenceRepository : ReactiveMongoRepository<DatabaseSequence, String>

@@ -1,4 +1,4 @@
-package app.properstock.exception
+package app.properstock.financecollector.exception
 
 import java.lang.Exception
 

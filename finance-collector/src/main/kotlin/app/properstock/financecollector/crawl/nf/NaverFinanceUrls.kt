@@ -1,7 +1,7 @@
-package app.properstock.crawl.nf
+package app.properstock.financecollector.crawl.nf
 
-import app.properstock.exception.NotSupportedException
-import app.properstock.model.Market
+import app.properstock.financecollector.exception.NotSupportedException
+import app.properstock.financecollector.model.Market
 
 class NaverFinanceUrls {
     fun tickers(market: Market, page: Int): String {
