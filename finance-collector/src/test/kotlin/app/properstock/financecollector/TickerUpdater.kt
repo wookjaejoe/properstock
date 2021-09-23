@@ -2,19 +2,15 @@ package app.properstock.financecollector
 
 import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
 import app.properstock.financecollector.model.Market
+import app.properstock.financecollector.model.Ticker
 import app.properstock.financecollector.repository.TickerRepository
+import app.properstock.financecollector.service.DatabaseSequenceGenerator
 import org.junit.jupiter.api.Test
-import org.openqa.selenium.chrome.ChromeDriver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 @SpringBootTest
 class TickerUpdater {
-
-    @Autowired
-    lateinit var driver: ChromeDriver
 
     @Autowired
     lateinit var repository: TickerRepository
@@ -22,32 +18,32 @@ class TickerUpdater {
     @Autowired
     lateinit var naverFinanceCrawler: NaverFinanceCrawler
 
+    @Autowired
+    lateinit var databaseSequenceGenerator: DatabaseSequenceGenerator
+
     @Test
     fun testCrawlTickers() {
+        naverFinanceCrawler.crawlAllTickers().subscribe { println(it) }
+    }
 
-        var page = 1
+    /**
+     * 티커 목록 업데이트
+     */
+    @Test
+    fun updateTickers() {
+        naverFinanceCrawler.crawlTickers(market = Market.KOSPI, page = 1)
+            .flatMap { newTicker ->
+                val ticker = repository.findByCode(newTicker.code).block()
+                if (ticker == null) {
+                    newTicker.id = databaseSequenceGenerator.increaseSequence(Ticker.seqName).block()!!.value
+                } else {
+                    newTicker.id = ticker.id
+                }
 
-        while (true) {
-            val tickers = naverFinanceCrawler.crawlTickers(Market.KOSPI, page)
-            if (tickers.isEmpty()) {
-                break
+                println(newTicker)
+                repository.save(newTicker)
             }
-
-            for (ticker in tickers) {
-                // fixme: 중복 관련해서 제대로 동작안하는듯
-                // fixme: 업데이트 하면 updated 필드 수정되게 해야함. 이거 좀 한곳에서 공통 로직으로 빼고 싶은데..
-                repository.findByCode(ticker.code)
-                    .switchIfEmpty(Mono.just(ticker))
-                    .map {
-                        ticker.code = it.code
-                        Mono.just(ticker)
-                    }
-                    .block()
-            }
-
-            repository.saveAll(tickers).blockLast()
-            page++
-        }
+            .subscribe()
     }
 
     @Test

@@ -8,7 +8,7 @@ import java.time.Instant
 @Document
 data class Ticker(
     @Id
-    val id: Long,
+    var id: Long?,
 
     /** 마켓 */
     val market: Market,
@@ -34,7 +34,7 @@ data class Ticker(
     val link: String,
 
     /** 마지막 업데이트 시각 */
-    var updated: Instant
+    var updated: Instant?
 
 ) {
     companion object {
