@@ -2,17 +2,22 @@ package app.properstock.financecollector.crawl.nf
 
 import app.properstock.financecollector.exception.NotSupportedException
 import app.properstock.financecollector.model.Market
+import org.springframework.stereotype.Component
 
 class NaverFinanceUrls {
-    fun tickers(market: Market, page: Int): String {
-        val sosok = when (market) {
-            Market.KOSPI -> 0
-            Market.KOSDAQ -> 1
-            else -> throw NotSupportedException("Not supported market. Maybe programmer's mistake.")
+
+    companion object {
+        const val root = "https://finance.naver.com"
+        fun tickers(market: Market, page: Int): String {
+            val sosok = when (market) {
+                Market.KOSPI -> 0
+                Market.KOSDAQ -> 1
+                else -> throw NotSupportedException("Not supported market. Maybe programmer's mistake.")
+            }
+
+            return "$root/sise/sise_market_sum.nhn?sosok=$sosok&page=$page"
         }
 
-        return "https://finance.naver.com/sise/sise_market_sum.nhn?sosok=$sosok&page=$page"
+        fun companyInfo(code: String) = "https://navercomp.wisereport.co.kr/v2/company/c1010001.aspx?cmp_cd=$code"
     }
-
-    fun coInfo(code: String) = "https://finance.naver.com/item/coinfo.naver?code=$code"
 }

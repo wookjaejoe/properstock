@@ -7,8 +7,9 @@ import java.time.Instant
 
 @Document
 data class Ticker(
+
     @Id
-    var id: Long?,
+    var id: String? = null,
 
     /** 마켓 */
     val market: Market,
@@ -35,10 +36,8 @@ data class Ticker(
 
     /** 마지막 업데이트 시각 */
     var updated: Instant?
-
 ) {
     companion object {
         const val seqName = "ticker"
     }
-
 }
