@@ -2,7 +2,7 @@ package app.properstock.financecollector.crawl.nf
 
 import app.properstock.financecollector.model.Market
 import app.properstock.financecollector.model.Ticker
-import app.properstock.financecollector.service.DatabaseSequenceGenerator
+import app.properstock.financecollector.service.DbSeqGenerator
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
@@ -17,7 +17,7 @@ const val OUTER_HTML = "outerHTML"
 @Component
 class NaverFinanceCrawler(
     private val driver: ChromeDriver,
-    private val databaseSequenceGenerator: DatabaseSequenceGenerator
+    private val dbSeqGenerator: DbSeqGenerator
 ) {
     private val actions = Actions(driver)
     private val urls = NaverFinanceUrls()

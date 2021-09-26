@@ -4,7 +4,7 @@ import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
 import app.properstock.financecollector.model.Market
 import app.properstock.financecollector.model.Ticker
 import app.properstock.financecollector.repository.TickerRepository
-import app.properstock.financecollector.service.DatabaseSequenceGenerator
+import app.properstock.financecollector.service.DbSeqGenerator
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -19,7 +19,7 @@ class TickerUpdater {
     lateinit var naverFinanceCrawler: NaverFinanceCrawler
 
     @Autowired
-    lateinit var databaseSequenceGenerator: DatabaseSequenceGenerator
+    lateinit var dbSeqGenerator: DbSeqGenerator
 
     @Test
     fun testCrawlTickers() {
@@ -31,19 +31,13 @@ class TickerUpdater {
      */
     @Test
     fun updateTickers() {
-        naverFinanceCrawler.crawlTickers(market = Market.KOSPI, page = 1)
-            .flatMap { newTicker ->
-                val ticker = repository.findByCode(newTicker.code).block()
-                if (ticker == null) {
-                    newTicker.id = databaseSequenceGenerator.increaseSequence(Ticker.seqName).block()!!.value
-                } else {
-                    newTicker.id = ticker.id
-                }
-
-                println(newTicker)
-                repository.save(newTicker)
+        naverFinanceCrawler.crawlAllTickers()
+            .subscribe {
+                val oldTicker = repository.findByCode(it.code).block()
+                it.id = oldTicker?.id ?: dbSeqGenerator.generate(Ticker.seqName).block()!!.value
+                repository.save(it).block()
+                println(it)
             }
-            .subscribe()
     }
 
     @Test
