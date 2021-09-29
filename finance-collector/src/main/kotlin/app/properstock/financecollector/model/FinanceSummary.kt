@@ -2,7 +2,6 @@ package app.properstock.financecollector.model
 
 import app.properstock.financecollector.crawl.nf.StringMap
 import app.properstock.financecollector.exception.KeyValueNotMatchException
-import app.properstock.financecollector.exception.PageUpdatedException
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
@@ -35,12 +34,13 @@ data class FinanceSummary(
 ) {
     class TimeSeriesData<V>(
         val displayName: String,
-        val description: String? = null
-    ) : LinkedHashMap<YearMonth, V?>() {
+        val description: String? = null,
+        val values: MutableMap<YearMonth, V?> = mutableMapOf()
+    ) {
         fun set(times: List<YearMonth>, data: List<V?>) {
             if (times.size != data.size) throw KeyValueNotMatchException("Length not matched between times and data")
             for (i in times.indices) {
-                put(times[i], data[i])
+                values[times[i]] = data[i]
             }
         }
     }
