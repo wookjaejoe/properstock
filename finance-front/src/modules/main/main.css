@@ -1,0 +1,55 @@
+header {
+  height: 56px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.section1 {
+  height: 100vh;
+  background-image: url('../../images/main.png');
+  background-size: 100%;
+  background-repeat: round;
+  background-color: #282c34;
+}
+
+.section2 {
+  height: 100vh;
+  background-color: #ffffff;
+}
+
+.section2 .type-container {
+  min-width: 60%;
+}
+
+.section2 .type-container > div {
+  padding: 16px;
+}
+
+.section2 .type-name {
+  border: 2px solid #818181;
+  margin-right: 16px;
+  width: 100px;
+  height: 100px;
+  text-align: right;
+  padding: 60px 8px 0px 8px;
+}
+
+.section3 {
+  height: 100vh;
+  background-color: #282c34;
+}
+
+.vision {
+  color: white;
+  text-align: center;
+}
+
+.info-button-area {
+  margin-top: 100px;
+}
+
+.info-button-area > button {
+  width: 200px;
+  height: 50px;
+}
