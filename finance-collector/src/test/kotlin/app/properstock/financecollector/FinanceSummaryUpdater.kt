@@ -1,14 +1,17 @@
 package app.properstock.financecollector
 
 import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
+import app.properstock.financecollector.model.FinanceAnalysis
 import app.properstock.financecollector.repository.FinanceAnalysisRepository
 import app.properstock.financecollector.repository.TickerRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @SpringBootTest
-class FinanceUpdater {
+class FinanceSummaryUpdater {
 
     @Autowired
     lateinit var financeAnalysisRepository: FinanceAnalysisRepository
@@ -21,22 +24,18 @@ class FinanceUpdater {
 
     @Test
     fun updateAll() {
-        val tickers = tickerRepository.findAll().collectList().block()
+        val tickers = tickerRepository.findAll().collectList().block()!!
         var success = 0
         var fail = 0
-        tickers?.forEach {
+        for (ticker in tickers) {
             try {
-                val financeAnalysis = naverFinanceCrawler.crawlFinancialAnalysis(it.code)
-                val oldValue = financeAnalysisRepository.findByCode(financeAnalysis.code).block()
-                if(oldValue != null) {
-                    financeAnalysis.id = oldValue.id
-                }
-
-                println(financeAnalysisRepository.save(financeAnalysis).block())
+                val financeAnalysis = naverFinanceCrawler.crawlFinancialAnalysis(ticker.code)
+                financeAnalysisRepository.save(financeAnalysis).block()
                 success++
+                println("Success: ${ticker.name} - ${ticker.code}")
             } catch (e: Throwable) {
-                println("An error occurs(${it.name}): ${e.message}")
                 fail++
+                println("Fail: ${ticker.name} - ${ticker.code} caused by ${e.message}")
             }
         }
 
