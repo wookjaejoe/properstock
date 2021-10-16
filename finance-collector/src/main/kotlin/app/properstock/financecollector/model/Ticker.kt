@@ -8,14 +8,11 @@ import java.time.Instant
 @Document
 data class Ticker(
 
-    @Id
-    var id: String? = null,
-
     /** 마켓 */
     val market: Market,
 
     /** 종목코드 */
-    @Indexed(unique = true)
+    @Id
     var code: String,
 
     /** 종목명 */
@@ -35,9 +32,5 @@ data class Ticker(
     val link: String,
 
     /** 마지막 업데이트 시각 */
-    var updated: Instant?
-) {
-    companion object {
-        const val seqName = "ticker"
-    }
-}
+    var updated: Instant = Instant.now()
+)

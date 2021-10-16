@@ -10,8 +10,6 @@ import java.time.YearMonth
 @Document
 data class FinanceAnalysis(
     @Id
-    var id: String? = null,
-    @Indexed(unique = true)
     val code: String,
     val financeSummary: FinanceSummary,
 )

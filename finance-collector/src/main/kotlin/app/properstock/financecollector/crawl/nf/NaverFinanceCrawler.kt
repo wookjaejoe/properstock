@@ -4,7 +4,6 @@ import app.properstock.financecollector.model.*
 import app.properstock.financecollector.service.WebBrowseDriverManager
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
-import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.interactions.Actions
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
@@ -23,7 +22,7 @@ fun String.convertToDouble(): Double? = try {
 
 @Component
 class NaverFinanceCrawler(
-    private val webBrowseDriverManager: WebBrowseDriverManager,
+    webBrowseDriverManager: WebBrowseDriverManager,
 ) {
     private val driver = webBrowseDriverManager.default()
     private val actions = Actions(driver)
@@ -63,94 +62,103 @@ class NaverFinanceCrawler(
      */
     fun crawlTickers(market: Market, page: Int): List<Ticker> {
         val url = NaverFinanceUrls.tickers(market, page)
-        driver.get(url)
-        // 테이블 탐색
-        val tableHtml = driver.findElements(By.tagName("table"))
-            .find {
-                try {
-                    it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "코스피"
-                } catch (e: Throwable) {
-                    false
-                }
-            }!!
-            .getAttribute("outerHTML")
+        try {
+            driver.get(url)
+            println(driver.findElement(By.tagName("html")))
+            // 테이블 탐색
+            val tableHtml = driver.findElements(By.tagName("table"))
+                .find {
+                    try {
+                        listOf("코스피", "코스닥").contains(it.findElement(By.tagName("caption")).getAttribute(INNER_HTML))
+                    } catch (e: Throwable) {
+                        false
+                    }
+                }!!
+                .getAttribute("outerHTML")
 
-        // 크롬 크롤링 결과에서 바로 탐색할 경우 성능 이슈 있기 때문에 Jsoup 사용
-        val table = Jsoup.parse(tableHtml)
-        val headers = table.getElementsByTag("th").map { it.text() }
-        return table.getElementsByTag("tr")
-            .filter { it.text().isNotBlank() }
-            .map { it.getElementsByTag("td") }
-            .filter { !it.isNullOrEmpty() }
-            .map {
-                val link = it[headers.indexOf("종목명")].getElementsByTag("a")[0].attr("href")
-                Ticker(
-                    market = market,
-                    code = "(?<=code=)[A-Za-z0-9]+".toRegex().find(link)!!.value,
-                    name = it[headers.indexOf("종목명")].text().replace(",", ""),
-                    price = it[headers.indexOf("현재가")].text().replace(",", "").toInt(),
-                    marketCap = it[headers.indexOf("시가총액")].text().replace(",", "").toLong() * 1_0000_0000,
-                    shares = it[headers.indexOf("상장주식수")].text().replace(",", "").toInt() * 1000,
-                    link = NaverFinanceUrls.root + link,
-                    updated = Instant.now()
-                )
-            }
+            // 크롬 크롤링 결과에서 바로 탐색할 경우 성능 이슈 있기 때문에 Jsoup 사용
+            val table = Jsoup.parse(tableHtml)
+            val headers = table.getElementsByTag("th").map { it.text() }
+            return table.getElementsByTag("tr")
+                .filter { it.text().isNotBlank() }
+                .map { it.getElementsByTag("td") }
+                .filter { !it.isNullOrEmpty() }
+                .map {
+                    val link = it[headers.indexOf("종목명")].getElementsByTag("a")[0].attr("href")
+                    Ticker(
+                        market = market,
+                        code = "(?<=code=)[A-Za-z0-9]+".toRegex().find(link)!!.value,
+                        name = it[headers.indexOf("종목명")].text().replace(",", ""),
+                        price = it[headers.indexOf("현재가")].text().replace(",", "").toInt(),
+                        marketCap = it[headers.indexOf("시가총액")].text().replace(",", "").toLong() * 1_0000_0000,
+                        shares = it[headers.indexOf("상장주식수")].text().replace(",", "").toInt() * 1000,
+                        link = NaverFinanceUrls.root + link,
+                        updated = Instant.now()
+                    )
+                }
+        } catch (e: Throwable) {
+            throw RuntimeException("Failed to crawling $url", e)
+        }
     }
 
     fun crawlFinancialAnalysis(code: String): FinanceAnalysis {
-        driver.get(NaverFinanceUrls.companyInfo(code))
+        val url = NaverFinanceUrls.companyInfo(code)
+        try {
+            driver.get(url)
+            // 연간 탭 클릭
+            val yearlyTab = driver.findElement(By.id("cns_Tab21"))
+            actions.click(yearlyTab).build().perform()
 
-        // 연간 탭 클릭
-        val yearlyTab = driver.findElement(By.id("cns_Tab21"))
-        actions.click(yearlyTab).build().perform()
+            val tableHtml = driver.findElements(By.tagName("table")).find {
+                try {
+                    it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
+                } catch (e: Throwable) {
+                    false
+                }
+            }!!.getAttribute(OUTER_HTML)
 
-        val tableHtml = driver.findElements(By.tagName("table")).find {
-            try {
-                it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
-            } catch (e: Throwable) {
-                false
-            }
-        }!!.getAttribute(OUTER_HTML)
-
-        val table = Jsoup.parse(tableHtml)
-        val headers = table
-            .getElementsByTag("thead")[0]
-            .getElementsByTag("tr")[1]
-            .getElementsByTag("th")
-            .map {
-                val str = "[0-9]{4}/[0-9]{2}".toRegex().find(it.text())?.value!!
-                val spl = str.split("/")
-                YearMonth.of(spl[0].toInt(), spl[1].toInt())
-            }
-
-        val financeSummary = FinanceSummary()
-
-        table
-            .getElementsByTag("tbody")[0]
-            .getElementsByTag("tr").map { element ->
-                val title = element.getElementsByTag("th")[0].text()
-                val values = element.getElementsByTag("td").map { td ->
-                    td.text()
-                        .replace(",", "")
-                        .ifEmpty { null }
+            val table = Jsoup.parse(tableHtml)
+            val headers = table
+                .getElementsByTag("thead")[0]
+                .getElementsByTag("tr")[1]
+                .getElementsByTag("th")
+                .map {
+                    val str = "[0-9]{4}/[0-9]{2}".toRegex().find(it.text())?.value!!
+                    val spl = str.split("/")
+                    YearMonth.of(spl[0].toInt(), spl[1].toInt())
                 }
 
-                Pair(title, values)
-            }.associate {
-                Pair(FINANCE_SUMMARY_INDICES[it.first], it.second)
-            }.run {
-                financeSummary.sales.set(headers, this["sales"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
-                financeSummary.operatingProfit.set(headers, this["operatingProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
-                financeSummary.netProfit.set(headers, this["netProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
-                financeSummary.roe.set(headers, this["roe"]!!.map { it?.convertToDouble() })
-                financeSummary.eps.set(headers, this["eps"]!!.map { it?.convertToLong() })
-                financeSummary.per.set(headers, this["per"]!!.map { it?.convertToDouble() })
-                financeSummary.issuedCommonShares.set(headers, this["issuedCommonShares"]!!.map { it?.convertToLong() })
-            }
+            val financeSummary = FinanceSummary()
 
-        return FinanceAnalysis(
-            code = code,
-            financeSummary = financeSummary
-        )
+            table
+                .getElementsByTag("tbody")[0]
+                .getElementsByTag("tr").map { element ->
+                    val title = element.getElementsByTag("th")[0].text()
+                    val values = element.getElementsByTag("td").map { td ->
+                        td.text()
+                            .replace(",", "")
+                            .ifEmpty { null }
+                    }
+
+                    Pair(title, values)
+                }.associate {
+                    Pair(FINANCE_SUMMARY_INDICES[it.first], it.second)
+                }.run {
+                    financeSummary.sales.set(headers, this["sales"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                    financeSummary.operatingProfit.set(headers, this["operatingProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                    financeSummary.netProfit.set(headers, this["netProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                    financeSummary.roe.set(headers, this["roe"]!!.map { it?.convertToDouble() })
+                    financeSummary.eps.set(headers, this["eps"]!!.map { it?.convertToLong() })
+                    financeSummary.per.set(headers, this["per"]!!.map { it?.convertToDouble() })
+                    financeSummary.issuedCommonShares.set(headers, this["issuedCommonShares"]!!.map { it?.convertToLong() })
+                }
+
+            return FinanceAnalysis(
+                code = code,
+                financeSummary = financeSummary
+            )
+        } catch (e: Throwable) {
+            throw RuntimeException("Failed to crawling $url", e)
+        }
     }
 }
