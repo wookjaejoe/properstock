@@ -1,9 +1,9 @@
 package app.properstock.financecollector.crawl.nf
 
 import app.properstock.financecollector.model.*
-import app.properstock.financecollector.service.WebBrowseDriverManager
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
+import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.interactions.Actions
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
@@ -22,11 +22,8 @@ fun String.convertToDouble(): Double? = try {
 
 @Component
 class NaverFinanceCrawler(
-    webBrowseDriverManager: WebBrowseDriverManager,
+    val driver: ChromeDriver,
 ) {
-    private val driver = webBrowseDriverManager.default()
-    private val actions = Actions(driver)
-
     /**
      * 네이버 파이낸스에서 크롤링 가능한 모든 티커 목록을 크롤링하여 반환
      */
@@ -103,6 +100,7 @@ class NaverFinanceCrawler(
 
     fun crawlFinancialAnalysis(code: String): FinanceAnalysis {
         val url = NaverFinanceUrls.companyInfo(code)
+        val actions = Actions(driver)
         try {
             driver.get(url)
             // 연간 탭 클릭
