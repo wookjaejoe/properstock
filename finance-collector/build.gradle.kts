@@ -72,14 +72,16 @@ tasks.bootBuildImage {
     isPublish = true
 }
 
-tasks.test {
-    exclude("**/*")
-}
-
 tasks.register("build.dev") {
     dependsOn("build").doLast {
         exec {
             commandLine("docker build -t $dockerImageName -f docker/Dockerfile .".split(" "))
+        }
+        exec {
+            commandLine("docker login -u=jowookjae -p=jowookjae".split(" "))
+        }
+        exec {
+            commandLine("docker push $dockerImageName".split(" "))
         }
     }
 }
