@@ -1,22 +1,23 @@
 package app.properstock.financecollector.config
 
-import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeOptions
-import org.springframework.beans.factory.annotation.Value
+import org.openqa.selenium.remote.RemoteWebDriver
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.net.URL
 
 @Configuration
 class ChromeDriverConfig {
 
-    @Value("\${chromedriver}")
-    private lateinit var chromedriver: String
+//    @Value("\${chromedriver}")
+//    private lateinit var chromedriver: String
 
     @Bean
-    fun getChromeDriver(): ChromeDriver {
-        System.setProperty("webdriver.chrome.driver", chromedriver)
-        val chromeOptions = ChromeOptions()
-        chromeOptions.setHeadless(true)
-        return ChromeDriver(chromeOptions)
+    fun getChromeDriver(): WebDriver {
+        return RemoteWebDriver(
+            URL("http://127.0.0.1:4444"),
+            ChromeOptions()
+        )
     }
 }

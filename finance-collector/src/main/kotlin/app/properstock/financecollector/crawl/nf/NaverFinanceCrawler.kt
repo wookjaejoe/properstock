@@ -3,7 +3,7 @@ package app.properstock.financecollector.crawl.nf
 import app.properstock.financecollector.model.*
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
-import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.interactions.Actions
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
@@ -22,7 +22,7 @@ fun String.convertToDouble(): Double? = try {
 
 @Component
 class NaverFinanceCrawler(
-    val driver: ChromeDriver,
+    val webDriver: WebDriver,
 ) {
     /**
      * 네이버 파이낸스에서 크롤링 가능한 모든 티커 목록을 크롤링하여 반환
@@ -60,10 +60,10 @@ class NaverFinanceCrawler(
     fun crawlTickers(market: Market, page: Int): List<Ticker> {
         val url = NaverFinanceUrls.tickers(market, page)
         try {
-            driver.get(url)
-            println(driver.findElement(By.tagName("html")))
+            webDriver.get(url)
+            println(webDriver.findElement(By.tagName("html")))
             // 테이블 탐색
-            val tableHtml = driver.findElements(By.tagName("table"))
+            val tableHtml = webDriver.findElements(By.tagName("table"))
                 .find {
                     try {
                         listOf("코스피", "코스닥").contains(it.findElement(By.tagName("caption")).getAttribute(INNER_HTML))
@@ -100,14 +100,14 @@ class NaverFinanceCrawler(
 
     fun crawlFinancialAnalysis(code: String): FinanceAnalysis {
         val url = NaverFinanceUrls.companyInfo(code)
-        val actions = Actions(driver)
+        val actions = Actions(webDriver)
         try {
-            driver.get(url)
+            webDriver.get(url)
             // 연간 탭 클릭
-            val yearlyTab = driver.findElement(By.id("cns_Tab21"))
+            val yearlyTab = webDriver.findElement(By.id("cns_Tab21"))
             actions.click(yearlyTab).build().perform()
 
-            val tableHtml = driver.findElements(By.tagName("table")).find {
+            val tableHtml = webDriver.findElements(By.tagName("table")).find {
                 try {
                     it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
                 } catch (e: Throwable) {

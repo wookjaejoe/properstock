@@ -1,4 +1,4 @@
-package app.properstock.financecollector
+package app.properstock.financecollector.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

@@ -20,6 +20,7 @@ internal class FinanceProcessorTest{
     @Test
     fun processFinanceAnalysis() {
         listOf(
+            "005930",
             "000270",
         ).forEach {
             financeProcessor.processFinanceAnalysis(it)
