@@ -72,20 +72,6 @@ tasks.bootBuildImage {
     isPublish = true
 }
 
-tasks.register("build.dev") {
-    dependsOn("build").doLast {
-        exec {
-            commandLine("docker build -t $dockerImageName -f docker/Dockerfile .".split(" "))
-        }
-        exec {
-            commandLine("docker login -u=jowookjae -p=jowookjae".split(" "))
-        }
-        exec {
-            commandLine("docker push $dockerImageName".split(" "))
-        }
-    }
-}
-
 var devServer: Any? = null
 remotes {
     devServer = withGroovyBuilder {
@@ -98,7 +84,8 @@ remotes {
 }
 
 tasks.register("deploy.dev") {
-    dependsOn("build.dev").doLast {
+//    dependsOn("bootBuildImage").doLast {
+    doLast{
         ssh.run(delegateClosureOf<RunHandler> {
             session(
                 devServer,
@@ -111,4 +98,5 @@ tasks.register("deploy.dev") {
             )
         })
     }
+//    }
 }

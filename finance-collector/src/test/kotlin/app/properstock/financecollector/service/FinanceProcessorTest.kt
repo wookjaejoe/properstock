@@ -16,7 +16,6 @@ internal class FinanceProcessorTest{
     @Autowired
     lateinit var tickerRepository: TickerRepository
 
-
     @Test
     fun processFinanceAnalysis() {
         listOf(
