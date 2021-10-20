@@ -1,9 +1,10 @@
 package app.properstock.financecollector.repository
 
 import app.properstock.financecollector.model.FinanceAnalysis
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository
-import reactor.core.publisher.Mono
+import org.springframework.data.mongodb.repository.MongoRepository
 
-interface FinanceAnalysisRepository : ReactiveMongoRepository<FinanceAnalysis, Long> {
-    fun findByCode(code: String): Mono<FinanceAnalysis>
+interface FinanceAnalysisRepository : MongoRepository<FinanceAnalysis, Long> {
+    fun findByCode(code: String): FinanceAnalysis?
+    fun existsByCode(code: String): Boolean
+    fun deleteByCode(code: String)
 }

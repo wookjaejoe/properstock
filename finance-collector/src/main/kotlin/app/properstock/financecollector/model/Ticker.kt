@@ -8,11 +8,14 @@ import java.time.Instant
 @Document
 data class Ticker(
 
+    @Id
+    val id: String? = null,
+
     /** 마켓 */
     val market: Market,
 
     /** 종목코드 */
-    @Id
+    @Indexed(unique = true)
     var code: String,
 
     /** 종목명 */

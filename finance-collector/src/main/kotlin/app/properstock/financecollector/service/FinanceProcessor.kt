@@ -13,13 +13,11 @@ class FinanceProcessor(
 
     fun processFinanceAnalysis(code: String) {
         tickerRepository.findByCode(code)
-            .block()
             .run {
                 println(this)
             }
 
         financeAnalysisRepository.findByCode(code)
-            .block()
             .run {
                 val yearMonths = this!!.financeSummary.eps.values.map { it.key }
                 for(yearMonth in yearMonths) {

@@ -23,36 +23,29 @@ class ScheduledTasks(
     @Scheduled(cron = "0 0 4,16 * * *")
     fun updateTickers() {
         logger.info("Starting to update tickers...")
-        naverFinanceCrawler.crawlAllTickers()
-            .flatMap {
+        naverFinanceCrawler
+            .crawlAllTickers()
+            .forEach {
+                if (tickerRepository.existsByCode(it.code)) tickerRepository.deleteByCode(it.code)
                 tickerRepository.save(it)
+                logger.info("${it.code}:${it.name} updated.")
             }
-            .subscribe(
-                {
-                    logger.info("Successfully updated: ${it.code}")
-                },
-                {
-                    logger.error("An error occurs while updating tickers...", it)
-                }
-            )
     }
 
-    @Scheduled(cron = "0 0 4,16 * * *")
+    @Scheduled(cron = "0 0 5,17 * * *")
     fun updateFinanceAnalysis() {
+        logger.info("Starting to update finance analysis...")
         tickerRepository
             .findAll()
-            .collectList()
-            .block()
-            ?.map {
+            .forEach {
                 try {
                     val financeAnalysis = naverFinanceCrawler.crawlFinancialAnalysis(it.code)
+                    if (financeAnalysisRepository.existsByCode(it.code)) financeAnalysisRepository.deleteByCode(it.code)
+                    financeAnalysisRepository.save(financeAnalysis)
                     logger.info("${it.code} updated successfully.")
-                    financeAnalysis
                 } catch (e: Throwable) {
                     logger.warn("Failed to update ${it.code} caused by ${e.javaClass.simpleName}:${e.message}")
-                    null
                 }
             }
-            ?.map { it?.apply { financeAnalysisRepository.save(it).block() } }
     }
 }

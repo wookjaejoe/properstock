@@ -11,4 +11,4 @@ spring:
 webdriver:
   chrome:
     remote:
-      url: http://127.0.0.1:4444
+      url: http://218.147.138.41:4444

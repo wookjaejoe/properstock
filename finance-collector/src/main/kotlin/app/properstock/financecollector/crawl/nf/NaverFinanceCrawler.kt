@@ -6,9 +6,10 @@ import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.interactions.Actions
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Flux
 import java.time.Instant
 import java.time.YearMonth
+import java.util.stream.Stream
+import kotlin.streams.asStream
 
 const val INNER_HTML = "innerHTML"
 const val OUTER_HTML = "outerHTML"
@@ -27,31 +28,25 @@ class NaverFinanceCrawler(
     /**
      * 네이버 파이낸스에서 크롤링 가능한 모든 티커 목록을 크롤링하여 반환
      */
-    fun crawlAllTickers(): Flux<Ticker> {
-        return Flux.concat(
-            crawlTickers(Market.KOSPI),
-            crawlTickers(Market.KOSDAQ)
-        )
+    fun crawlAllTickers(): Stream<Ticker> {
+        return sequence {
+            for (ticker in crawlTickers(Market.KOSPI)) yield(ticker)
+            for (ticker in crawlTickers(Market.KOSDAQ)) yield(ticker)
+        }.asStream()
     }
 
     /**
      * 특정 시장의 모든 티커 목록 크롤링하여 반환
      */
-    fun crawlTickers(market: Market): Flux<Ticker> {
-        return Flux.create { sink ->
-            try {
-                var page = 1
-                while (true) {
-                    val tickers = crawlTickers(market, page++)
-                    if (tickers.isEmpty()) break
-                    else tickers.forEach { sink.next(it) }
-                }
-            } catch (e: Throwable) {
-                sink.error(e)
-            } finally {
-                sink.complete()
+    fun crawlTickers(market: Market): Stream<Ticker> {
+        var page = 1
+        return sequence {
+            while (true) {
+                val tickers = crawlTickers(market, page++)
+                if (tickers.isEmpty()) break
+                else yieldAll(tickers)
             }
-        }
+        }.asStream()
     }
 
     /**
@@ -61,7 +56,6 @@ class NaverFinanceCrawler(
         val url = NaverFinanceUrls.tickers(market, page)
         try {
             webDriver.get(url)
-            println(webDriver.findElement(By.tagName("html")))
             // 테이블 탐색
             val tableHtml = webDriver.findElements(By.tagName("table"))
                 .find {
@@ -143,12 +137,18 @@ class NaverFinanceCrawler(
                     Pair(FINANCE_SUMMARY_INDICES[it.first], it.second)
                 }.run {
                     financeSummary.sales.set(headers, this["sales"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
-                    financeSummary.operatingProfit.set(headers, this["operatingProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
-                    financeSummary.netProfit.set(headers, this["netProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                    financeSummary.operatingProfit.set(
+                        headers,
+                        this["operatingProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                    financeSummary.netProfit.set(
+                        headers,
+                        this["netProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
                     financeSummary.roe.set(headers, this["roe"]!!.map { it?.convertToDouble() })
                     financeSummary.eps.set(headers, this["eps"]!!.map { it?.convertToLong() })
                     financeSummary.per.set(headers, this["per"]!!.map { it?.convertToDouble() })
-                    financeSummary.issuedCommonShares.set(headers, this["issuedCommonShares"]!!.map { it?.convertToLong() })
+                    financeSummary.issuedCommonShares.set(
+                        headers,
+                        this["issuedCommonShares"]!!.map { it?.convertToLong() })
                 }
 
             return FinanceAnalysis(

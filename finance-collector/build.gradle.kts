@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.5.21"
     kotlin("plugin.spring") version "1.5.21"
 
-    id("org.springframework.boot") version "2.5.4"
+    id("org.springframework.boot") version "2.5.5"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("org.hidetake.ssh") version "2.10.1"
 }
@@ -22,25 +22,21 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
 
-    implementation("org.springdoc:springdoc-openapi-ui:1.5.10")
-    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.10")
-    implementation("org.springdoc:springdoc-openapi-kotlin:1.5.10")
-    implementation("org.springdoc:springdoc-openapi-webflux-core:1.5.10")
-
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+    implementation("org.springdoc:springdoc-openapi-ui:1.5.11")
+    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.11")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.5.11")
     implementation("org.seleniumhq.selenium:selenium-java:3.141.59")
-    implementation("org.jsoup:jsoup:1.14.2")
-    implementation("commons-io:commons-io:2.11.0")
 
+    implementation("org.jsoup:jsoup:1.14.3")
+    implementation("commons-io:commons-io:2.11.0")
+    implementation("org.mapstruct:mapstruct:1.4.2.Final")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.projectreactor:reactor-test")
 }
 
 configurations {
@@ -60,12 +56,12 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val dockerImageName = "jowookjae/ppst.finance-collector:${project.version}"
+val dockerImageName = "218.147.138.41:5000/ppst.finance-collector:${project.version}"
 
 tasks.bootBuildImage {
     docker.publishRegistry {
-        username = "jowookjae"
-        password = "jowookjae"
+        username = ""
+        password = ""
     }
 
     imageName = dockerImageName
@@ -85,18 +81,18 @@ remotes {
 
 tasks.register("deploy.dev") {
 //    dependsOn("bootBuildImage").doLast {
-    doLast{
-        ssh.run(delegateClosureOf<RunHandler> {
-            session(
-                devServer,
-                delegateClosureOf<SessionHandler> {
-                    execute(hashMapOf("ignoreError" to true), "docker stop ${project.name}")
-                    execute(hashMapOf("ignoreError" to true), "docker rm ${project.name}")
-                    execute(hashMapOf("ignoreError" to true), "docker rmi $dockerImageName")
-                    execute("docker run -e SPRING_PROFILES_ACTIVE=dev -p 5000:8080 -p 15000:8443 --name ${project.name} -d $dockerImageName")
-                }
-            )
-        })
-    }
+        doLast {
+            ssh.run(delegateClosureOf<RunHandler> {
+                session(
+                    devServer,
+                    delegateClosureOf<SessionHandler> {
+                        execute(hashMapOf("ignoreError" to true), "docker stop ${project.name}")
+                        execute(hashMapOf("ignoreError" to true), "docker rm ${project.name}")
+                        execute(hashMapOf("ignoreError" to true), "docker rmi $dockerImageName")
+                        execute("docker run -e SPRING_PROFILES_ACTIVE=dev -p 6000:8080 -p 16000:8443 --name ${project.name} -d $dockerImageName")
+                    }
+                )
+            })
+        }
 //    }
 }
