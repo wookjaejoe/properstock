@@ -7,8 +7,3 @@ spring:
       host: 218.147.138.41
       database: finance
       auto-index-creation: true
-
-webdriver:
-  chrome:
-    remote:
-      url: http://localhost:4444

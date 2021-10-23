@@ -8,7 +8,7 @@ import java.net.URL
 fun main() {
     print("Connecting with driver...")
     val driver = RemoteWebDriver(
-        URL("http://127.0.0.1:4444"),
+        URL("http://localhost:4444"),
         ChromeOptions()
     )
     println("Driver connected.")

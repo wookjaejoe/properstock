@@ -1,0 +1,4 @@
+webdriver:
+  chrome:
+    remote:
+      url: http://218.147.138.41:4444

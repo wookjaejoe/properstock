@@ -20,7 +20,7 @@ class ScheduledTasks(
         val logger: Logger = LoggerFactory.getLogger(ScheduledTasks::class.java)
     }
 
-    @Scheduled(cron = "0 0 4,16 * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     fun updateTickers() {
         logger.info("Starting to update tickers...")
         naverFinanceCrawler
@@ -32,9 +32,10 @@ class ScheduledTasks(
             }
     }
 
-    @Scheduled(cron = "0 0 5,17 * * *")
+    @Scheduled(cron = "0 0 2 * * *")
     fun updateFinanceAnalysis() {
         logger.info("Starting to update finance analysis...")
+
         tickerRepository
             .findAll()
             .forEach {

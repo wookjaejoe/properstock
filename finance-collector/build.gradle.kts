@@ -88,7 +88,7 @@ tasks.register("deploy.dev") {
                     execute(hashMapOf("ignoreError" to true), "docker stop ${project.name}")
                     execute(hashMapOf("ignoreError" to true), "docker rm ${project.name}")
                     execute(hashMapOf("ignoreError" to true), "docker rmi $dockerImageName")
-                    execute("docker run -e SPRING_PROFILES_ACTIVE=dev -p 6000:8080 -p 16000:8443 --name ${project.name} -d $dockerImageName")
+                    execute("docker run -e SPRING_PROFILES_ACTIVE=dev -p 6001:8080 -p 16001:8443 --name ${project.name} -d $dockerImageName")
                 }
             )
         })
