@@ -5,11 +5,10 @@ import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.RemoteWebDriver
 import java.net.URL
 
-
 fun main() {
     print("Connecting with driver...")
     val driver = RemoteWebDriver(
-        URL("http://218.147.138.41:4444"),
+        URL("http://127.0.0.1:4444"),
         ChromeOptions()
     )
     println("Driver connected.")

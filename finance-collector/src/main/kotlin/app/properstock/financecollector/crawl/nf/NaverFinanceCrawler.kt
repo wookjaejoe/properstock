@@ -1,10 +1,12 @@
 package app.properstock.financecollector.crawl.nf
 
+import app.properstock.financecollector.crawl.WebDriverConnector
 import app.properstock.financecollector.model.*
 import org.jsoup.Jsoup
 import org.openqa.selenium.By
-import org.openqa.selenium.WebDriver
 import org.openqa.selenium.interactions.Actions
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.YearMonth
@@ -23,12 +25,17 @@ fun String.convertToDouble(): Double? = try {
 
 @Component
 class NaverFinanceCrawler(
-    val webDriver: WebDriver,
+    val webDriverConnector: WebDriverConnector
 ) {
+    companion object {
+        val logger: Logger = LoggerFactory.getLogger(NaverFinanceCrawler::class.java)
+    }
+
     /**
      * 네이버 파이낸스에서 크롤링 가능한 모든 티커 목록을 크롤링하여 반환
      */
     fun crawlAllTickers(): Stream<Ticker> {
+        logger.info("Crawling all tickers started.")
         return sequence {
             for (ticker in crawlTickers(Market.KOSPI)) yield(ticker)
             for (ticker in crawlTickers(Market.KOSDAQ)) yield(ticker)
@@ -39,6 +46,7 @@ class NaverFinanceCrawler(
      * 특정 시장의 모든 티커 목록 크롤링하여 반환
      */
     fun crawlTickers(market: Market): Stream<Ticker> {
+        logger.info("Crawling ticker in ${market.name} started.")
         var page = 1
         return sequence {
             while (true) {
@@ -53,11 +61,12 @@ class NaverFinanceCrawler(
      * 특정 시장, 특정 페이지 모든 티커 크롤링하여 반환
      */
     fun crawlTickers(market: Market, page: Int): List<Ticker> {
+        logger.info("Crawling ticker in ${market.name}:$page started.")
         val url = NaverFinanceUrls.tickers(market, page)
-        try {
-            webDriver.get(url)
+        return webDriverConnector.connect {
+            get(url)
             // 테이블 탐색
-            val tableHtml = webDriver.findElements(By.tagName("table"))
+            val tableHtml = findElements(By.tagName("table"))
                 .find {
                     try {
                         listOf("코스피", "코스닥").contains(it.findElement(By.tagName("caption")).getAttribute(INNER_HTML))
@@ -70,7 +79,7 @@ class NaverFinanceCrawler(
             // 크롬 크롤링 결과에서 바로 탐색할 경우 성능 이슈 있기 때문에 Jsoup 사용
             val table = Jsoup.parse(tableHtml)
             val headers = table.getElementsByTag("th").map { it.text() }
-            return table.getElementsByTag("tr")
+            table.getElementsByTag("tr")
                 .filter { it.text().isNotBlank() }
                 .map { it.getElementsByTag("td") }
                 .filter { !it.isNullOrEmpty() }
@@ -87,21 +96,20 @@ class NaverFinanceCrawler(
                         updated = Instant.now()
                     )
                 }
-        } catch (e: Throwable) {
-            throw RuntimeException("Failed to crawling $url", e)
         }
     }
 
     fun crawlFinancialAnalysis(code: String): FinanceAnalysis {
+        logger.info("Crawling financial analysis for $code started.")
         val url = NaverFinanceUrls.companyInfo(code)
-        val actions = Actions(webDriver)
-        try {
-            webDriver.get(url)
+        return webDriverConnector.connect {
+            val actions = Actions(this)
+            get(url)
             // 연간 탭 클릭
-            val yearlyTab = webDriver.findElement(By.id("cns_Tab21"))
+            val yearlyTab = findElement(By.id("cns_Tab21"))
             actions.click(yearlyTab).build().perform()
 
-            val tableHtml = webDriver.findElements(By.tagName("table")).find {
+            val tableHtml = findElements(By.tagName("table")).find {
                 try {
                     it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
                 } catch (e: Throwable) {
@@ -151,12 +159,10 @@ class NaverFinanceCrawler(
                         this["issuedCommonShares"]!!.map { it?.convertToLong() })
                 }
 
-            return FinanceAnalysis(
+            FinanceAnalysis(
                 code = code,
                 financeSummary = financeSummary
             )
-        } catch (e: Throwable) {
-            throw RuntimeException("Failed to crawling $url", e)
         }
     }
 }
