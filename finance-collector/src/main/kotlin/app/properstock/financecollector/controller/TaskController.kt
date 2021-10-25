@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.RestController
 class TaskController(
     val scheduledTasks: ScheduledTasks
 ) {
-    @PostMapping
-    fun runAllTasks() {
+    @PostMapping("/tickers")
+    fun updateTickers() {
         scheduledTasks.updateTickers()
+    }
+
+    @PostMapping("/finance-analysis")
+    fun updateFinanceAnalysis() {
         scheduledTasks.updateFinanceAnalysis()
     }
 }

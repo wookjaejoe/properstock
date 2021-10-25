@@ -21,7 +21,9 @@ class WebDriverConnector {
         logger.info("Connecting with remote webdriver: $chromeRemoteUrl")
         return CloseableWebDriver(
             URL(chromeRemoteUrl),
-            ChromeOptions()
+            ChromeOptions().apply {
+                this.setHeadless(true)
+            }
         ).use {
             logger.info("Remote webdriver connected.")
             todo(it)
