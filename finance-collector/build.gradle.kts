@@ -56,7 +56,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val dockerImageName = "218.147.138.41:5000/ppst.finance-collector:${project.version}"
+val dockerImageName = "home.jowookjae.in:5000/ppst.finance-collector:${project.version}"
 
 tasks.bootBuildImage {
     docker.publishRegistry {
@@ -72,9 +72,9 @@ var devServer: Any? = null
 remotes {
     devServer = withGroovyBuilder {
         "create"("remoteName") {
-            setProperty("host", "218.147.138.41")
-            setProperty("user", "dev")
-            setProperty("password", "dev")
+            setProperty("host", "home.jowookjae.in")
+            setProperty("user", "admin")
+            setProperty("password", "admin")
         }
     }
 }

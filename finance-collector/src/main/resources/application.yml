@@ -4,6 +4,6 @@ server:
 spring:
   data:
     mongodb:
-      host: 218.147.138.41
+      host: home.jowookjae.in
       database: finance
       auto-index-creation: true
