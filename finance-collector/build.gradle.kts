@@ -70,16 +70,16 @@ tasks.bootBuildImage {
 
 var devServer: Any? = null
 remotes {
+    val user = project.properties["user"]
+    val password = project.properties["password"]
     devServer = withGroovyBuilder {
         "create"("remoteName") {
             setProperty("host", "home.jowookjae.in")
-            setProperty("user", "admin")
-            setProperty("password", "admin")
+            setProperty("user", user)
+            setProperty("password", password)
         }
     }
 }
-
-
 
 tasks.register("deploy.dev") {
     val runOptions = listOf(
