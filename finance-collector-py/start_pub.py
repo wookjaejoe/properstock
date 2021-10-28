@@ -4,6 +4,8 @@ import os
 
 log.init()
 
+VERSION = '0.1.0-SNAPSHOT'
+
 
 def main():
     publisher = KrxCurrentPricePublisher(

@@ -6,3 +6,4 @@ pykrx
 finance-datareader
 pika~=1.2.0
 jsons
+paramiko
