@@ -1,7 +1,8 @@
-pandas~=0.25.0
+pandas==1.3.4
 requests~=2.26.0
 lxml~=4.6.3
 yfinance
 pykrx
 finance-datareader
 pika~=1.2.0
+jsons
