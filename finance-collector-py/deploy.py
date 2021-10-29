@@ -1,6 +1,5 @@
 import argparse
 import os
-import subprocess
 
 import paramiko
 
@@ -26,16 +25,16 @@ def main():
     image_name = f'{registry}/{container_name}:{version}'
     run_cmd = f'docker build -t {image_name} .'
 
-    # print_hr()
-    # print(f'Run command at local: {run_cmd}')
-    # assert os.system(run_cmd) == 0
-    # print_hr()
-    #
-    # print_hr()
-    # run_cmd = f'docker push {image_name}'
-    # print(f'Run command at local: {run_cmd}')
-    # assert os.system(run_cmd) == 0
-    # print_hr()
+    print_hr()
+    print(f'Run command at local: {run_cmd}')
+    assert os.system(run_cmd) == 0
+    print_hr()
+
+    print_hr()
+    run_cmd = f'docker push {image_name}'
+    print(f'Run command at local: {run_cmd}')
+    assert os.system(run_cmd) == 0
+    print_hr()
 
     # 도커 컨테이너 실행
     host = 'home.jowookjae.in'

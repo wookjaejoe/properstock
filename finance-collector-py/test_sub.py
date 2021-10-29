@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import pika
+import json
 
 host = 'home.jowookjae.in'
 exchange = 'currentPrice'
@@ -16,8 +17,12 @@ channel.queue_bind(exchange=exchange, queue=queue_name)
 
 print(f'Waiting for message received from {exchange}@{host}. To exit press CTRL+C')
 
+
 def callback(ch, method, properties, body):
-    print(" [x] %r" % body)
+    if body:
+        for item in json.loads(body):
+            if item['code'] == '012170':
+                print(item['price'])
 
 
 channel.basic_consume(

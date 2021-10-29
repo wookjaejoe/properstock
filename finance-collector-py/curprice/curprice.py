@@ -90,6 +90,7 @@ class KrxCurrentPricePublisher:
                 if cur_info.code in self.prev_infos:
                     if self.prev_infos[cur_info.code].price != cur_info.price:
                         updatable = True
+
                 else:
                     updatable = True
 
@@ -98,12 +99,9 @@ class KrxCurrentPricePublisher:
 
             updatable_count = len(updated_infos)
             if updatable_count == 0:
-                logger.info('Updatable count is 0. Sleeping 60 seconds...')
-                time.sleep(60)
-                continue
-            elif updatable_count < 10:
-                logger.info('Updatable count is less than 10. Sleeping 10 seconds...')
-                time.sleep(10)
+                deplay = 60
+                logger.info(f'Updatable count is 0. Sleeping {deplay} seconds...')
+                time.sleep(deplay)
                 continue
             else:
                 pass
@@ -115,6 +113,9 @@ class KrxCurrentPricePublisher:
                 routing_key='',
                 body=jsons.dumps(updated_infos.values()).encode('utf-8')
             )
+
+            # 너무 잦은 요청 시 API에서 값을 안주는거 같아서, 요청 속도 제어
+            time.sleep(5)
 
     def close(self):
         self.rmq_conn.close()
