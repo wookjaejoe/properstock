@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 
     implementation("org.springdoc:springdoc-openapi-ui:1.5.11")
     implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.11")

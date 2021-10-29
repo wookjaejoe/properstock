@@ -7,3 +7,7 @@ spring:
       host: home.jowookjae.in
       database: finance
       auto-index-creation: true
+  rabbitmq:
+    host: home.jowookjae.in
+    username: guest
+    password: guest
