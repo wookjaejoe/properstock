@@ -79,7 +79,7 @@ class KrxCurrentPricePublisher:
     def start(self):
         logger.info(f'Staring to publish krx current price into {self.exchange}@exchange...')
         channel = self.rmq_conn.channel()
-        channel.exchange_declare(exchange=self.exchange, exchange_type='fanout')
+        channel.exchange_declare(exchange=self.exchange, exchange_type='fanout', durable=True)
 
         # 여기서 전 값이랑 비교
         while True:
