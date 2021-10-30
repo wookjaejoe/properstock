@@ -1,12 +1,11 @@
 package app.properstock.financecollector.config
 
 import org.springframework.amqp.core.*
-import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class Tut3Config {
+class RabbitConfig {
     @Bean
     fun fanout(): FanoutExchange {
         return FanoutExchange("currentPrice")
@@ -23,10 +22,5 @@ class Tut3Config {
         currentPrice: Queue
     ): Binding {
         return BindingBuilder.bind(currentPrice).to(fanout)
-    }
-
-    @RabbitListener(queues = ["#{currentPrice.name}"])
-    fun receive1(message: String) {
-        println(message)
     }
 }
