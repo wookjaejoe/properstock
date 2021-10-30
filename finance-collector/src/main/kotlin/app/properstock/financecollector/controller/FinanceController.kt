@@ -12,7 +12,7 @@ class FinanceController(
     val financeAnalysisRepository: FinanceAnalysisRepository
 ) {
     @GetMapping
-    fun getBasics(): List<FinanceAnalysis> {
+    fun getAll(): List<FinanceAnalysis> {
         return financeAnalysisRepository.findAll()
     }
 }

@@ -5,4 +5,5 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface ProperPriceRepository : MongoRepository<ProperPrice, String> {
     fun findByTickerCodeAndFormulaSymbol(tickerCode: String, formulaSymbol: String): ProperPrice?
+    fun findAllByTickerCodeInAndValueNot(tickerCodes: List<String>, valueNot: Double): List<ProperPrice>
 }

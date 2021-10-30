@@ -33,6 +33,12 @@ data class Ticker(
     /** 링크 */
     val link: String,
 
+    /** 산업 */
+    val industry: String? = null,
+
+    /** 테마 */
+    val themes: List<String> = emptyList(),
+
     /** 마지막 업데이트 시각 */
     var updated: Instant = Instant.now()
 )
