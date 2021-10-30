@@ -42,26 +42,23 @@ def main():
     ssh.load_system_host_keys()
     ssh.connect(host, username=user, password=pswd)
 
-    def check_ssh_exec(_so, _se):
-        if _so.channel.recv_exit_status() != 0:
+    def execute(cmd: str):
+        print(f'SSH EXECUTE COMMAND: {cmd}')
+        _, so, se = ssh.exec_command(cmd)
+        if so.channel.recv_exit_status() != 0:
             print('!! ERROR OCCURS !!')
 
-        for line in iter(_so.readline, ""):
+        for line in iter(so.readline, ""):
             print(line, end="")
 
-        for line in iter(_se.readline, ""):
+        for line in iter(se.readline, ""):
             print(line, end="")
 
-    _, so, se = ssh.exec_command(f'docker stop {container_name}')
-    check_ssh_exec(so, se)
-    _, so, se = ssh.exec_command(f'docker rm {container_name}')
-    check_ssh_exec(so, se)
-    _, so, se = ssh.exec_command(f'docker rmi {container_name}')
-    check_ssh_exec(so, se)
-    _, so, se = ssh.exec_command(f'docker pull {image_name}')
-    check_ssh_exec(so, se)
-    _, so, se = ssh.exec_command(f'docker run -d --name {container_name} {image_name}')
-    check_ssh_exec(so, se)
+    execute(f'docker stop {container_name}')
+    execute(f'docker rm {container_name}')
+    execute(f'docker rmi {container_name}')
+    execute(f'docker pull {image_name}')
+    execute(f'docker run -d --name {container_name} {image_name}')
 
 
 if __name__ == '__main__':
