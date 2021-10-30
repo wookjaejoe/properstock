@@ -16,7 +16,6 @@ import kotlin.streams.asStream
 const val INNER_HTML = "innerHTML"
 const val OUTER_HTML = "outerHTML"
 
-fun String.convertToLong(): Long = this.trim().replace(",", "").toLong()
 fun String.convertToDouble(): Double? = try {
     this.trim().replace(",", "").toDouble()
 } catch (e: Throwable) {
@@ -144,19 +143,19 @@ class NaverFinanceCrawler(
                 }.associate {
                     Pair(FINANCE_SUMMARY_INDICES[it.first], it.second)
                 }.run {
-                    financeSummary.sales.set(headers, this["sales"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                    financeSummary.sales.set(headers, this["sales"]!!.map { it?.convertToDouble()?.times(1_0000_0000) })
                     financeSummary.operatingProfit.set(
                         headers,
-                        this["operatingProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                        this["operatingProfit"]!!.map { it?.convertToDouble()?.times(1_0000_0000) })
                     financeSummary.netProfit.set(
                         headers,
-                        this["netProfit"]!!.map { it?.convertToLong()?.times(1_0000_0000) })
+                        this["netProfit"]!!.map { it?.convertToDouble()?.times(1_0000_0000) })
                     financeSummary.roe.set(headers, this["roe"]!!.map { it?.convertToDouble() })
-                    financeSummary.eps.set(headers, this["eps"]!!.map { it?.convertToLong() })
+                    financeSummary.eps.set(headers, this["eps"]!!.map { it?.convertToDouble() })
                     financeSummary.per.set(headers, this["per"]!!.map { it?.convertToDouble() })
                     financeSummary.issuedCommonShares.set(
                         headers,
-                        this["issuedCommonShares"]!!.map { it?.convertToLong() })
+                        this["issuedCommonShares"]!!.map { it?.convertToDouble() })
                 }
 
             FinanceAnalysis(

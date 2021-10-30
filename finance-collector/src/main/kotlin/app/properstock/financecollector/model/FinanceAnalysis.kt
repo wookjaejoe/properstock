@@ -21,29 +21,29 @@ data class FinanceAnalysis(
 
 data class FinanceSummary(
     /** 매출액 */
-    val sales: TimeSeriesData<Long> = TimeSeriesData("매출액"),
+    val sales: TimeSeries<Double> = TimeSeries("매출액"),
     /** 당기순이익 */
-    val netProfit: TimeSeriesData<Long> = TimeSeriesData("당기순이익"),
+    val netProfit: TimeSeries<Double> = TimeSeries("당기순이익"),
     /** 영업이익 */
-    val operatingProfit: TimeSeriesData<Long> = TimeSeriesData("영업이익"),
+    val operatingProfit: TimeSeries<Double> = TimeSeries("영업이익"),
     /** ROE */
-    val roe: TimeSeriesData<Double> = TimeSeriesData("ROE", "ROE(%)"),
+    val roe: TimeSeries<Double> = TimeSeries("ROE", "ROE(%)"),
     /** EPS */
-    val eps: TimeSeriesData<Long> = TimeSeriesData("EPS", "EPS(원)"),
+    val eps: TimeSeries<Double> = TimeSeries("EPS", "EPS(원)"),
     /** PER */
-    val per: TimeSeriesData<Double> = TimeSeriesData("PER", "PER(배)"),
+    val per: TimeSeries<Double> = TimeSeries("PER", "PER(배)"),
     /** 발행주식수(보통주) */
-    val issuedCommonShares: TimeSeriesData<Long> = TimeSeriesData("발행주식수", "발행주식수(보통주)")
+    val issuedCommonShares: TimeSeries<Double> = TimeSeries("발행주식수", "발행주식수(보통주)")
 ) {
-    class TimeSeriesData<V>(
+    class TimeSeries<V>(
         val displayName: String,
         val description: String? = null,
-        val values: MutableMap<YearMonth, V?> = mutableMapOf()
+        val data: MutableMap<YearMonth, V?> = mutableMapOf()
     ) {
         fun set(times: List<YearMonth>, data: List<V?>) {
             if (times.size != data.size) throw KeyValueNotMatchException("Length not matched between times and data")
             for (i in times.indices) {
-                values[times[i]] = data[i]
+                this.data[times[i]] = data[i]
             }
         }
     }

@@ -29,6 +29,6 @@ class ScheduledTasksTest {
 
     @Test
     fun updateFinanceAnalysis() {
-        scheduledTasks.updateFinanceAnalysis()
+        scheduledTasks.updateFinanceData()
     }
 }

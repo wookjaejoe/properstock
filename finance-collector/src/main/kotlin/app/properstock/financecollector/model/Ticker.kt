@@ -7,7 +7,6 @@ import java.time.Instant
 
 @Document
 data class Ticker(
-
     @Id
     val id: String? = null,
 

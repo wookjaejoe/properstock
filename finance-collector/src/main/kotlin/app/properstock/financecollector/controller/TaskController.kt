@@ -17,6 +17,6 @@ class TaskController(
 
     @PostMapping("/finance-analysis")
     fun updateFinanceAnalysis() {
-        scheduledTasks.updateFinanceAnalysis()
+        scheduledTasks.updateFinanceData()
     }
 }
