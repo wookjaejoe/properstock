@@ -33,11 +33,13 @@ data class ProperPrice(
         val updated: Instant,
 
         // Additionals
+        val currentPrice: Double,
         val tickerName: String,
         val tickerIndustry: String?,
         val tickerThemes: List<String>,
+        val tickerMarket: Market,
         val margin: Double,
-        val marginRate: Double
+        val marginRate: Double,
     )
 
     companion object {
@@ -45,11 +47,13 @@ data class ProperPrice(
         interface ProperPriceMapper {
             fun toDto(
                 properPrice: ProperPrice,
+                currentPrice: Double,
                 tickerName: String,
                 tickerIndustry: String?,
                 tickerThemes: List<String>,
+                tickerMarket: Market,
                 margin: Double,
-                marginRate: Double
+                marginRate: Double,
             ): Dto
         }
 

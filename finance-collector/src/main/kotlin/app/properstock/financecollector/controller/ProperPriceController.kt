@@ -39,12 +39,14 @@ class ProperPriceController(
             val ticker = tickersByCode[it.tickerCode]!!
             ProperPrice.mapper.toDto(
                 it,
+                currentPrice = ticker.price.toDouble(),
                 tickerName = ticker.name,
                 tickerIndustry = ticker.industry,
                 tickerThemes = ticker.themes,
+                tickerMarket = ticker.market,
                 margin = it.value - ticker.price,
-                marginRate = it.value - ticker.price / ticker.price
+                marginRate = (it.value - ticker.price) / ticker.price * 100
             )
-        }
+        }.sortedBy { it.marginRate }.reversed()
     }
 }
