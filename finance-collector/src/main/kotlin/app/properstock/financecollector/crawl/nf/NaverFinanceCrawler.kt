@@ -203,7 +203,7 @@ class NaverFinanceCrawler(
 
         return sequence {
             industries.forEach {
-                yield(webDriverConnector.connect {
+                val ind: NaverFinanceIndustry = webDriverConnector.connect {
                     // 업종 상세 페이지 입장
                     get(NaverFinanceUrls.resolve(it.ref))
                     val table = findElements(By.tagName("table"))[2].getAttribute(OUTER_HTML)
@@ -213,7 +213,9 @@ class NaverFinanceCrawler(
                         .getElementsByTag("tr")
                         .mapNotNull { val aList = it.getElementsByTag("a"); if (aList.size > 0) aList[0].attr("href") else null }
                     it
-                })
+                }
+
+                yield(ind)
             }
         }.asStream()
     }

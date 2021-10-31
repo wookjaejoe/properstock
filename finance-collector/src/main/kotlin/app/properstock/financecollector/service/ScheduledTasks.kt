@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 @EnableScheduling
@@ -47,11 +48,14 @@ class ScheduledTasks(
                 val oldData = industryRepository.findByName(industry.name)
                 if (oldData != null) {
                     oldData.tickerCodes = codes
+                    oldData.marginRate = industry.marginRate
+                    oldData.updatedAt = Instant.now()
                     industryRepository.save(oldData)
                 } else {
                     val newData = Industry(
                         name = industry.name,
-                        tickerCodes = codes
+                        tickerCodes = codes,
+                        marginRate = industry.marginRate
                     )
                     industryRepository.save(newData)
                 }
@@ -68,7 +72,7 @@ class ScheduledTasks(
             }
     }
 
-    @Scheduled(cron = "0 0 2 * * *", zone = TZ_KR)
+    @Scheduled(cron = "0 0 3 * * *", zone = TZ_KR)
     fun updateFinanceData() {
         logger.info("Starting to update finance analysis...")
         tickerRepository
