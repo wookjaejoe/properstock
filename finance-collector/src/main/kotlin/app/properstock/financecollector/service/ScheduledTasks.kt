@@ -2,7 +2,9 @@ package app.properstock.financecollector.service
 
 import app.properstock.financecollector.TZ_KR
 import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
+import app.properstock.financecollector.model.Industry
 import app.properstock.financecollector.repository.FinanceAnalysisRepository
+import app.properstock.financecollector.repository.IndustryRepository
 import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceService
 import org.slf4j.Logger
@@ -17,7 +19,8 @@ class ScheduledTasks(
     val naverFinanceCrawler: NaverFinanceCrawler,
     val tickerRepository: TickerRepository,
     val financeAnalysisRepository: FinanceAnalysisRepository,
-    val properPriceService: ProperPriceService
+    val properPriceService: ProperPriceService,
+    val industryRepository: IndustryRepository
 ) {
     companion object {
         val logger: Logger = LoggerFactory.getLogger(ScheduledTasks::class.java)
@@ -33,6 +36,35 @@ class ScheduledTasks(
                 if (tickerRepository.existsByCode(it.code)) tickerRepository.deleteByCode(it.code)
                 tickerRepository.save(it)
                 logger.info("${it.code}:${it.name} updated.")
+            }
+
+        naverFinanceCrawler
+            .crawlIndustries()
+            .forEach { industry ->
+                val codes = industry.tickerRefs.map { tickerRef -> tickerRef.split("code=")[1] }
+
+                // industry 업데이트
+                val oldData = industryRepository.findByName(industry.name)
+                if (oldData != null) {
+                    oldData.tickerCodes = codes
+                    industryRepository.save(oldData)
+                } else {
+                    val newData = Industry(
+                        name = industry.name,
+                        tickerCodes = codes
+                    )
+                    industryRepository.save(newData)
+                }
+
+                // 티커 업데이트
+                codes.forEach { code ->
+                    val ticker = tickerRepository.findByCode(code)
+                    if (ticker != null) {
+                        ticker.industry = industry.name
+                        tickerRepository.save(ticker)
+                        logger.info("Updated: $ticker")
+                    }
+                }
             }
     }
 

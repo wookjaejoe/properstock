@@ -34,7 +34,7 @@ data class Ticker(
     val link: String,
 
     /** 산업 */
-    val industry: String? = null,
+    var industry: String? = null,
 
     /** 테마 */
     val themes: List<String> = emptyList(),
