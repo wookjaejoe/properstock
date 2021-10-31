@@ -3,6 +3,7 @@ package app.properstock.financecollector.crawl.nf
 import app.properstock.financecollector.crawl.WebDriverConnector
 import app.properstock.financecollector.model.*
 import org.jsoup.Jsoup
+import org.jsoup.select.Elements
 import org.openqa.selenium.By
 import org.openqa.selenium.interactions.Actions
 import org.slf4j.Logger
@@ -18,6 +19,12 @@ const val OUTER_HTML = "outerHTML"
 
 fun String.convertToDouble(): Double? = try {
     this.trim().replace(",", "").toDouble()
+} catch (e: Throwable) {
+    null
+}
+
+fun String.parseDouble(): Double? = try {
+    "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".toRegex().find(this)?.value?.convertToDouble()
 } catch (e: Throwable) {
     null
 }
@@ -163,5 +170,51 @@ class NaverFinanceCrawler(
                 financeSummary = financeSummary
             )
         }
+    }
+
+    fun crawlIndustries(): Stream<NaverFinanceIndustry> {
+        val industries: List<NaverFinanceIndustry> = webDriverConnector.connect {
+            // 업종 페이지 입장
+            get(NaverFinanceUrls.industries())
+
+            // 테이블 파싱
+            val trList: Elements = findElement(By.tagName("table"))
+                .getAttribute(OUTER_HTML)
+                .run {
+                    Jsoup.parse(this).getElementsByTag("tr")
+                }
+
+            trList
+                .subList(2, trList.size)
+                .filter { it.text().trim().isNotEmpty() }
+                .map { row ->
+                    val tdList = row.getElementsByTag("td")
+                    val aTag = tdList[0].getElementsByTag("a")
+                    val ref = aTag.attr("href")
+                    val name = aTag.text().trim()
+                    val marginRate = tdList[1].text().parseDouble()
+                    NaverFinanceIndustry(
+                        name = name,
+                        ref = ref,
+                        marginRate = marginRate,
+                    )
+                }
+        }
+
+        return sequence {
+            industries.forEach {
+                yield(webDriverConnector.connect {
+                    // 업종 상세 페이지 입장
+                    get(NaverFinanceUrls.resolve(it.ref))
+                    val table = findElements(By.tagName("table"))[2].getAttribute(OUTER_HTML)
+
+                    it.tickerRefs = Jsoup.parse(table)
+                        .getElementsByTag("tbody")[0]
+                        .getElementsByTag("tr")
+                        .mapNotNull { val aList = it.getElementsByTag("a"); if (aList.size > 0) aList[0].attr("href") else null }
+                    it
+                })
+            }
+        }.asStream()
     }
 }
