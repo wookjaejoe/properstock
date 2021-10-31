@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.5.21"
     kotlin("plugin.spring") version "1.5.21"
+    kotlin("kapt") version "1.5.31"
 
     id("org.springframework.boot") version "2.5.5"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
@@ -36,6 +37,7 @@ dependencies {
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("commons-io:commons-io:2.11.0")
     implementation("org.mapstruct:mapstruct:1.4.2.Final")
+    kapt("org.mapstruct:mapstruct-processor:1.4.2.Final")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }

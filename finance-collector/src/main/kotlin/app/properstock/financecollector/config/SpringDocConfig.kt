@@ -11,7 +11,7 @@ class SpringdocConfig {
     @Bean
     fun api(): GroupedOpenApi? {
         return GroupedOpenApi.builder()
-            .group("default")
+            .group("v1")
             .pathsToMatch("/**")
             .build()
     }

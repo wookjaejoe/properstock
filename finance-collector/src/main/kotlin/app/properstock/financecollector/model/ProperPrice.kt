@@ -1,5 +1,7 @@
 package app.properstock.financecollector.model
 
+import org.mapstruct.Mapper
+import org.mapstruct.factory.Mappers
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.index.CompoundIndexes
@@ -22,4 +24,35 @@ data class ProperPrice(
     var value: Double,
     var note: String? = null,
     var updated: Instant = Instant.now()
-)
+) {
+    data class Dto(
+        val tickerCode: String,
+        val formulaSymbol: String,
+        val value: Double,
+        val note: String,
+        val updated: Instant,
+
+        // Additionals
+        val tickerName: String,
+        val tickerIndustry: String?,
+        val tickerThemes: List<String>,
+        val margin: Double,
+        val marginRate: Double
+    )
+
+    companion object {
+        @Mapper
+        interface ProperPriceMapper {
+            fun toDto(
+                properPrice: ProperPrice,
+                tickerName: String,
+                tickerIndustry: String?,
+                tickerThemes: List<String>,
+                margin: Double,
+                marginRate: Double
+            ): Dto
+        }
+
+        val mapper: ProperPriceMapper = Mappers.getMapper(ProperPriceMapper::class.java)
+    }
+}

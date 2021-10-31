@@ -22,7 +22,7 @@ class ProperPriceController(
         formulaSymbol: String?,
         limit: Int?,
         searchText: String?,
-    ): List<ProperPrice> {
+    ): List<ProperPrice.Dto> {
         // 종목 필터
         var tickers = tickerRepository.findAll()
         if (market != null) tickers = tickers.filter { it.market == market }
@@ -31,9 +31,20 @@ class ProperPriceController(
         if (searchText != null) tickers = tickers.filter { it.name.contains(searchText) || it.code.contains(searchText) }
 
         // 기타 필터
+        val tickersByCode = tickers.associateBy { it.code }
         var properPrices = properPriceRepository.findAllByTickerCodeInAndValueNot(tickers.map { it.code }, Double.NaN)
-        if(formulaSymbol != null) properPrices = properPrices.filter { it.formulaSymbol == formulaSymbol }
-        if(limit != null) properPrices = properPrices.take(limit)
-        return properPrices
+        if (formulaSymbol != null) properPrices = properPrices.filter { it.formulaSymbol == formulaSymbol }
+        if (limit != null) properPrices = properPrices.take(limit)
+        return properPrices.map {
+            val ticker = tickersByCode[it.tickerCode]!!
+            ProperPrice.mapper.toDto(
+                it,
+                tickerName = ticker.name,
+                tickerIndustry = ticker.industry,
+                tickerThemes = ticker.themes,
+                margin = it.value - ticker.price,
+                marginRate = it.value - ticker.price / ticker.price
+            )
+        }
     }
 }
