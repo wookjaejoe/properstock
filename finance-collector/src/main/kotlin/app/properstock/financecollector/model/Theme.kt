@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
 @Document
-data class Industry (
+data class Theme(
     @Id
     val id: String? = null,
 

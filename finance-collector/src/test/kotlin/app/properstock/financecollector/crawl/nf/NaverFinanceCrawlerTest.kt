@@ -32,4 +32,9 @@ class NaverFinanceCrawlerTest {
     fun crawlIndustries() {
         naverFinanceCrawler.crawlIndustries().forEach { println(it) }
     }
+
+    @Test
+    fun crawlThemes() {
+        naverFinanceCrawler.crawlThemes().forEach { println(it) }
+    }
 }

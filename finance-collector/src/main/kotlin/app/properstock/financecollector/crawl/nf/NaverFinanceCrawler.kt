@@ -3,6 +3,7 @@ package app.properstock.financecollector.crawl.nf
 import app.properstock.financecollector.crawl.WebDriverConnector
 import app.properstock.financecollector.model.*
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import org.openqa.selenium.By
 import org.openqa.selenium.interactions.Actions
@@ -178,11 +179,12 @@ class NaverFinanceCrawler(
             get(NaverFinanceUrls.industries())
 
             // 테이블 파싱
-            val trList: Elements = findElement(By.tagName("table"))
-                .getAttribute(OUTER_HTML)
-                .run {
-                    Jsoup.parse(this).getElementsByTag("tr")
-                }
+            val trList: Elements =
+                findElement(By.tagName("table"))
+                    .getAttribute(OUTER_HTML)
+                    .run {
+                        Jsoup.parse(this).getElementsByTag("tr")
+                    }
 
             trList
                 .subList(2, trList.size)
@@ -216,6 +218,70 @@ class NaverFinanceCrawler(
                 }
 
                 yield(ind)
+            }
+        }.asStream()
+    }
+
+    private fun crawlThemes(contentTable: Element): List<NaverFinanaceTheme> {
+        return contentTable
+            .getElementsByTag("tr")
+            .filter { it.getElementsByTag("td").text().trim().isNotEmpty() }
+            .map {
+                val tdList = it.getElementsByTag("td")
+                NaverFinanaceTheme(
+                    name = tdList[0].getElementsByTag("a").text().trim(),
+                    ref = tdList[0].getElementsByTag("a").attr("href"),
+                    marginRate = tdList[1].text().parseDouble(),
+                )
+            }
+    }
+
+    fun crawlThemes(): Stream<NaverFinanaceTheme> {
+        var lastPage: Int
+        val findThemeTable = { body: Element -> body.getElementsByTag("table").find { it.hasClass("theme") }!! }
+        val findLastPage = { body: Element ->
+            body.getElementsByTag("td")
+                .find { it.hasClass("pgRR") }!!
+                .getElementsByTag("a")
+                .attr("href")
+                .split("page=")[1]
+                .toInt()
+        }
+
+        val themes: MutableList<NaverFinanaceTheme> = mutableListOf()
+        webDriverConnector.connect {
+            var url = NaverFinanceUrls.themes(1)
+            logger.info("Opening $url")
+            get(url)
+            var body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
+            lastPage = findLastPage(body)
+            themes.addAll(crawlThemes(findThemeTable(body)))
+
+            (2..lastPage).map { page ->
+                url = NaverFinanceUrls.themes(page)
+                logger.info("Opening $url")
+                get(url)
+                body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
+                themes.addAll(crawlThemes(findThemeTable(body)))
+            }
+        }
+
+        return sequence {
+            themes.forEach { theme ->
+                webDriverConnector.connect {
+                    get(NaverFinanceUrls.resolve(theme.ref))
+                    val body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
+                    theme.tickerRefs = body.getElementsByTag("table")
+                        .find { it.attr("class") == "type_5" }!!
+                        .getElementsByTag("tbody")[0]
+                        .getElementsByTag("tr")
+                        .map { it.getElementsByTag("a") }
+                        .filter { it.isNotEmpty() }
+                        .map { it[0].attr("href") }
+                    theme
+                }.run {
+                    yield(theme)
+                }
             }
         }.asStream()
     }

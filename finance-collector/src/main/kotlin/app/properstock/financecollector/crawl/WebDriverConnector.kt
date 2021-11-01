@@ -37,15 +37,7 @@ class WebDriverConnector {
         url,
         chromeOptions
     ) {
-        val autoCloser = Timer().schedule(
-            30 * 1000  // 30초
-        ) {
-            logger.warn("The connection has not been closed for 30 seconds, force close.")
-            close()
-        }
-
         override fun close() {
-            autoCloser.cancel()
             quit()
         }
     }

@@ -10,7 +10,7 @@ class NaverFinanceUrls {
         const val root = "https://finance.naver.com"
 
         fun resolve(subPath: String): String {
-            return "$root${if (!subPath.startsWith("/")) subPath else "/$subPath"}"
+            return "$root${if (subPath.startsWith("/")) subPath else "/$subPath"}"
         }
 
         fun tickers(market: Market, page: Int): String {
@@ -23,8 +23,7 @@ class NaverFinanceUrls {
         }
 
         fun companyInfo(code: String) = "https://navercomp.wisereport.co.kr/v2/company/c1010001.aspx?cmp_cd=$code"
-
         fun industries() = resolve("/sise/sise_group.naver?type=upjong")
-        fun themes(page: Int) = resolve("/sise/sise_group.naver?page=$page")
+        fun themes(page: Int) = resolve("/sise/theme.naver?page=$page")
     }
 }

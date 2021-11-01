@@ -3,8 +3,10 @@ package app.properstock.financecollector.service
 import app.properstock.financecollector.TZ_KR
 import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
 import app.properstock.financecollector.model.Industry
+import app.properstock.financecollector.model.Theme
 import app.properstock.financecollector.repository.FinanceAnalysisRepository
 import app.properstock.financecollector.repository.IndustryRepository
+import app.properstock.financecollector.repository.ThemeRepository
 import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceService
 import org.slf4j.Logger
@@ -21,7 +23,8 @@ class ScheduledTasks(
     val tickerRepository: TickerRepository,
     val financeAnalysisRepository: FinanceAnalysisRepository,
     val properPriceService: ProperPriceService,
-    val industryRepository: IndustryRepository
+    val industryRepository: IndustryRepository,
+    val themeRepository: ThemeRepository
 ) {
     companion object {
         val logger: Logger = LoggerFactory.getLogger(ScheduledTasks::class.java)
@@ -36,7 +39,7 @@ class ScheduledTasks(
                 // todo: 업데이트 제대로
                 if (tickerRepository.existsByCode(it.code)) tickerRepository.deleteByCode(it.code)
                 tickerRepository.save(it)
-                logger.info("${it.code}:${it.name} updated.")
+                logger.info("Updated: $it")
             }
 
         naverFinanceCrawler
@@ -51,6 +54,7 @@ class ScheduledTasks(
                     oldData.marginRate = industry.marginRate
                     oldData.updatedAt = Instant.now()
                     industryRepository.save(oldData)
+                    logger.info("Updated: $oldData")
                 } else {
                     val newData = Industry(
                         name = industry.name,
@@ -58,6 +62,7 @@ class ScheduledTasks(
                         marginRate = industry.marginRate
                     )
                     industryRepository.save(newData)
+                    logger.info("Updated: $newData")
                 }
 
                 // 티커 업데이트
@@ -69,6 +74,42 @@ class ScheduledTasks(
                         logger.info("Updated: $ticker")
                     }
                 }
+            }
+
+        naverFinanceCrawler.crawlThemes()
+            .forEach { theme ->
+                // 테마 업데이트
+                val codes = theme.tickerRefs.map { ref -> ref.split("code=")[1] }
+                val oldData = themeRepository.findByName(theme.name)
+                if (oldData != null) {
+                    oldData.apply {
+                        tickerCodes = codes
+                        marginRate = theme.marginRate
+                        updatedAt = Instant.now()
+                        themeRepository.save(this)
+                        logger.info("Updated: $this")
+                    }
+                } else {
+                    val newData = Theme(
+                        name = theme.name,
+                        tickerCodes = codes,
+                        marginRate = theme.marginRate
+                    )
+                    themeRepository.save(newData)
+                    logger.info("Updated: $newData")
+                }
+            }
+
+        // 티커의 테마 업데이트
+        val themes = themeRepository.findAll()
+        tickerRepository.findAll()
+            .forEach { ticker ->
+                val themeNames = themes.filter { theme -> theme.tickerCodes.contains(ticker.code) }
+                    .map { theme -> theme.name }
+                ticker.themes = themeNames
+                ticker.updated = Instant.now()
+                tickerRepository.save(ticker)
+                logger.info("Updated: $ticker")
             }
     }
 

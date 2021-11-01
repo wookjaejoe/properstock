@@ -37,7 +37,7 @@ data class Ticker(
     var industry: String? = null,
 
     /** 테마 */
-    val themes: List<String> = emptyList(),
+    var themes: List<String> = listOf(),
 
     /** 마지막 업데이트 시각 */
     var updated: Instant = Instant.now()
