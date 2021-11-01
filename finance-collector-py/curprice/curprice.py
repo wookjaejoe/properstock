@@ -1,13 +1,14 @@
+import logging
+import time
 from dataclasses import dataclass
 from datetime import date, timedelta
-from datetime import datetime, timezone
+from datetime import datetime, timezone, tzinfo
 from typing import *
-import jsons
-import time
 
+import jsons
 import pika
 from pykrx import stock as krx
-import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ def nearest_business_date() -> date:
 class KrxStockCurrentInfo:
     code: str
     price: float
-    updated: datetime
+    updated_at: datetime
 
 
 class KrxCurrentPriceFetcher:
@@ -74,48 +75,47 @@ class KrxCurrentPricePublisher:
         self.rmq_conn = pika.BlockingConnection(
             pika.ConnectionParameters(host=rmq_host, port=rmq_port)
         )
-        self.prev_infos: Dict[str, KrxStockCurrentInfo] = {}
 
     def start(self):
         logger.info(f'Staring to publish krx current price into {self.exchange}@exchange...')
         channel = self.rmq_conn.channel()
         channel.exchange_declare(exchange=self.exchange, exchange_type='fanout', durable=True)
 
-        # 여기서 전 값이랑 비교
+        prev_infos: Dict[str, KrxStockCurrentInfo] = {}
         while True:
             cur_infos = self.fetcher.fetch()
+            logger.info(f'{len(cur_infos)} prices fetched.')
             updated_infos = {}
             for cur_info in cur_infos:
-                updatable = False
-                if cur_info.code in self.prev_infos:
-                    if self.prev_infos[cur_info.code].price != cur_info.price:
-                        updatable = True
+                updated = False
+                if cur_info.code in prev_infos:
+                    if prev_infos[cur_info.code].price != cur_info.price:
+                        # 이전 현재가 정보가 있는데, 값이 다름. 업데이트 대상
+                        updated = True
 
                 else:
-                    updatable = True
+                    # 이전 현재가 정보 없음. 업데이트 대상
+                    updated = True
 
-                if updatable:
+                if updated:
                     updated_infos.update({cur_info.code: cur_info})
 
-            updatable_count = len(updated_infos)
-            if updatable_count == 0:
-                deplay = 60
-                logger.info(f'Updatable count is 0. Sleeping {deplay} seconds...')
-                time.sleep(deplay)
-                continue
+            if updated_infos:
+                logger.info(f'Publishing {len(updated_infos)} updated current price...')
+                channel.basic_publish(
+                    exchange=self.exchange,
+                    routing_key='',
+                    body=jsons.dumps(updated_infos.values()).encode('utf-8')
+                )
+
+                prev_infos.update(updated_infos)
+
+                # 너무 잦은 요청 시 API에서 값을 안주는거 같아서, 요청 속도 제어
+                time.sleep(5)
             else:
-                pass
-
-            logger.info(f'Publishing {len(updated_infos)} updated current price...')
-            self.prev_infos.update(updated_infos)
-            channel.basic_publish(
-                exchange=self.exchange,
-                routing_key='',
-                body=jsons.dumps(updated_infos.values()).encode('utf-8')
-            )
-
-            # 너무 잦은 요청 시 API에서 값을 안주는거 같아서, 요청 속도 제어
-            time.sleep(5)
+                deplay = 60
+                logger.info(f'Updated count is 0. Sleeping {deplay} seconds...')
+                time.sleep(deplay)
 
     def close(self):
         self.rmq_conn.close()

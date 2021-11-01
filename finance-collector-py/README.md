@@ -11,4 +11,4 @@
 
 ## 배포
 도커 이미지 생성 후 리모트 호스트에 컨테이너 실행한다.
-1. 배포 스크립트 실행: `python deploy.py`
+1. 배포 스크립트 실행: `python deploy.py --user $USER --pawd $PASSWORD`
