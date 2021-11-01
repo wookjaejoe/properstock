@@ -28,7 +28,8 @@ class ProperPriceController(
         if (market != null) tickers = tickers.filter { it.market == market }
         if (industries != null) tickers = tickers.filter { industries.contains(it.industry) }
         if (themes != null) tickers = tickers.filter { themes.intersect(it.themes).isNotEmpty() }
-        if (searchText != null) tickers = tickers.filter { it.name.contains(searchText) || it.code.contains(searchText) }
+        if (searchText != null) tickers =
+            tickers.filter { it.name.contains(searchText, ignoreCase = true) || it.code.contains(searchText, ignoreCase = true) }
 
         // 기타 필터
         val tickersByCode = tickers.associateBy { it.code }
