@@ -7,6 +7,7 @@ import ProperIndustry from '../proper/ProperIndustry';
 import ProperTheme from '../proper/ProperTheme';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import ProperTop100 from '../proper/ProperTop100';
+import Main from '../Main';
 
 const Dashboard = () => {
   return (
@@ -24,6 +25,7 @@ const Dashboard = () => {
             <Route exact path="/proper/rank" component={ProperTop100} />
             <Route exact path="/proper/rank/industry" component={ProperIndustry} />
             <Route exact path="/proper/rank/theme" component={ProperTheme} />
+            <Route exact path="/" component={Main} />
           </Switch>
         </div>
       </Router>

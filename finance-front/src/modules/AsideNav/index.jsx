@@ -7,10 +7,12 @@ const AsideNav = () => {
   return (
     <aside>
       <div className="side-nav">
-        <div className="logo">
-          <img className="logo-normal" src="/logo.png"></img>
-          <img className="logo-simple" src="/simple_logo.png"></img>
-        </div>
+        <NavLink exact to="/">
+          <div className="logo">
+            <img className="logo-normal" src="/logo.png"></img>
+            <img className="logo-simple" src="/simple_logo.png"></img>
+          </div>
+        </NavLink>
         <div className="navigation">
           <ul className="section">
             <li>

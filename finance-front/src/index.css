@@ -224,6 +224,9 @@ aside {
   font-weight: bold;
   border-bottom: 1px solid #353535;
 }
+.card .card__contents {
+  padding: 8px;
+}
 
 .card .more-action {
   font-size: 12px;
