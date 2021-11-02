@@ -1,5 +1,6 @@
 .type__button__selector {
   position: relative;
+  width: 100%;
 }
 
 .type__button__selector .type__button__selector__list {

@@ -18,6 +18,10 @@ body {
   margin-bottom: 8px;
 }
 
+.mt {
+  margin-top: 8px;
+}
+
 /* Side */
 #side-toggle__input {
   display: none;
@@ -140,7 +144,6 @@ aside {
 }
 
 .menu > li {
-  padding: 6px 32px;
   margin-bottom: 4px;
   border-left: 3px solid #00000000;
 }
@@ -149,11 +152,12 @@ aside {
   background-color: #242424 !important;
 }
 
-.menu > li.active {
+.menu > li > a.active {
   background-color: #24242473;
 }
 
 .menu > li a {
+  padding: 6px 32px;
   display: block;
   color: inherit;
   text-decoration: none;
@@ -221,19 +225,72 @@ aside {
   border-bottom: 1px solid #353535;
 }
 
+.card .more-action {
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  padding: 4px;
+  margin-bottom: -6px;
+  border-top: 1px solid #353535;
+}
+
+.card .more-action:hover {
+  background-color: rgb(76 76 76 / 20%);
+}
+
+.card .more-action:active {
+  background-color: rgb(76 76 76 / 40%);
+}
+
+/* Filter */
+.proper__filter {
+  position: relative;
+}
+.proper__filter .card__title,
+.proper__filter .expanded__icon {
+  cursor: pointer;
+}
+.proper__filter .expanded__icon {
+  font-size: 24px;
+  position: absolute;
+  right: 16px;
+  top: 10px;
+}
+
 .search-contidion {
   margin: 8px;
 }
 
-.search-contidion .condition_title {
+.search-contidion .condition__title {
   font-size: 14px;
   margin-bottom: 4px;
+}
+
+.search-area {
+  display: none;
+}
+
+.search-area.show {
+  display: block;
 }
 
 .search-contidion .condition__area {
   display: flex;
   font-size: 12px;
 }
+
+.search-contidion .condition__area.condition__list {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  overflow: auto;
+  max-height: 110px;
+}
+
+.search-contidion .condition__area.condition__list.condition-border {
+  border: 1px solid #353535;
+  border-radius: 4px;
+}
+
 .search-contidion > .condition__area > .condition__item {
   margin: 4px;
   padding: 4px 16px;
@@ -253,6 +310,11 @@ aside {
 
 .search-contidion > .condition__area > .condition__item.active {
   background-color: rgb(112 112 112 / 100%);
+}
+
+.search__button__area {
+  border-top: 1px solid #353535;
+  padding: 8px 8px 0px 8px;
 }
 
 /* Table */
@@ -337,4 +399,46 @@ aside {
 
 .font-red {
   color: rgb(189 69 57);
+}
+
+/* button */
+.btn {
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  padding: 6px 24px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn.btn-primary {
+  border: 1px solid#4063bf;
+  background-color: #4063bf;
+}
+
+.btn.btn-primary:hover {
+  background-color: #3857a7;
+}
+
+.btn.btn-primary:active {
+  background-color: #273d74;
+}
+
+.btn.btn-outline-primary {
+  border: 1px solid#4063bf;
+  background-color: initial;
+  color: #4063bf;
+}
+
+.btn.btn-outline-primary:hover {
+  background-color: #3857a7;
+  color: white;
+}
+
+.btn.btn-outline-primary:active {
+  background-color: #273d74;
+  color: white;
 }

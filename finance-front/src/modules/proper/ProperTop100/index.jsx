@@ -22,7 +22,7 @@ const ProperTop100 = () => {
               <th>종목 코드</th>
               <th>종목 명</th>
               <th>마켓</th>
-              <th>산업</th>
+              <th>업종</th>
               <th>테마</th>
               <th>현재 가격</th>
               <th>적정 주가</th>

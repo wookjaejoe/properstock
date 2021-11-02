@@ -1,47 +1,70 @@
-import {
-  faAngleDoubleLeft,
-  faAngleDoubleRight,
-} from '@fortawesome/free-solid-svg-icons';
+import { faAngleDoubleLeft, faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
+import FilterContainer from '../../../common/components/FilterContainer';
+import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
 
 const ProperAllList = () => {
+  const handleChangeFilter = (value) => {
+    console.log(value);
+  };
   return (
     <>
       <PageTitle title="적정주가 (전체)" />
-
       <PageContents>
-        <div className="card mb">
-          <p className="card__title">필터</p>
-          <div className="search-contidion">
-            <p className="condition_title">산업</p>
-            <div className="condition__area">
-              <TypeSelector></TypeSelector>
-            </div>
-          </div>
-          <div className="search-contidion">
-            <p className="condition_title">산업</p>
-            <div className="condition__area">
-              <div className="condition__item active">에너지</div>
-              <div className="condition__item active">원자재</div>
-              <div className="condition__item">산업재</div>
-              <div className="condition__item">헬스케어</div>
-            </div>
-          </div>
-          <div className="search-contidion">
-            <p className="condition_title">산업</p>
-            <div className="condition__area">
-              <div className="condition__item active">에너지</div>
-              <div className="condition__item active">원자재</div>
-              <div className="condition__item">산업재</div>
-              <div className="condition__item">헬스케어</div>
-            </div>
-          </div>
-        </div>
-        <div className="card">
+        <FilterContainer title="필터" onChange={handleChangeFilter}>
+          <FilterListItem title="마켓" items={['KOSDAQ', 'KOSPI']}></FilterListItem>
+          <FilterListItem title="업종" items={['철강', '철강']} border={true}></FilterListItem>
+          <FilterListItem
+            title="테마"
+            items={[
+              '비철금속',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+              '북한 광물자원개발',
+            ]}
+            border={true}
+          ></FilterListItem>
+        </FilterContainer>
+        <TypeSelector onChange={handleChangeFilter}></TypeSelector>
+        <div className="card mt">
           <p className="card__title">조회 목록</p>
           <table className="table custom-table">
             <thead>
@@ -49,7 +72,7 @@ const ProperAllList = () => {
                 <th>종목 코드</th>
                 <th>종목 명</th>
                 <th>마켓</th>
-                <th>산업</th>
+                <th>업종</th>
                 <th>테마</th>
                 <th>현재 가격</th>
                 <th>적정 주가</th>
