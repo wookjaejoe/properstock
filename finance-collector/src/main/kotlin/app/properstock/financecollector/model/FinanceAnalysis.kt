@@ -13,8 +13,8 @@ data class FinanceAnalysis(
     @Id
     val id: String? = null,
     @Indexed(unique = true)
-    val code: String,
-    val financeSummary: FinanceSummary,
+    var code: String,
+    var financeSummary: FinanceSummary,
     /** 마지막 업데이트 시각 */
     var updated: Instant = Instant.now()
 )

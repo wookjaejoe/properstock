@@ -36,9 +36,19 @@ class ScheduledTasks(
         naverFinanceCrawler
             .crawlAllTickers()
             .forEach {
-                // todo: 업데이트 제대로
-                if (tickerRepository.existsByCode(it.code)) tickerRepository.deleteByCode(it.code)
-                tickerRepository.save(it)
+                val oldData = tickerRepository.findByCode(it.code)
+                if (oldData != null) {
+                    oldData.apply {
+                        this.name = it.name
+                        this.price = it.price
+                        this.marketCap = it.marketCap
+                        this.shares = it.shares
+                        this.link = it.link
+                    }
+                    tickerRepository.save(oldData)
+                } else {
+                    tickerRepository.save(it)
+                }
                 logger.info("Updated: $it")
             }
 
@@ -122,9 +132,18 @@ class ScheduledTasks(
                 try {
                     // 재무제표 업데이트
                     val financeAnalysis = naverFinanceCrawler.crawlFinancialAnalysis(it.code)
-                    // todo: 업데이트 제대로
-                    if (financeAnalysisRepository.existsByCode(it.code)) financeAnalysisRepository.deleteByCode(it.code)
-                    financeAnalysisRepository.save(financeAnalysis)
+                    val oldData = financeAnalysisRepository.findByCode(it.code)
+                    if (oldData != null) {
+                        oldData.apply {
+                            code = financeAnalysis.code
+                            financeSummary = financeAnalysis.financeSummary
+                            updated = Instant.now()
+                        }
+                        financeAnalysisRepository.save(oldData)
+                    } else {
+                        financeAnalysisRepository.save(financeAnalysis)
+                    }
+
                     logger.info("financeAnalysis@${it.code} updated successfully.")
 
                     // 적정주가 업데이트

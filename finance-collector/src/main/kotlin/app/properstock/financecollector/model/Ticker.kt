@@ -19,19 +19,19 @@ data class Ticker(
 
     /** 종목명 */
     @Indexed(unique = true)
-    val name: String,
+    var name: String,
 
     /** 현재가 */
-    val price: Int,
+    var price: Int,
 
     /** 시가총액 */
-    val marketCap: Long,
+    var marketCap: Long,
 
     /** 상장주식수 */
-    val shares: Int,
+    var shares: Int,
 
     /** 링크 */
-    val link: String,
+    var link: String,
 
     /** 산업 */
     var industry: String? = null,
