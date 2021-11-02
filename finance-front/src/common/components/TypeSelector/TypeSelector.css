@@ -43,6 +43,7 @@
 .type__button__selector .card__button .type__button__icon {
   position: absolute;
   right: 24px;
+  top: 24px;
   font-size: 28px;
 }
 
