@@ -58,7 +58,7 @@ const Main = () => {
             </p>
             <pre className={`proper-long__desc ${expanded['EPSPER'] ? 'active' : ''}`}>{test}</pre>
             <div className="desc-expend" onClick={() => handleExpand('EPSPER')}>
-              <FontAwesomeIcon icon={expanded['EPSPER'] ? faCaretDown : faCaretUp} />
+              <FontAwesomeIcon icon={expanded['EPSPER'] ? faCaretUp : faCaretDown} />
             </div>
           </div>
         </div>
