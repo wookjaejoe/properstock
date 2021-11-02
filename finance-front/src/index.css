@@ -1,17 +1,340 @@
-body {
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+* {
+  font-family: 'Noto Sans KR', sans-serif !important;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  background-color: #1c1c1c;
+  color: #cacaca;
 }
 
-.navbar-brand {
+/* Common */
+.mb {
+  margin-bottom: 8px;
+}
+
+/* Side */
+#side-toggle__input {
+  display: none;
+}
+
+#side-toggle__input ~ .side-toggle__icon {
+  cursor: pointer;
+  position: absolute;
+  left: 240px;
+  top: 10px;
+  font-size: 30px;
+  z-index: 10;
+}
+
+#side-toggle__input ~ .side-toggle__icon:active {
+  color: #aaa9a9;
+}
+
+aside {
+  position: fixed;
+  width: 280px;
+  height: 100%;
+}
+
+#side-toggle__input:checked ~ .side-toggle__icon {
+  left: 24px;
+}
+
+#side-toggle__input:checked ~ aside {
+  z-index: 9;
+}
+
+#side-toggle__input:checked ~ aside .logo {
+  margin: 60px 8px 0px 8px;
+  padding: 8px;
+}
+
+#side-toggle__input:checked ~ aside .logo > .logo-normal {
+  display: none;
+}
+
+#side-toggle__input:checked ~ aside .logo > .logo-simple {
+  display: block;
+  width: 40px;
+}
+
+#side-toggle__input:checked ~ aside,
+#side-toggle__input:checked ~ .side-toggle__icon {
+  width: 70px;
+}
+
+#side-toggle__input:checked ~ .container {
+  left: 60px;
+  width: calc(100% - 92px);
+}
+
+#side-toggle__input:checked ~ aside .section__title {
+  margin: 8px;
+  text-align: center;
+}
+
+#side-toggle__input:checked ~ aside .section__title .section__label {
+  display: none;
+}
+
+#side-toggle__input:checked ~ aside .section__menu {
+  display: none;
+}
+
+#side-toggle__input:checked ~ aside .section > li:hover > .section__menu {
+  display: block;
+  position: absolute;
+  width: 240px;
+  top: 0px;
+  margin-top: 0;
+  left: 55px;
+  padding: 0px;
+  background-color: #2e2e2e;
+}
+
+.side-nav .logo {
+  padding: 32px 28px 12px 0px;
+  text-align: center;
+  border-bottom: 1px solid #353535;
+}
+
+.logo > .logo-simple {
+  display: none;
+}
+
+.navigation {
+  margin-top: 24px;
+}
+
+.section li {
+  position: relative;
+}
+
+.section li,
+.menu li {
+  list-style: none;
+}
+
+.section .section__title {
+  padding: 8px;
   font-weight: bold;
+  font-size: 12px;
+  margin: 0px 16px;
+  background: rgb(64 99 191 / 10%);
+}
+
+.section .section__title .section__label,
+.section .section__menu .section__label {
+  margin-left: 16px;
+}
+
+.section .section__menu {
+  padding: 0px 16px;
+  margin-top: 8px;
+}
+
+.menu > li {
+  padding: 6px 32px;
+  margin-bottom: 4px;
+  border-left: 3px solid #00000000;
+}
+
+.menu > li:hover {
+  background-color: #242424 !important;
+}
+
+.menu > li.active {
+  background-color: #24242473;
+}
+
+.menu > li a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+/* Contents */
+.container {
+  background-color: #171717;
+  position: fixed;
+  left: 270px;
+  width: calc(100% - 302px);
+  height: calc(100% - 32px);
+  margin: 16px;
+  padding: 16px;
+  padding-top: 0px;
+  border-radius: 16px;
+  overflow: auto;
+}
+
+.page__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #353535;
+  height: 50px;
+  z-index: 4;
+  position: sticky;
+  top: 0;
+  background-color: inherit;
+}
+
+.page__title .page__back {
+  font-size: 24px;
+  margin-right: 16px;
+  cursor: pointer;
+}
+
+.page__title .page__back:hover {
+  color: #f7f7f7;
+}
+
+.page__title .page__back:active {
+  color: #ffffff;
+}
+
+.page__title span {
+  margin-left: 16px;
+}
+
+.contents {
+  padding: 8px;
+}
+
+/* Card */
+.card {
+  background: #1c1c1c;
+  border-radius: 4px;
+  padding: 8px;
+}
+.card .card__title {
+  padding: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 1px solid #353535;
+}
+
+.search-contidion {
+  margin: 8px;
+}
+
+.search-contidion .condition_title {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.search-contidion .condition__area {
+  display: flex;
+  font-size: 12px;
+}
+.search-contidion > .condition__area > .condition__item {
+  margin: 4px;
+  padding: 4px 16px;
+  border: 1px solid rgb(112 112 112 / 72%);
+  border-radius: 8px;
+  text-align: right;
+  cursor: pointer;
+}
+
+.search-contidion > .condition__area > .condition__item:hover {
+  background-color: rgb(112 112 112 / 30%);
+}
+
+.search-contidion > .condition__area > .condition__item:active {
+  background-color: rgb(112 112 112 / 60%);
+}
+
+.search-contidion > .condition__area > .condition__item.active {
+  background-color: rgb(112 112 112 / 100%);
+}
+
+/* Table */
+.table {
+  font-size: 12px;
+  margin-top: 8px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  text-align: left;
+  background: rgb(38 38 38);
+  position: sticky;
+  top: 50px;
+}
+
+.table tbody tr {
+  background: rgb(37 37 43 / 30%);
+  border-bottom: 3px solid #1c1c1c;
+}
+
+.table tbody tr:hover {
+  background: rgb(37 37 43 / 60%);
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+}
+
+.pagination {
+  font-size: 12px;
+  margin: 8px;
+  text-align: right;
+}
+
+.pagination span {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  margin: 0px 4px;
+  padding-top: 6px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid rgb(109 109 112 / 50%);
+  border-radius: 8px;
+}
+
+.pagination span:hover {
+  background-color: rgb(109 109 112 / 50%);
+}
+
+.pagination span:active {
+  background-color: rgb(109 109 112 / 80%);
+}
+
+.pagination .active {
+  background-color: rgb(109 109 112 / 80%);
+}
+
+/* badge */
+.badge {
+  background-color: #5a4343;
+  border-radius: 4px;
+  display: inline-block;
+  padding: 2px 8px;
+  margin-right: 4px;
+}
+
+.badge.kospi {
+  background-color: #615a76;
+}
+.badge.kosdaq {
+  background-color: #435a4e;
+}
+
+/* font color */
+.font-green {
+  color: rgb(57 189 104);
+}
+
+.font-red {
+  color: rgb(189 69 57);
 }

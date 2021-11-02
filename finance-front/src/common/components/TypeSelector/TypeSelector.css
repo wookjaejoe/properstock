@@ -1,0 +1,63 @@
+.type__button__selector {
+  position: relative;
+}
+
+.type__button__selector .type__button__selector__list {
+  display: none;
+  border: 1px solid #353535;
+  border-radius: 4px;
+  z-index: 3;
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: #242424;
+  box-shadow: 0px 1px 1px 0px #939090;
+}
+.type__button__selector .type__button__selector__list.active {
+  display: block;
+}
+
+.type__button__selector .type__button__selector__list .card__button {
+  margin: 0;
+}
+
+.card.card__button {
+  cursor: pointer;
+  margin-bottom: 0px;
+}
+
+.type__button__selector .card__button {
+  position: relative;
+  border: 1px solid #353535;
+}
+
+.type__button__selector .card__button:hover {
+  background-color: rgb(197 67 67/ 70%);
+}
+
+.type__button__selector .card__button:active {
+  background-color: rgb(197 67 67/ 80%);
+}
+
+.type__button__selector .card__button .type__button__icon {
+  position: absolute;
+  right: 24px;
+  font-size: 28px;
+}
+
+.type__button__selector .type__button {
+  padding: 10px;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.type__button__selector .type__button .type__button__title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.type__button__selector .type__button .type__button__desc {
+  font-size: 13px;
+}

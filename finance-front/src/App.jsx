@@ -1,10 +1,10 @@
 import React from 'react';
 
 import './App.css';
-import Main from './modules/main';
+import Dashboard from './modules/dashboard';
 
 function App() {
-  return <Main />;
+  return <Dashboard />;
 }
 
 export default App;
