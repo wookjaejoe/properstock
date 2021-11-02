@@ -13,6 +13,9 @@
   width: 80%;
   text-align: center;
 }
+.main-area > h2 > span {
+  color: #9d3b3b;
+}
 
 .proper__desc__list {
   padding: 16px;

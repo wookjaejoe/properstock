@@ -45,8 +45,8 @@ const Main = () => {
     <div className="main-area">
       <img src="/main.png"></img>
       <h2>
-        PROPERSTOCK은 주식투자자들의 올바른 가치 투자를 위해 검증된 공식들로 산출한 적정주가를
-        제공합니다.
+        <span>PROPERSTOCK</span>은 주식투자자들의 올바른 가치 투자를 위해 검증된 공식들로 산출한
+        적정주가를 제공합니다.
       </h2>
       <div className="proper__desc__list">
         <div className="card proper__desc">
