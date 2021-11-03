@@ -37,4 +37,9 @@ class NaverFinanceCrawlerTest {
     fun crawlThemes() {
         naverFinanceCrawler.crawlThemes().forEach { println(it) }
     }
+
+    @Test
+    fun crawlEtf() {
+        naverFinanceCrawler.crawlEtf().forEach { println(it) }
+    }
 }

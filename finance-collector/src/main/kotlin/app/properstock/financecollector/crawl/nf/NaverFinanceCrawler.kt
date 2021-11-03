@@ -1,7 +1,10 @@
 package app.properstock.financecollector.crawl.nf
 
 import app.properstock.financecollector.crawl.WebDriverConnector
-import app.properstock.financecollector.model.*
+import app.properstock.financecollector.model.FinanceAnalysis
+import app.properstock.financecollector.model.FinanceSummary
+import app.properstock.financecollector.model.Market
+import app.properstock.financecollector.model.Ticker
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
@@ -303,5 +306,35 @@ class NaverFinanceCrawler(
                 }
             }
         }.asStream()
+    }
+
+    fun crawlEtf(): List<String> {
+        val url = NaverFinanceUrls.etf()
+        return webDriverConnector.connect {
+            get(url)
+            Jsoup.parse(findElement(By.id("etfItemTable")).getAttribute(OUTER_HTML))
+                .getElementsByTag("tr")
+                .map {
+                    it.getElementsByTag("td")[0]
+                        .getElementsByTag("a")[0]
+                        .attr("href")
+                        .split("code=")[0]
+                }
+        }
+    }
+
+    fun crawlEtn(): List<String> {
+        val url = NaverFinanceUrls.etn()
+        return webDriverConnector.connect {
+            get(url)
+            Jsoup.parse(findElement(By.id("etnItemTable")).getAttribute(OUTER_HTML))
+                .getElementsByTag("tr")
+                .map {
+                    it.getElementsByTag("td")[0]
+                        .getElementsByTag("a")[0]
+                        .attr("href")
+                        .split("code=")[0]
+                }
+        }
     }
 }
