@@ -58,7 +58,8 @@ class ProperPriceService(
 
         controllingInterestMultipliedByPer.calculate(
             controllingInterestList = financeAnalysis.financeSummary.controllingInterest.data.toSortedMap(),
-            perList = financeAnalysis.financeSummary.per.data.toSortedMap()
+            perList = financeAnalysis.financeSummary.per.data.toSortedMap(),
+            issuedCommonShares = financeAnalysis.financeSummary.issuedCommonShares.data.toSortedMap()
         ).run { update(code, controllingInterestMultipliedByPer.symbol, this) }
     }
 

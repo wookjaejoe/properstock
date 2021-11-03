@@ -55,19 +55,26 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
 
     fun calculate(
         controllingInterestList: SortedMap<YearMonth, Double?>,
-        perList: SortedMap<YearMonth, Double?>
+        perList: SortedMap<YearMonth, Double?>,
+        issuedCommonShares: SortedMap<YearMonth, Double?>
     ): ProperPriceFormula.Output {
         val per = calculatePerByAvg(controllingInterestList, perList)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
 
         val thisYear = YearMonth.now().year
         // 지배주주순이익 계산: 당해년도 지배주주순이익
-        val controllingInterest: Double = controllingInterestList[controllingInterestList
-            .keys
-            .findLast { ym -> ym.year == thisYear }]
-            ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
+        val controllingInterest = controllingInterestList[
+            controllingInterestList
+                .keys
+                .findLast { ym -> ym.year == thisYear }
+        ] ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
+        val issued = issuedCommonShares[
+            issuedCommonShares
+                .keys
+                .findLast { ym -> ym.year == thisYear }
+        ] ?: return ProperPriceFormula.Output.dummy("당해년도 발행주식수 미확인")
         return ProperPriceFormula.Output(
-            per * controllingInterest,
+            per * controllingInterest / issued,
             """
                 당해년도 추정 지배주주순이익: $controllingInterest
                 최근 5년 내 연속 흑자 PER 평균: $per
