@@ -4,6 +4,7 @@ import app.properstock.financecollector.model.ProperPrice
 import app.properstock.financecollector.repository.FinanceAnalysisRepository
 import app.properstock.financecollector.repository.ProperPriceRepository
 import app.properstock.financecollector.repository.TickerRepository
+import app.properstock.financecollector.service.proper.formula.ControllingInterestMultipliedByPer
 import app.properstock.financecollector.service.proper.formula.EpsMultipliedByPer
 import app.properstock.financecollector.service.proper.formula.EpsMultipliedByRoe
 import org.slf4j.Logger
@@ -20,7 +21,8 @@ class ProperPriceService(
     val properPriceRepository: ProperPriceRepository,
 
     val epsMultipliedByPer: EpsMultipliedByPer,
-    val epsMultipliedByRoe: EpsMultipliedByRoe
+    val epsMultipliedByRoe: EpsMultipliedByRoe,
+    val controllingInterestMultipliedByPer: ControllingInterestMultipliedByPer
 ) {
     init {
         // 공식 심볼 중복 확인
@@ -44,17 +46,20 @@ class ProperPriceService(
         logger.info("Starting to update properPrice@$code...")
         val financeAnalysis = financeAnalysisRepository.findByCode(code) ?: return
 
-        logger.info("Updating properPrice:${epsMultipliedByPer.symbol}@$code")
         epsMultipliedByPer.calculate(
             epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
             perList = financeAnalysis.financeSummary.per.data.toSortedMap()
         ).run { update(code, epsMultipliedByPer.symbol, this) }
 
-        logger.info("Updating properPrice:${epsMultipliedByRoe.symbol}@$code")
         epsMultipliedByRoe.calculate(
             epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
             roeList = financeAnalysis.financeSummary.roe.data.toSortedMap()
         ).run { update(code, epsMultipliedByRoe.symbol, this) }
+
+        controllingInterestMultipliedByPer.calculate(
+            controllingInterestList = financeAnalysis.financeSummary.controllingInterest.data.toSortedMap(),
+            perList = financeAnalysis.financeSummary.per.data.toSortedMap()
+        ).run { update(code, controllingInterestMultipliedByPer.symbol, this) }
     }
 
     private fun update(tickerCode: String, formulaSymbol: String, formulaOut: ProperPriceFormula.Output): ProperPrice {
