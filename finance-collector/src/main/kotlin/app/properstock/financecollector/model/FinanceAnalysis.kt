@@ -1,6 +1,5 @@
 package app.properstock.financecollector.model
 
-import app.properstock.financecollector.crawl.nf.StringMap
 import app.properstock.financecollector.exception.KeyValueNotMatchException
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed

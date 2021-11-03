@@ -39,7 +39,8 @@ class NaverFinanceCrawlerTest {
     }
 
     @Test
-    fun crawlEtf() {
-        naverFinanceCrawler.crawlEtf().forEach { println(it) }
+    fun crawlEt() {
+        naverFinanceCrawler.crawlEtfCodes().forEach { println(it) }
+        naverFinanceCrawler.crawlEtnCodes().forEach { println(it) }
     }
 }

@@ -158,7 +158,7 @@ class NaverFinanceCrawler(
                         headers,
                         this["매출액"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
                     )
-                     financeSummary.operatingProfit.set(
+                    financeSummary.operatingProfit.set(
                         headers,
                         this["영업이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
                     )
@@ -235,7 +235,9 @@ class NaverFinanceCrawler(
                     it.tickerRefs = Jsoup.parse(table)
                         .getElementsByTag("tbody")[0]
                         .getElementsByTag("tr")
-                        .mapNotNull { val aList = it.getElementsByTag("a"); if (aList.size > 0) aList[0].attr("href") else null }
+                        .mapNotNull {
+                            val aList = it.getElementsByTag("a"); if (aList.size > 0) aList[0].attr("href") else null
+                        }
                     it
                 }
 
@@ -308,32 +310,40 @@ class NaverFinanceCrawler(
         }.asStream()
     }
 
-    fun crawlEtf(): List<String> {
+    fun crawlEtfCodes(): List<String> {
         val url = NaverFinanceUrls.etf()
         return webDriverConnector.connect {
             get(url)
-            Jsoup.parse(findElement(By.id("etfItemTable")).getAttribute(OUTER_HTML))
+            val html = findElement(By.tagName("html")).getAttribute(OUTER_HTML)
+            Jsoup.parse(html)
+                .getElementById("etfItemTable")!!
                 .getElementsByTag("tr")
+                .filter { it.getElementsByTag("td").size > 0 }
+                .filter { it.getElementsByTag("td")[0].getElementsByTag("a").size > 0 }
                 .map {
                     it.getElementsByTag("td")[0]
                         .getElementsByTag("a")[0]
                         .attr("href")
-                        .split("code=")[0]
+                        .split("code=")[1]
                 }
         }
     }
 
-    fun crawlEtn(): List<String> {
+    fun crawlEtnCodes(): List<String> {
         val url = NaverFinanceUrls.etn()
         return webDriverConnector.connect {
             get(url)
-            Jsoup.parse(findElement(By.id("etnItemTable")).getAttribute(OUTER_HTML))
+            val html = findElement(By.tagName("html")).getAttribute(OUTER_HTML)
+            Jsoup.parse(html)
+                .getElementById("etnItemTable")!!
                 .getElementsByTag("tr")
+                .filter { it.getElementsByTag("td").size > 0 }
+                .filter { it.getElementsByTag("td")[0].getElementsByTag("a").size > 0 }
                 .map {
                     it.getElementsByTag("td")[0]
                         .getElementsByTag("a")[0]
                         .attr("href")
-                        .split("code=")[0]
+                        .split("code=")[1]
                 }
         }
     }
