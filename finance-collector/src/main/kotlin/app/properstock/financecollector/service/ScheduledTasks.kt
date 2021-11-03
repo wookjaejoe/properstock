@@ -126,8 +126,10 @@ class ScheduledTasks(
     @Scheduled(cron = "0 0 0 * * *", zone = TZ_KR)
     fun updateFinanceData() {
         logger.info("Starting to update finance analysis...")
+        val excludes = naverFinanceCrawler.run { crawlEtfCodes() + crawlEtnCodes() }
         tickerRepository
             .findAll()
+            .filter { !excludes.contains(it.code) }
             .forEach {
                 try {
                     // 재무제표 업데이트
