@@ -31,4 +31,10 @@ class ScheduledTasksTest {
     fun updateFinanceAnalysis() {
         scheduledTasks.updateFinanceData()
     }
+
+    @Test
+    fun updateAll() {
+        scheduledTasks.updateTickers()
+        scheduledTasks.updateFinanceData()
+    }
 }

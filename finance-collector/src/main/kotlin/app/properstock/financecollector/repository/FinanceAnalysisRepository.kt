@@ -5,6 +5,4 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface FinanceAnalysisRepository : MongoRepository<FinanceAnalysis, Long> {
     fun findByCode(code: String): FinanceAnalysis?
-    fun existsByCode(code: String): Boolean
-    fun deleteByCode(code: String)
 }

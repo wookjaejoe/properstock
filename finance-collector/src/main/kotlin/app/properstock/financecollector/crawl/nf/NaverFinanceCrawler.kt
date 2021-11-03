@@ -68,9 +68,9 @@ class NaverFinanceCrawler(
      * 특정 시장, 특정 페이지 모든 티커 크롤링하여 반환
      */
     fun crawlTickers(market: Market, page: Int): List<Ticker> {
-        logger.info("Crawling ticker in ${market.name}:$page started.")
         val url = NaverFinanceUrls.tickers(market, page)
         return webDriverConnector.connect {
+            logger.info("Opening $url")
             get(url)
             // 테이블 탐색
             val tableHtml = findElements(By.tagName("table"))
@@ -89,7 +89,7 @@ class NaverFinanceCrawler(
             table.getElementsByTag("tr")
                 .filter { it.text().isNotBlank() }
                 .map { it.getElementsByTag("td") }
-                .filter { !it.isNullOrEmpty() }
+                .filter { !it.isEmpty() }
                 .map {
                     val link = it[headers.indexOf("종목명")].getElementsByTag("a")[0].attr("href")
                     Ticker(
@@ -107,10 +107,10 @@ class NaverFinanceCrawler(
     }
 
     fun crawlFinancialAnalysis(code: String): FinanceAnalysis {
-        logger.info("Crawling financial analysis for $code started.")
         val url = NaverFinanceUrls.companyInfo(code)
         return webDriverConnector.connect {
             val actions = Actions(this)
+            logger.info("Opening $url")
             get(url)
             // 연간 탭 클릭
             val yearlyTab = findElement(By.id("cns_Tab21"))
@@ -149,21 +149,40 @@ class NaverFinanceCrawler(
 
                     Pair(title, values)
                 }.associate {
-                    Pair(FINANCE_SUMMARY_INDICES[it.first], it.second)
+                    Pair(it.first.trim(), it.second)
                 }.run {
-                    financeSummary.sales.set(headers, this["sales"]!!.map { it?.convertToDouble()?.times(1_0000_0000) })
-                    financeSummary.operatingProfit.set(
+                    financeSummary.sales.set(
                         headers,
-                        this["operatingProfit"]!!.map { it?.convertToDouble()?.times(1_0000_0000) })
+                        this["매출액"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                    )
+                     financeSummary.operatingProfit.set(
+                        headers,
+                        this["영업이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                    )
                     financeSummary.netProfit.set(
                         headers,
-                        this["netProfit"]!!.map { it?.convertToDouble()?.times(1_0000_0000) })
-                    financeSummary.roe.set(headers, this["roe"]!!.map { it?.convertToDouble() })
-                    financeSummary.eps.set(headers, this["eps"]!!.map { it?.convertToDouble() })
-                    financeSummary.per.set(headers, this["per"]!!.map { it?.convertToDouble() })
+                        this["당기순이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                    )
+                    financeSummary.controllingInterest.set(
+                        headers,
+                        this["당기순이익(지배)"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                    )
+                    financeSummary.roe.set(
+                        headers,
+                        this["ROE(%)"]!!.map { it?.convertToDouble() }
+                    )
+                    financeSummary.eps.set(
+                        headers,
+                        this["EPS(원)"]!!.map { it?.convertToDouble() }
+                    )
+                    financeSummary.per.set(
+                        headers,
+                        this["PER(배)"]!!.map { it?.convertToDouble() }
+                    )
                     financeSummary.issuedCommonShares.set(
                         headers,
-                        this["issuedCommonShares"]!!.map { it?.convertToDouble() })
+                        this["발행주식수(보통주)"]!!.map { it?.convertToDouble() }
+                    )
                 }
 
             FinanceAnalysis(

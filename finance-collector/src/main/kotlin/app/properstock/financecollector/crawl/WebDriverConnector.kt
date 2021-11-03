@@ -1,6 +1,5 @@
 package app.properstock.financecollector.crawl
 
-import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.Logger
@@ -9,8 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.Closeable
 import java.net.URL
-import java.util.*
-import kotlin.concurrent.schedule
+import java.util.concurrent.TimeUnit
 
 @Component
 class WebDriverConnector {
@@ -18,14 +16,16 @@ class WebDriverConnector {
     lateinit var chromeRemoteUrl: String
 
     fun <R> connect(todo: CloseableWebDriver.() -> R): R {
-        logger.info("Connecting with remote webdriver: $chromeRemoteUrl")
+        logger.debug("Connecting with remote webdriver: $chromeRemoteUrl")
         return CloseableWebDriver(
             URL(chromeRemoteUrl),
             ChromeOptions().apply {
                 this.setHeadless(true)
             }
         ).use {
-            logger.info("Remote webdriver connected.")
+            it.manage().timeouts().pageLoadTimeout(15, TimeUnit.SECONDS)
+            it.manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS)
+            logger.debug("Remote webdriver connected.")
             todo(it)
         }
     }
