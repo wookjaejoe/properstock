@@ -60,7 +60,10 @@ class EpsMultipliedByPer : ProperPriceFormula {
         // 결과 반환
         return ProperPriceFormula.Output(
             value = eps * per,
-            note = "EPS=$eps, PER=$per"
+            note = """
+                당해년도 추정 EPS: $eps
+                최근 5년 내 연속 흑자 PER 평균: $per
+            """.trimIndent()
         )
     }
 }

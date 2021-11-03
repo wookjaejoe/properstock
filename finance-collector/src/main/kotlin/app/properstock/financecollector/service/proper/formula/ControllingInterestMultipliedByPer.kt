@@ -65,12 +65,12 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
         val controllingInterest: Double = controllingInterestList[controllingInterestList
             .keys
             .findLast { ym -> ym.year == thisYear }]
-            ?: return ProperPriceFormula.Output.dummy("지배주순이익 미확인")
+            ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
         return ProperPriceFormula.Output(
             per * controllingInterest,
             """
-                지배주주순이익 평균: $controllingInterest
-                PER 평균: $per 
+                당해년도 추정 지배주주순이익: $controllingInterest
+                최근 5년 내 연속 흑자 PER 평균: $per
             """.trimIndent()
         )
     }

@@ -49,7 +49,10 @@ class EpsMultipliedByRoe : ProperPriceFormula {
         val roe: Double = roeList[roeList.keys.findLast { ym -> ym.year == thisYear }] ?: return ProperPriceFormula.Output.dummy("ROE 미확인")
         return ProperPriceFormula.Output(
             value = eps * roe,
-            note = "EPS=$eps, ROE=$roe"
+            note = """
+                당해년도 추정 EPS: $eps
+                당해년도 추정 ROE: $roe
+            """.trimIndent()
         )
     }
 }
