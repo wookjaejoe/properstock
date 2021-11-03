@@ -1,7 +1,6 @@
 import { faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useState } from 'react';
-import { useEffect } from 'react/cjs/react.development';
+import React, { useCallback, useEffect, useState } from 'react';
 import ProperHttp from '../../common/https/ProperHttp';
 import './Main.css';
 

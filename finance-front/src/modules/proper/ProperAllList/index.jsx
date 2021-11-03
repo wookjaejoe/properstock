@@ -1,6 +1,5 @@
 import axios from 'axios';
-import React from 'react';
-import { useCallback, useEffect, useState } from 'react/cjs/react.development';
+import React, { useCallback, useEffect, useState } from 'react';
 import FilterContainer from '../../../common/components/FilterContainer';
 import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';

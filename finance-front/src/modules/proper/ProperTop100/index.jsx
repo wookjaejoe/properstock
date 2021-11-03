@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useCallback, useEffect } from 'react/cjs/react.development';
+import React, { useCallback, useEffect, useState } from 'react';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
