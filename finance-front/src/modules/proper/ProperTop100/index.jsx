@@ -1,24 +1,38 @@
 import React, { useState } from 'react';
+import { useCallback, useEffect } from 'react/cjs/react.development';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
+import ProperHttp from '../../../common/https/ProperHttp';
 
 const ProperTop100 = () => {
-  const [properType, setProperType] = useState('');
+  const [formulas, setFormulas] = useState([]);
+  const [tickerList, setTckerList] = useState([]);
 
-  const handleChangeType = (type) => {
-    setProperType(type);
-    console.log(properType);
-  };
+  useEffect(() => {
+    ProperHttp.searchFormulas().then((formulas) => {
+      setFormulas(formulas);
+      ProperHttp.searchTop100(formulas[0].symbol).then((tickerList) => {
+        setTckerList(tickerList);
+      });
+    });
+  }, []);
+
+  const handleChangeType = useCallback((type) => {
+    ProperHttp.searchTop100(type.symbol).then((tickerList) => {
+      setTckerList(tickerList);
+    });
+  }, []);
 
   return (
     <>
       <PageTitle title="적정주가 (랭킹 Top 100)" />
       <PageContents>
-        <TypeSelector onChange={handleChangeType}></TypeSelector>
+        <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
         <table className="table custom-table">
           <thead>
             <tr>
+              <th>No</th>
               <th>종목 코드</th>
               <th>종목 명</th>
               <th>마켓</th>
@@ -31,60 +45,49 @@ const ProperTop100 = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>009520</td>
-              <td>포스코엠텍</td>
-              <td>
-                <span className="badge kosdaq">KOSDAQ</span>
-              </td>
-              <td>
-                <span>철강</span>
-              </td>
+            {tickerList.map((ticker, idx) => {
+              return (
+                <tr key={idx}>
+                  <td>{idx + 1}</td>
+                  <td>{ticker.tickerCode}</td>
+                  <td>{ticker.tickerName}</td>
+                  <td>
+                    <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
+                      {ticker.tickerMarket}
+                    </span>
+                  </td>
+                  <td>
+                    <span>{ticker.tickerIndustry}</span>
+                  </td>
 
-              <td>
-                <span className="badge">비철금속</span>
-                <span className="badge">북한 광물자원개발</span>
-              </td>
-              <td>
-                <span>8,100</span>
-              </td>
-              <td>
-                <span>6,812</span>
-              </td>
-              <td>
-                <span className="font-red">-1,287</span>
-              </td>
-              <td>
-                <span className="font-red">-15%</span>
-              </td>
-            </tr>
-            <tr>
-              <td>009520</td>
-              <td>포스코엠텍</td>
-              <td>
-                <span className="badge kospi">KOSPI</span>
-              </td>
-              <td>
-                <span>철강</span>
-              </td>
-
-              <td>
-                <span className="badge">비철금속</span>
-                <span className="badge">북한 광물자원개발</span>
-              </td>
-              <td>
-                <span>8,100</span>
-              </td>
-              <td>
-                <span>6,812</span>
-              </td>
-              <td>
-                <span className="font-green">-1,287</span>
-              </td>
-              <td>
-                <span className="font-green">-15%</span>
-              </td>
-            </tr>
+                  <td width="300px">
+                    {ticker.tickerThemes.map((theme, index) => {
+                      return (
+                        <span className="badge" key={index}>
+                          {theme}
+                        </span>
+                      );
+                    })}
+                  </td>
+                  <td>
+                    <span>{ticker.currentPrice.toLocaleString()}</span>
+                  </td>
+                  <td>
+                    <span>{parseInt(ticker.value).toLocaleString()}</span>
+                  </td>
+                  <td>
+                    <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
+                      {parseInt(ticker.margin).toLocaleString()}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
+                      {parseInt(ticker.marginRate)}%
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </PageContents>

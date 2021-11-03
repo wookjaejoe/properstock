@@ -337,7 +337,7 @@ aside {
 
 .table tbody tr {
   background: rgb(37 37 43 / 30%);
-  border-bottom: 3px solid #1c1c1c;
+  border-bottom: 1px solid rgb(197 197 197 / 40%);
 }
 
 .table tbody tr:hover {
@@ -386,6 +386,7 @@ aside {
   display: inline-block;
   padding: 2px 8px;
   margin-right: 4px;
+  margin-bottom: 4px;
 }
 
 .badge.kospi {

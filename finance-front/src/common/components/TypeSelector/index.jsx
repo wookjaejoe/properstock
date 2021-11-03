@@ -3,20 +3,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './TypeSelector.css';
-import ProperHttp from '../../https/ProperHttp';
 
-const TypeSelector = ({ onChange }) => {
+const TypeSelector = ({ formulas, onChange }) => {
   const [show, setShow] = useState(false);
-  const selectorRef = useRef();
-  const [formulas, setFormulas] = useState([]);
   const [selected, setSelected] = useState({});
+  const selectorRef = useRef();
 
   useEffect(() => {
-    ProperHttp.searchFormulas().then((res) => {
-      setFormulas(res);
-      setSelected(res[0]);
-    });
-  }, []);
+    setSelected(formulas[0]);
+  }, [formulas]);
 
   // 컴포넌트 외부 클릭시 이벤트 처리
   useEffect(() => {
@@ -84,6 +79,7 @@ const TypeSelector = ({ onChange }) => {
 
 TypeSelector.propTypes = {
   onChange: PropTypes.func.isRequired,
+  formulas: PropTypes.array.isRequired,
 };
 
 export default TypeSelector;

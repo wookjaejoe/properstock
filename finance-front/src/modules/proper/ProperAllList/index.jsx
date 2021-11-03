@@ -1,69 +1,106 @@
-import { faAngleDoubleLeft, faAngleDoubleRight } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import axios from 'axios';
 import React from 'react';
+import { useCallback, useEffect, useState } from 'react/cjs/react.development';
 import FilterContainer from '../../../common/components/FilterContainer';
 import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
+import ProperHttp from '../../../common/https/ProperHttp';
 
 const ProperAllList = () => {
-  const handleChangeFilter = (value) => {
-    console.log(value);
-  };
+  const [industries, setIndustries] = useState([]);
+  const [themes, setThemes] = useState([]);
+  const [filter, setFilter] = useState({});
+  const [formulas, setFormulas] = useState([]);
+  const [formulaSymbol, setFormulaSymbol] = useState('');
+  const [tickerList, setTckerList] = useState([]);
+
+  useEffect(() => {
+    axios
+      .all([
+        ProperHttp.searchIndustryNames(),
+        ProperHttp.searchThemeNames(),
+        ProperHttp.searchFormulas(),
+      ])
+      .then(
+        axios.spread((industryNames, themeNames, formulas) => {
+          setIndustries(industryNames);
+          setThemes(themeNames);
+          setFormulas(formulas);
+          setFormulaSymbol(formulas[0].symbol);
+          ProperHttp.searchTickerList({ formulaSymbol: formulas[0].symbol }).then((res) =>
+            setTckerList(res)
+          );
+        })
+      );
+  }, []);
+
+  const handleSubmit = useCallback(() => {
+    ProperHttp.searchTickerList({ ...filter, formulaSymbol: formulaSymbol }).then((res) =>
+      setTckerList(res)
+    );
+  }, [filter, formulaSymbol]);
+
+  const handleClear = useCallback(() => {
+    setFilter({});
+    ProperHttp.searchTickerList({ ormulaSymbol: formulaSymbol }).then((res) => setTckerList(res));
+  }, [formulaSymbol]);
+
+  const handleChangeType = useCallback(
+    (type) => {
+      setFormulaSymbol(type.symbol);
+      ProperHttp.searchTickerList({ ...filter, formulaSymbol: type.symbol }).then((res) =>
+        setTckerList(res)
+      );
+    },
+    [filter]
+  );
+
+  const handleChangeFilter = useCallback((key, item) => {
+    setFilter((pre) => {
+      const preSelected = pre[key] || [];
+      let currentSelected;
+      if (preSelected.includes(item)) {
+        currentSelected = preSelected.filter((p) => p !== item);
+      } else {
+        currentSelected = [...preSelected, item];
+      }
+
+      return {
+        ...pre,
+        [key]: currentSelected,
+      };
+    });
+  }, []);
+
   return (
     <>
       <PageTitle title="적정주가 (전체)" />
       <PageContents>
-        <FilterContainer title="필터" onChange={handleChangeFilter}>
-          <FilterListItem title="마켓" items={['KOSDAQ', 'KOSPI']}></FilterListItem>
-          <FilterListItem title="업종" items={['철강', '철강']} border={true}></FilterListItem>
+        <FilterContainer title="필터" onSubmit={handleSubmit} onClear={handleClear}>
+          <FilterListItem
+            title="마켓"
+            options={['KOSDAQ', 'KOSPI']}
+            values={filter['market'] || []}
+            onChange={(item) => handleChangeFilter('market', item)}
+          ></FilterListItem>
+          <FilterListItem
+            title="업종"
+            options={industries}
+            values={filter['industries'] || []}
+            border={true}
+            onChange={(item) => handleChangeFilter('industries', item)}
+          ></FilterListItem>
           <FilterListItem
             title="테마"
-            items={[
-              '비철금속',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-            ]}
+            options={themes}
+            values={filter['themes'] || []}
             border={true}
+            onChange={(item) => handleChangeFilter('themes', item)}
           ></FilterListItem>
         </FilterContainer>
-        <TypeSelector onChange={handleChangeFilter}></TypeSelector>
+        <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
         <div className="card mt">
           <p className="card__title">조회 목록</p>
           <table className="table custom-table">
@@ -81,63 +118,51 @@ const ProperAllList = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
+              {tickerList.map((ticker, idx) => {
+                return (
+                  <tr key={idx}>
+                    <td>{ticker.tickerCode}</td>
+                    <td>{ticker.tickerName}</td>
+                    <td>
+                      <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
+                        {ticker.tickerMarket}
+                      </span>
+                    </td>
+                    <td>
+                      <span>{ticker.tickerIndustry}</span>
+                    </td>
 
-                <td>
-                  <span className="badge">비철금속</span>
-                  <span className="badge">북한 광물자원개발</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-
-                <td>
-                  <span className="badge">비철금속</span>
-                  <span className="badge">북한 광물자원개발</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
+                    <td width="300px">
+                      {ticker.tickerThemes.map((theme, index) => {
+                        return (
+                          <span className="badge" key={index}>
+                            {theme}
+                          </span>
+                        );
+                      })}
+                    </td>
+                    <td>
+                      <span>{ticker.currentPrice.toLocaleString()}</span>
+                    </td>
+                    <td>
+                      <span>{parseInt(ticker.value).toLocaleString()}</span>
+                    </td>
+                    <td>
+                      <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
+                        {parseInt(ticker.margin).toLocaleString()}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
+                        {parseInt(ticker.marginRate)}%
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-          <div className="pagination">
+          {/* <div className="pagination">
             <span>
               <FontAwesomeIcon icon={faAngleDoubleLeft} />
             </span>
@@ -146,7 +171,7 @@ const ProperAllList = () => {
             <span>
               <FontAwesomeIcon icon={faAngleDoubleRight} />
             </span>
-          </div>
+          </div> */}
         </div>
       </PageContents>
     </>

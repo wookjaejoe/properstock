@@ -1,576 +1,172 @@
-import React from 'react';
+import axios from 'axios';
+import React, { useCallback, useEffect, useState } from 'react';
 import FilterContainer from '../../../common/components/FilterContainer';
 import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
+import ProperHttp from '../../../common/https/ProperHttp';
 
 const ProperTheme = () => {
-  const handleChangeType = () => {};
-  const handleChangeFilter = () => {};
+  const [themes, setThemes] = useState([]);
+  const [selectedThemes, setSelectedThemes] = useState([]);
+  const [formulas, setFormulas] = useState([]);
+  const [formulaSymbol, setFormulaSymbol] = useState('');
+  const [tickerByTheme, setTckerByTheme] = useState({});
+  const [showMoreFlag, setShowMoreFlag] = useState([]);
+
+  useEffect(() => {
+    axios.all([ProperHttp.searchThemeNames(), ProperHttp.searchFormulas()]).then(
+      axios.spread((themeNames, formulas) => {
+        setThemes(themeNames);
+        setFormulas(formulas);
+        setFormulaSymbol(formulas[0].symbol);
+        ProperHttp.searchTickerByTheme({ formulaSymbol: formulas[0].symbol }).then((res) => {
+          setTckerByTheme(res);
+        });
+      })
+    );
+  }, []);
+
+  const handleSubmit = useCallback(() => {
+    setShowMoreFlag([]);
+    ProperHttp.searchTickerByTheme({
+      themes: selectedThemes,
+      formulaSymbol: formulaSymbol,
+    }).then((res) => {
+      const tickers = {};
+      selectedThemes.forEach((key) => {
+        tickers[key] = res[key];
+      });
+      setTckerByTheme(tickers);
+    });
+  }, [selectedThemes, formulaSymbol]);
+
+  const handleClear = useCallback(() => {
+    setSelectedThemes([]);
+    ProperHttp.searchTickerByTheme({ formulaSymbol: formulaSymbol }).then((res) =>
+      setTckerByTheme(res)
+    );
+  }, [formulaSymbol]);
+
+  const handleChangeType = useCallback(
+    (type) => {
+      setShowMoreFlag([]);
+      setFormulaSymbol(type.symbol);
+      ProperHttp.searchTickerByTheme({
+        themes: selectedThemes,
+        formulaSymbol: type.symbol,
+      }).then((res) => {
+        const tickers = {};
+        selectedThemes.forEach((key) => {
+          tickers[key] = res[key];
+        });
+        setTckerByTheme(tickers);
+      });
+    },
+    [selectedThemes]
+  );
+
+  const handleChangeFilter = useCallback((item) => {
+    setSelectedThemes((pre) => {
+      let currentSelected;
+      if (pre.includes(item)) {
+        currentSelected = pre.filter((p) => p !== item);
+      } else {
+        currentSelected = [...pre, item];
+      }
+
+      return currentSelected;
+    });
+  }, []);
+
+  const handleShowMore = useCallback((key) => {
+    setShowMoreFlag((prev) => {
+      return [...prev, key];
+    });
+  }, []);
   return (
     <>
       <PageTitle title="적정주가 (테마 별 랭킹)" />
       <PageContents>
-        <FilterContainer title="필터" onChange={handleChangeFilter}>
+        <FilterContainer title="필터" onSubmit={handleSubmit} onClear={handleClear}>
           <FilterListItem
             title="테마"
-            items={[
-              '비철금속',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-              '북한 광물자원개발',
-            ]}
+            options={themes}
+            values={selectedThemes}
             border={true}
+            onChange={(item) => handleChangeFilter(item)}
           ></FilterListItem>
         </FilterContainer>
-        <TypeSelector onChange={handleChangeType}></TypeSelector>
-        <div className="card mt">
-          <p className="card__title">비철금속</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
-        <div className="card mt">
-          <p className="card__title">북한 광물자원개발</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>테마</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
-        <div className="card mt">
-          <p className="card__title">비철금속</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
-        <div className="card mt">
-          <p className="card__title">비철금속</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
-        <div className="card mt">
-          <p className="card__title">비철금속</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
-        <div className="card mt">
-          <p className="card__title">비철금속</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
-        <div className="card mt">
-          <p className="card__title">비철금속</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
-        <div className="card mt">
-          <p className="card__title">비철금속</p>
-          <table className="table custom-table">
-            <thead>
-              <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
-                <th>현재 가격</th>
-                <th>적정 주가</th>
-                <th>차액</th>
-                <th>차액 비율</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kosdaq">KOSDAQ</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-red">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-red">-15%</span>
-                </td>
-              </tr>
-              <tr>
-                <td>009520</td>
-                <td>포스코엠텍</td>
-                <td>
-                  <span className="badge kospi">KOSPI</span>
-                </td>
-                <td>
-                  <span>철강</span>
-                </td>
-                <td>
-                  <span>8,100</span>
-                </td>
-                <td>
-                  <span>6,812</span>
-                </td>
-                <td>
-                  <span className="font-green">-1,287</span>
-                </td>
-                <td>
-                  <span className="font-green">-15%</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="more-action">더 보기</div>
-        </div>
+        <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
+        {Object.keys(tickerByTheme).map((themeKey, themeIdx) => {
+          const tickerList = tickerByTheme[themeKey] || [];
+
+          return (
+            <div className="card mt" key={themeIdx}>
+              <p className="card__title">{themeKey}</p>
+              <table className="table custom-table">
+                <thead>
+                  <tr>
+                    <th>종목 코드</th>
+                    <th>종목 명</th>
+                    <th>마켓</th>
+                    <th>업종</th>
+                    <th>현재 가격</th>
+                    <th>적정 주가</th>
+                    <th>차액</th>
+                    <th>차액 비율</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickerList.map((ticker, idx) => {
+                    if (idx >= 5 && !showMoreFlag.includes(themeKey)) {
+                      return null;
+                    }
+                    return (
+                      <tr key={`${themeKey}_${idx}`}>
+                        <td>{ticker.tickerCode}</td>
+                        <td>{ticker.tickerName}</td>
+                        <td>
+                          <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
+                            {ticker.tickerMarket}
+                          </span>
+                        </td>
+                        <td>
+                          <span>{ticker.tickerIndustry}</span>
+                        </td>
+
+                        <td>
+                          <span>{ticker.currentPrice.toLocaleString()}</span>
+                        </td>
+                        <td>
+                          <span>{parseInt(ticker.value).toLocaleString()}</span>
+                        </td>
+                        <td>
+                          <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
+                            {parseInt(ticker.margin).toLocaleString()}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
+                            {parseInt(ticker.marginRate)}%
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {tickerList.length > 5 && !showMoreFlag.includes(themeKey) ? (
+                <div className="more-action" onClick={() => handleShowMore(themeKey)}>
+                  더 보기
+                </div>
+              ) : (
+                <></>
+              )}
+            </div>
+          );
+        })}
       </PageContents>
     </>
   );

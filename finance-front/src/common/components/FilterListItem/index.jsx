@@ -1,54 +1,48 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-const FilterListItem = ({ title, items, border }) => {
-  const [selected, setSelected] = useState([]);
-
-  const handleSelectItem = useCallback((item) => {
-    setSelected((prev) => {
-      if (prev.includes(item)) {
-        return prev.filter((p) => p !== item);
-      } else {
-        return [...prev, item];
-      }
-    });
-  }, []);
-
-  const renderItem = useCallback(
-    (element, index) => {
-      return (
-        <div
-          className={`condition__item ${
-            selected.includes(element) ? 'active' : ''
-          } ${selected.includes(element)}`}
-          key={index}
-          onClick={() => {
-            handleSelectItem(element);
-          }}
-        >
-          {element}
-        </div>
-      );
+const FilterListItem = ({ title, options, values, border, onChange }) => {
+  const handleSelectItem = useCallback(
+    (item) => {
+      onChange(item);
     },
-    [items, selected]
+    [onChange]
   );
 
   return (
     <div className="search-contidion">
       <p className="condition__title">{title}</p>
       <div className={`condition__area condition__list ${border ? 'condition-border' : ''}`}>
-        {items.map(renderItem)}
+        {options.map((element, index) => {
+          return (
+            <div
+              className={`condition__item ${
+                values.includes(element) ? 'active' : ''
+              } ${values.includes(element)}`}
+              key={index}
+              onClick={() => {
+                handleSelectItem(element);
+              }}
+            >
+              {element}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
+
 FilterListItem.defaultProps = {
-  items: [],
+  options: [],
 };
+
 FilterListItem.propTypes = {
   title: PropTypes.string.isRequired,
-  items: PropTypes.array.isRequired,
+  options: PropTypes.array.isRequired,
+  values: PropTypes.array.isRequired,
   border: PropTypes.bool,
+  onChange: PropTypes.func.isRequired,
 };
 
 export default FilterListItem;
