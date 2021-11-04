@@ -1,7 +1,6 @@
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useState } from 'react';
-import { useCallback } from 'react/cjs/react.development';
+import React, { useCallback, useEffect, useState } from 'react';
 import ProperHttp from '../../common/https/ProperHttp';
 
 const SearchBar = () => {
