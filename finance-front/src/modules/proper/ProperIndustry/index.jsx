@@ -96,7 +96,7 @@ const ProperIndustry = () => {
               <table className="table custom-table">
                 <thead>
                   <tr>
-                    <th>No</th>
+                    <th width="60px">No</th>
                     <th width="80px">종목 코드</th>
                     <th width="160px">종목 명</th>
                     <th width="100px">마켓</th>
