@@ -88,7 +88,7 @@ tasks.register("deploy.dev") {
     val runOptions = listOf(
         "-d",
         "-e SPRING_PROFILES_ACTIVE=dev",
-        "-p 6001:8080 -p 16001:8443",
+        "-p 9080:8080 -p 9443:8443",
         "--name ${project.name}",
         "-v /etc/localtime:/etc/localtime:ro"
     ).joinToString(" ")

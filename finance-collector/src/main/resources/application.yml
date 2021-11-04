@@ -1,3 +1,5 @@
+http:
+  port: 8080
 server:
   port: 8443
   servlet:
