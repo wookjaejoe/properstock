@@ -16,7 +16,7 @@ class ProperPriceController(
 ) {
     @GetMapping
     fun getAll(
-        market: Market?,
+        markets: Array<Market>?,
         industries: Array<String>?,
         themes: Array<String>?,
         formulaSymbol: String?,
@@ -25,7 +25,7 @@ class ProperPriceController(
     ): List<ProperPrice.Dto> {
         // 종목 필터
         var tickers = tickerRepository.findAll()
-        if (market != null) tickers = tickers.filter { it.market == market }
+        if (markets != null) tickers = tickers.filter { markets.contains(it.market) }
         if (industries != null) tickers = tickers.filter { industries.contains(it.industry) }
         if (themes != null) tickers = tickers.filter { themes.intersect(it.themes).isNotEmpty() }
         if (searchText != null) tickers =
