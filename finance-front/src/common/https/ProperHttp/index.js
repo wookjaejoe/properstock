@@ -27,7 +27,7 @@ const ProperHttp = {
   }) {
     let parameter = '';
     if (market.length > 0) {
-      parameter = parameter.concat(`market=${market.join(',')}&`);
+      parameter = parameter.concat(`markets=${market.join(',')}&`);
     }
     if (industries.length > 0) {
       parameter = parameter.concat(`industries=${industries.join(',')}&`);
