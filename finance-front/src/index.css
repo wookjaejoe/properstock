@@ -25,15 +25,31 @@ body {
 /* SearchBar */
 .searchbar__container {
   position: fixed;
+  flex-direction: column;
   height: 46px;
   width: 100%;
   top: 4px;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+.searchbar__container > .search-result {
+  background: rgb(50 50 50);
+  width: 560px;
+  position: absolute;
+  top: 46px;
+  border-radius: 10px;
+  margin-left: -40px;
+  box-shadow: 0 1px 6px 0 rgb(32 33 36 / 28%);
+  overflow: auto;
+  max-height: 500px;
+}
 
-.searchbar__container > input {
+.searchbar__container > .searchbar {
+  width: 600px;
+}
+.searchbar__container > .searchbar > input {
   width: 560px;
   height: 40px;
   border-radius: 24px;
@@ -42,12 +58,12 @@ body {
   background-color: rgb(255 255 255 / 76%);
 }
 
-.searchbar__container > span {
+.searchbar__container > .searchbar > span {
   margin-left: -32px;
   width: 50px;
 }
 
-.searchbar__container > .search__icon {
+.searchbar__container > .searchbar > .search__icon {
   margin-right: -50px;
   width: 50px;
 }
@@ -61,6 +77,45 @@ body {
 
 .searchbar__container .input-clear.active {
   display: inline-block;
+}
+
+.searchbar__container .search-result .result__item {
+  font-size: 12px;
+  background: rgb(38, 38, 38);
+  margin: 8px;
+  padding: 8px;
+  border-radius: 4px;
+}
+.search-result .result__item .result__item__header {
+  padding: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.search-result .result__item .result__item__proper__container {
+  margin: 8px;
+}
+.search-result .result__item .result__item__proper {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.search-result .result__item .result__item__header span {
+  margin-right: 8px;
+}
+
+.result__item .result__item__proper .result__item__proper__result {
+  display: flex;
+  padding-left: 16px;
+}
+
+.result__item .result__item__proper .result__item__proper__result > p {
+  margin-right: 16px;
+}
+.result__item .result__item__proper .result__item__proper__result > p > span {
+  margin-left: 4px;
 }
 
 /* Side */

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const ProperHttp = {
-  servideURL: 'http://home.jowookjae.in:6001',
+  servideURL: 'https://home.jowookjae.in:9443',
   searchFormulas() {
     return axios.get(`${this.servideURL}/proper/formulas`).then((res) => res.data);
   },
@@ -50,6 +50,17 @@ const ProperHttp = {
     }
 
     return axios.get(`${this.servideURL}/proper/prices?${parameter}`).then((res) => res.data);
+  },
+  searchTickerByName(param) {
+    return this.searchTickerList(param).then((data) => {
+      const group = {};
+
+      data.forEach((ticker) => {
+        const item = group[ticker.tickerName] || [];
+        group[ticker.tickerName] = [...item, ticker];
+      });
+      return group;
+    });
   },
   searchTop100(formulaSymbol) {
     return axios
