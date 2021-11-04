@@ -8,6 +8,7 @@ import ProperTheme from '../proper/ProperTheme';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import ProperTop100 from '../proper/ProperTop100';
 import Main from '../Main';
+import SearchBar from '../SearchBar';
 
 const Dashboard = () => {
   return (
@@ -18,7 +19,7 @@ const Dashboard = () => {
           <FontAwesomeIcon icon={faBars} />
         </label>
         <AsideNav />
-
+        <SearchBar />
         <div className="container">
           <Switch>
             <Route exact path="/proper/all" component={ProperAllList} />

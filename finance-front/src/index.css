@@ -22,6 +22,47 @@ body {
   margin-top: 8px;
 }
 
+/* SearchBar */
+.searchbar__container {
+  position: fixed;
+  height: 46px;
+  width: 100%;
+  top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.searchbar__container > input {
+  width: 560px;
+  height: 40px;
+  border-radius: 24px;
+  padding: 0px 50px;
+  border: none;
+  background-color: rgb(255 255 255 / 76%);
+}
+
+.searchbar__container > span {
+  margin-left: -32px;
+  width: 50px;
+}
+
+.searchbar__container > .search__icon {
+  margin-right: -50px;
+  width: 50px;
+}
+
+.searchbar__container .input-clear {
+  display: none;
+  color: #757b80;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.searchbar__container .input-clear.active {
+  display: inline-block;
+}
+
 /* Side */
 #side-toggle__input {
   display: none;
