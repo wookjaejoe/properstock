@@ -105,15 +105,16 @@ const ProperAllList = () => {
           <table className="table custom-table">
             <thead>
               <tr>
-                <th>종목 코드</th>
-                <th>종목 명</th>
-                <th>마켓</th>
-                <th>업종</th>
+                <th width="80px">종목 코드</th>
+                <th width="200px">종목 명</th>
+                <th width="100px">마켓</th>
+                <th width="200px">업종</th>
                 <th>테마</th>
                 <th>현재 가격</th>
                 <th>적정 주가</th>
                 <th>차액</th>
                 <th>차액 비율</th>
+                <th width="200px">비고</th>
               </tr>
             </thead>
             <tbody>
@@ -155,6 +156,9 @@ const ProperAllList = () => {
                       <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
                         {parseInt(ticker.marginRate)}%
                       </span>
+                    </td>
+                    <td>
+                      <pre>{ticker.note}</pre>
                     </td>
                   </tr>
                 );

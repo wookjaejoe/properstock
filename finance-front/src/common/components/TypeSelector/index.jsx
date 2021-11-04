@@ -54,7 +54,7 @@ const TypeSelector = ({ formulas, onChange }) => {
 
   return (
     <div className="type__button__selector" ref={selectorRef}>
-      <div className="card card__button" onClick={handleShow}>
+      <div className="card card__button type__button__select" onClick={handleShow}>
         <div className="type__button">
           <p className="type__button__title">{selected?.title}</p>
           <div className="type__button__desc">{selected?.shortDescription}</div>

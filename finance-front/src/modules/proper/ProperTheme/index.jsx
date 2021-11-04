@@ -28,18 +28,35 @@ const ProperTheme = () => {
     );
   }, []);
 
+  const filterTheme = useCallback((tickerByTheme, selectedThemes) => {
+    const filtered = {};
+    selectedThemes.forEach((key) => {
+      if (tickerByTheme[key]) {
+        filtered[key] = tickerByTheme[key];
+      }
+    });
+    return filtered;
+  }, []);
+
+  const searchTickers = useCallback(
+    (selectedThemes, formulaSymbol) => {
+      ProperHttp.searchTickerByTheme({
+        themes: selectedThemes,
+        formulaSymbol: formulaSymbol,
+      }).then((res) => {
+        if (selectedThemes.length == 0) {
+          setTckerByTheme(res);
+        } else {
+          setTckerByTheme(filterTheme(res, selectedThemes));
+        }
+      });
+    },
+    [filterTheme]
+  );
+
   const handleSubmit = useCallback(() => {
     setShowMoreFlag([]);
-    ProperHttp.searchTickerByTheme({
-      themes: selectedThemes,
-      formulaSymbol: formulaSymbol,
-    }).then((res) => {
-      const tickers = {};
-      selectedThemes.forEach((key) => {
-        tickers[key] = res[key];
-      });
-      setTckerByTheme(tickers);
-    });
+    searchTickers(selectedThemes, formulaSymbol);
   }, [selectedThemes, formulaSymbol]);
 
   const handleClear = useCallback(() => {
@@ -53,16 +70,7 @@ const ProperTheme = () => {
     (type) => {
       setShowMoreFlag([]);
       setFormulaSymbol(type.symbol);
-      ProperHttp.searchTickerByTheme({
-        themes: selectedThemes,
-        formulaSymbol: type.symbol,
-      }).then((res) => {
-        const tickers = {};
-        selectedThemes.forEach((key) => {
-          tickers[key] = res[key];
-        });
-        setTckerByTheme(tickers);
-      });
+      searchTickers(selectedThemes, type.symbol);
     },
     [selectedThemes]
   );
@@ -85,6 +93,7 @@ const ProperTheme = () => {
       return [...prev, key];
     });
   }, []);
+
   return (
     <>
       <PageTitle title="적정주가 (테마 별 랭킹)" />
@@ -108,14 +117,16 @@ const ProperTheme = () => {
               <table className="table custom-table">
                 <thead>
                   <tr>
-                    <th>종목 코드</th>
-                    <th>종목 명</th>
-                    <th>마켓</th>
-                    <th>업종</th>
+                    <th>No</th>
+                    <th width="80px">종목 코드</th>
+                    <th width="200px">종목 명</th>
+                    <th width="100px">마켓</th>
+                    <th width="200px">업종</th>
                     <th>현재 가격</th>
                     <th>적정 주가</th>
                     <th>차액</th>
                     <th>차액 비율</th>
+                    <th width="200px">비고</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -125,6 +136,7 @@ const ProperTheme = () => {
                     }
                     return (
                       <tr key={`${themeKey}_${idx}`}>
+                        <td>{idx + 1}</td>
                         <td>{ticker.tickerCode}</td>
                         <td>{ticker.tickerName}</td>
                         <td>
@@ -151,6 +163,9 @@ const ProperTheme = () => {
                           <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
                             {parseInt(ticker.marginRate)}%
                           </span>
+                        </td>
+                        <td>
+                          <pre>{ticker.note}</pre>
                         </td>
                       </tr>
                     );
