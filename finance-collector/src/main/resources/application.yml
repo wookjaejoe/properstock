@@ -1,5 +1,12 @@
 server:
-  port: 8080
+  port: 8443
+  servlet:
+    session:
+      timeout: 30
+  ssl:
+    key-store: classpath:cert/cert.pkcs12
+    key-store-type: PKCS12
+    key-store-password: "qwe123"
 
 spring:
   data:
