@@ -6,9 +6,9 @@ import ProperHttp from '../../common/https/ProperHttp';
 const SearchBar = () => {
   const [searchText, setSearchText] = useState('');
   const [result, setResult] = useState({});
+  const [show, setShow] = useState(false);
   const [formulas, setFormulas] = useState({});
 
-  // ESC 키 클릭시 이벤트 처리
   useEffect(() => {
     ProperHttp.searchFormulas().then((formulas) => {
       const map = {};
@@ -23,6 +23,8 @@ const SearchBar = () => {
 
   const handleClear = useCallback(() => {
     setSearchText('');
+    setResult({});
+    setShow(false);
   }, []);
 
   // ESC 키 클릭시 이벤트 처리
@@ -30,6 +32,7 @@ const SearchBar = () => {
     function handleEsc(event) {
       if (event.keyCode === 27) {
         setResult({});
+        setShow(false);
       }
     }
     document.addEventListener('keydown', handleEsc);
@@ -42,6 +45,7 @@ const SearchBar = () => {
     (event) => {
       if (event.keyCode === 13) {
         ProperHttp.searchTickerByName({ searchText: searchText }).then((result) => {
+          setShow(true);
           setResult(result);
         });
       }
@@ -117,6 +121,12 @@ const SearchBar = () => {
             </div>
           );
         })}
+
+        {show && Object.keys(result).length === 0 && (
+          <div className="no-result">
+            <span>No Result</span>
+          </div>
+        )}
       </div>
     </div>
   );

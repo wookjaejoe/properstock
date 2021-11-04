@@ -118,6 +118,12 @@ body {
   margin-left: 4px;
 }
 
+.search-result .no-result {
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+}
+
 /* Side */
 #side-toggle__input {
   display: none;
