@@ -4,6 +4,7 @@ import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
 import java.time.YearMonth
 import java.util.*
+import kotlin.math.floor
 
 @Component
 class EpsMultipliedByPer : ProperPriceFormula {
@@ -50,12 +51,14 @@ class EpsMultipliedByPer : ProperPriceFormula {
         epsList: SortedMap<YearMonth, Double?>,
         perList: SortedMap<YearMonth, Double?>
     ): ProperPriceFormula.Output {
-        val per = calculatePerByAvg(epsList, perList)
+        val per = calculatePerByAvg(epsList, perList).run { floor(this) }
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
 
         val thisYear = YearMonth.now().year
         // EPS 계산: 당해년도 EPS
-        val eps: Double = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }] ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
+        val eps: Double =
+            epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.run { floor(this) }
+                ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
 
         // 결과 반환
         return ProperPriceFormula.Output(

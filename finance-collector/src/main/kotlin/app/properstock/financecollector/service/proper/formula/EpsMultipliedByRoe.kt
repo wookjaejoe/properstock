@@ -4,6 +4,7 @@ import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
 import java.time.YearMonth
 import java.util.*
+import kotlin.math.floor
 
 @Component
 class EpsMultipliedByRoe : ProperPriceFormula {
@@ -45,8 +46,10 @@ class EpsMultipliedByRoe : ProperPriceFormula {
         roeList: SortedMap<YearMonth, Double?>
     ): ProperPriceFormula.Output {
         val thisYear = YearMonth.now().year
-        val eps: Double = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }] ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
-        val roe: Double = roeList[roeList.keys.findLast { ym -> ym.year == thisYear }] ?: return ProperPriceFormula.Output.dummy("ROE 미확인")
+        val eps: Double = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.run { floor(this) }
+            ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
+        val roe: Double = roeList[roeList.keys.findLast { ym -> ym.year == thisYear }]?.run { floor(this) }
+            ?: return ProperPriceFormula.Output.dummy("ROE 미확인")
         return ProperPriceFormula.Output(
             value = eps * roe,
             note = """

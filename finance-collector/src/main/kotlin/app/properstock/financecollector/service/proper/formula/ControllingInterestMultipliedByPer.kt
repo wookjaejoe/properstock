@@ -4,6 +4,7 @@ import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
 import java.time.YearMonth
 import java.util.*
+import kotlin.math.floor
 
 @Component
 class ControllingInterestMultipliedByPer : ProperPriceFormula {
@@ -62,17 +63,20 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
 
         val thisYear = YearMonth.now().year
-        // 지배주주순이익 계산: 당해년도 지배주주순이익
+        // 지배주주순이익 계산: 당해년도
         val controllingInterest = controllingInterestList[
             controllingInterestList
                 .keys
                 .findLast { ym -> ym.year == thisYear }
-        ] ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
+        ]?.run { floor(this) } ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
+
+        // 발행주식수 계산: 당해년도
         val issued = issuedCommonShares[
             issuedCommonShares
                 .keys
                 .findLast { ym -> ym.year == thisYear }
-        ] ?: return ProperPriceFormula.Output.dummy("당해년도 발행주식수 미확인")
+        ]?.run { floor(this) } ?: return ProperPriceFormula.Output.dummy("당해년도 발행주식수 미확인")
+
         return ProperPriceFormula.Output(
             per * controllingInterest / issued,
             """
