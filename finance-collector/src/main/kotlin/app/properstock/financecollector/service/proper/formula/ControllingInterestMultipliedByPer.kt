@@ -59,7 +59,7 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
         perList: SortedMap<YearMonth, Double?>,
         issuedCommonShares: SortedMap<YearMonth, Double?>
     ): ProperPriceFormula.Output {
-        val per = calculatePerByAvg(controllingInterestList, perList)
+        val per = calculatePerByAvg(controllingInterestList, perList).run { floor(this) }
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
 
         val thisYear = YearMonth.now().year
