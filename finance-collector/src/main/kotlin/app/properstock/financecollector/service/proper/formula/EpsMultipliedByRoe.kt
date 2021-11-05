@@ -46,12 +46,12 @@ class EpsMultipliedByRoe : ProperPriceFormula {
         roeList: SortedMap<YearMonth, Double?>
     ): ProperPriceFormula.Output {
         val thisYear = YearMonth.now().year
-        val eps: Double = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.run { floor(this) }
+        val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.toLong()
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
-        val roe: Double = roeList[roeList.keys.findLast { ym -> ym.year == thisYear }]?.run { floor(this) }
+        val roe = roeList[roeList.keys.findLast { ym -> ym.year == thisYear }]?.round(2)
             ?: return ProperPriceFormula.Output.dummy("ROE 미확인")
         return ProperPriceFormula.Output(
-            value = eps * roe,
+            value = floor(eps * roe),
             note = """
                 당해년도 추정 EPS: $eps
                 당해년도 추정 ROE: $roe

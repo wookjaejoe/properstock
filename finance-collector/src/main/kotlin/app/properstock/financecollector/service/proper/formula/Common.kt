@@ -3,6 +3,10 @@ package app.properstock.financecollector.service.proper.formula
 import java.time.YearMonth
 import java.util.*
 
+fun Double.round(offset: Int = 0): Double {
+    return String.format("%.${offset}f", this).toDouble()
+}
+
 /**
  * 순이익이 연속 흑자 조건 만족하면 PER 반환
  */

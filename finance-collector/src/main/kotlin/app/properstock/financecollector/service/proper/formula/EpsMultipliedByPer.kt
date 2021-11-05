@@ -51,21 +51,20 @@ class EpsMultipliedByPer : ProperPriceFormula {
         epsList: SortedMap<YearMonth, Double?>,
         perList: SortedMap<YearMonth, Double?>
     ): ProperPriceFormula.Output {
-        val per = calculatePerByAvg(epsList, perList).run { floor(this) }
+        val per = calculatePerByAvg(epsList, perList).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
 
         val thisYear = YearMonth.now().year
         // EPS 계산: 당해년도 EPS
-        val eps: Double =
-            epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.run { floor(this) }
-                ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
+        val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.toLong()
+            ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
 
         // 결과 반환
         return ProperPriceFormula.Output(
-            value = eps * per,
+            value = floor(eps * per),
             note = """
                 당해년도 추정 EPS: $eps
-                최근 5년 내 연속 흑자 PER 평균: $per
+                3~5년 연속 흑자 PER 평균: $per
             """.trimIndent()
         )
     }
