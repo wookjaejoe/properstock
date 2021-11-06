@@ -71,10 +71,11 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
         ]?.toLong() ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
 
         // 발행주식수 계산: 당해년도
+        // fixme: 일단 작년 걸로 계산하고 있는데, 이거 현 시점 발행주식수로 수정해야한다.
         val issued = issuedCommonShares[
             issuedCommonShares
                 .keys
-                .findLast { ym -> ym.year == thisYear }
+                .findLast { ym -> ym.year == thisYear - 1 }
         ]?.toLong() ?: return ProperPriceFormula.Output.dummy("당해년도 발행주식수 미확인")
 
         return ProperPriceFormula.Output(
@@ -82,7 +83,7 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
             """
                 당해년도 추정 지배주주순이익: ${controllingInterest / 1_0000_0000}억원
                 3~5년 연속 흑자 PER 평균: $per
-                발행주식수: issued
+                발행주식수: $issued
             """.trimIndent()
         )
     }

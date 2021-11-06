@@ -70,7 +70,7 @@ class ProperPriceService(
             oldData.note = formulaOut.note
             oldData.updated = Instant.now()
             properPriceRepository.save(oldData).apply {
-                logger.info("Proper price updated: $formulaSymbol@$tickerCode")
+                logger.info("Proper price updated: $oldData")
             }
         } else {
             val newData = ProperPrice(
@@ -80,7 +80,7 @@ class ProperPriceService(
                 note = formulaOut.note
             )
             properPriceRepository.save(newData).apply {
-                logger.info("New proper price: $formulaSymbol@$tickerCode")
+                logger.info("New proper price: $newData")
             }
         }
     }
