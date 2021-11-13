@@ -42,25 +42,28 @@ class ProperPriceService(
         }
     }
 
+    fun calculate(code: String): Map<String, ProperPriceFormula.Output> {
+        val financeAnalysis = financeAnalysisRepository.findByCode(code) ?: return emptyMap()
+        return mapOf(
+            epsMultipliedByPer.symbol to epsMultipliedByPer.calculate(
+                epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
+                perList = financeAnalysis.financeSummary.per.data.toSortedMap()
+            ),
+            epsMultipliedByRoe.symbol to epsMultipliedByRoe.calculate(
+                epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
+                roeList = financeAnalysis.financeSummary.roe.data.toSortedMap()
+            ),
+            controllingInterestMultipliedByPer.symbol to controllingInterestMultipliedByPer.calculate(
+                controllingInterestList = financeAnalysis.financeSummary.controllingInterest.data.toSortedMap(),
+                perList = financeAnalysis.financeSummary.per.data.toSortedMap(),
+                issuedCommonShares = financeAnalysis.financeSummary.issuedCommonShares.data.toSortedMap()
+            )
+        )
+    }
+
     fun update(code: String) {
         logger.info("Starting to update properPrice@$code...")
-        val financeAnalysis = financeAnalysisRepository.findByCode(code) ?: return
-
-        epsMultipliedByPer.calculate(
-            epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
-            perList = financeAnalysis.financeSummary.per.data.toSortedMap()
-        ).run { update(code, epsMultipliedByPer.symbol, this) }
-
-        epsMultipliedByRoe.calculate(
-            epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
-            roeList = financeAnalysis.financeSummary.roe.data.toSortedMap()
-        ).run { update(code, epsMultipliedByRoe.symbol, this) }
-
-        controllingInterestMultipliedByPer.calculate(
-            controllingInterestList = financeAnalysis.financeSummary.controllingInterest.data.toSortedMap(),
-            perList = financeAnalysis.financeSummary.per.data.toSortedMap(),
-            issuedCommonShares = financeAnalysis.financeSummary.issuedCommonShares.data.toSortedMap()
-        ).run { update(code, controllingInterestMultipliedByPer.symbol, this) }
+        calculate(code).forEach { update(code, it.key, it.value) }
     }
 
     private fun update(tickerCode: String, formulaSymbol: String, formulaOut: ProperPriceFormula.Output): ProperPrice {

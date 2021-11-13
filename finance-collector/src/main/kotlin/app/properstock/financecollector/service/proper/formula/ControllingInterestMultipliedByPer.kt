@@ -2,6 +2,7 @@ package app.properstock.financecollector.service.proper.formula
 
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
+import java.text.NumberFormat
 import java.time.YearMonth
 import java.util.*
 import kotlin.math.floor
@@ -83,7 +84,7 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
             """
                 당해년도 추정 지배주주순이익: ${controllingInterest / 1_0000_0000}억원
                 3~5년 연속 흑자 PER 평균: $per
-                발행주식수: $issued
+                발행주식수: ${NumberFormat.getNumberInstance(Locale.KOREA).format(issued)}
             """.trimIndent()
         )
     }

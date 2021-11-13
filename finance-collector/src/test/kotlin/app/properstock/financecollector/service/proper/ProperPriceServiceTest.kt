@@ -13,6 +13,11 @@ class ProperPriceServiceTest {
     lateinit var properPriceService: ProperPriceService
 
     @Test
+    fun calculate() {
+        properPriceService.calculate("005930")
+    }
+
+    @Test
     fun updateAll() {
         properPriceService.updateAll()
     }

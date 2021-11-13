@@ -2,6 +2,7 @@ package app.properstock.financecollector.service.proper.formula
 
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
+import java.text.NumberFormat
 import java.time.YearMonth
 import java.util.*
 import kotlin.math.floor
@@ -63,8 +64,8 @@ class EpsMultipliedByPer : ProperPriceFormula {
         return ProperPriceFormula.Output(
             value = floor(eps * per),
             note = """
-                당해년도 추정 EPS: $eps
-                3~5년 연속 흑자 PER 평균: $per
+                당해년도 추정 EPS: ${NumberFormat.getNumberInstance(Locale.KOREA).format(eps)}
+                추정 PER: ${NumberFormat.getNumberInstance(Locale.KOREA).format(per)}
             """.trimIndent()
         )
     }

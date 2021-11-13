@@ -2,6 +2,7 @@ package app.properstock.financecollector.service.proper.formula
 
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
+import java.text.NumberFormat
 import java.time.YearMonth
 import java.util.*
 import kotlin.math.floor
@@ -53,8 +54,8 @@ class EpsMultipliedByRoe : ProperPriceFormula {
         return ProperPriceFormula.Output(
             value = floor(eps * roe),
             note = """
-                당해년도 추정 EPS: $eps
-                당해년도 추정 ROE: $roe
+                당해년도 추정 EPS: ${NumberFormat.getNumberInstance(Locale.KOREA).format(eps)}
+                당해년도 추정 ROE: ${NumberFormat.getNumberInstance(Locale.KOREA).format(roe)}
             """.trimIndent()
         )
     }
