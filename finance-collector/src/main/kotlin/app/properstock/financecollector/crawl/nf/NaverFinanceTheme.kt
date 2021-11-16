@@ -1,6 +1,6 @@
 package app.properstock.financecollector.crawl.nf
 
-data class NaverFinanaceTheme(
+data class NaverFinanceTheme(
     val name: String,
     val ref: String,
     val marginRate: Double?,

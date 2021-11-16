@@ -1,10 +1,7 @@
 package app.properstock.financecollector.crawl.nf
 
 import app.properstock.financecollector.crawl.WebDriverConnector
-import app.properstock.financecollector.model.FinanceAnalysis
-import app.properstock.financecollector.model.FinanceSummary
-import app.properstock.financecollector.model.Market
-import app.properstock.financecollector.model.Ticker
+import app.properstock.financecollector.model.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
@@ -109,7 +106,7 @@ class NaverFinanceCrawler(
         }
     }
 
-    fun crawlFinancialAnalysis(code: String): FinanceAnalysis {
+    fun crawlCorpStat(code: String): CorpStat {
         val url = NaverFinanceUrls.companyInfo(code)
         return webDriverConnector.connect {
             val actions = Actions(this)
@@ -188,7 +185,7 @@ class NaverFinanceCrawler(
                     )
                 }
 
-            FinanceAnalysis(
+            CorpStat(
                 code = code,
                 financeSummary = financeSummary
             )
@@ -246,13 +243,13 @@ class NaverFinanceCrawler(
         }.asStream()
     }
 
-    private fun crawlThemes(contentTable: Element): List<NaverFinanaceTheme> {
+    private fun crawlThemes(contentTable: Element): List<NaverFinanceTheme> {
         return contentTable
             .getElementsByTag("tr")
             .filter { it.getElementsByTag("td").text().trim().isNotEmpty() }
             .map {
                 val tdList = it.getElementsByTag("td")
-                NaverFinanaceTheme(
+                NaverFinanceTheme(
                     name = tdList[0].getElementsByTag("a").text().trim(),
                     ref = tdList[0].getElementsByTag("a").attr("href"),
                     marginRate = tdList[1].text().parseDouble(),
@@ -260,7 +257,7 @@ class NaverFinanceCrawler(
             }
     }
 
-    fun crawlThemes(): Stream<NaverFinanaceTheme> {
+    fun crawlThemes(): Stream<NaverFinanceTheme> {
         var lastPage: Int
         val findThemeTable = { body: Element -> body.getElementsByTag("table").find { it.hasClass("theme") }!! }
         val findLastPage = { body: Element ->
@@ -272,7 +269,7 @@ class NaverFinanceCrawler(
                 .toInt()
         }
 
-        val themes: MutableList<NaverFinanaceTheme> = mutableListOf()
+        val themes: MutableList<NaverFinanceTheme> = mutableListOf()
         webDriverConnector.connect {
             var url = NaverFinanceUrls.themes(1)
             logger.info("Opening $url")
@@ -346,5 +343,80 @@ class NaverFinanceCrawler(
                         .split("code=")[1]
                 }
         }
+    }
+
+    fun crawlFinanceAnal(code: String): FinanceAnal {
+        val url = NaverFinanceUrls.financialAnalysis(code)
+        val financeStat = webDriverConnector.connect {
+            logger.info("Opening $url")
+            get(url)
+
+            // 재무재표 상태표 탭 클릭
+            val actions = Actions(this)
+            val financeStatTab = findElements(By.tagName("a")).findLast { it.getAttribute("title") == "재무상태표" }
+            actions.click(financeStatTab).build().perform()
+
+            val html = findElement(By.tagName("html")).getAttribute(OUTER_HTML)
+            val table = Jsoup.parse(html)
+                .getElementsByTag("table").last()!!
+
+            val headers = table
+                .getElementsByTag("thead")[0]
+                .getElementsByTag("tr")[0]
+                .getElementsByTag("th")
+                .run { subList(1, size - 2) }
+                .map {
+                    val str = "[0-9]{4}/[0-9]{2}".toRegex().find(it.text())?.value!!
+                    val spl = str.split("/")
+                    YearMonth.of(spl[0].toInt(), spl[1].toInt())
+                }
+
+            /**
+            유동자산 : 네이버 finance > 종목 > 종목분석 > 재무분석 > 재무상태표 > 당해 추정 유동자산
+            유동부채 : 네이버 finance > 종목 > 종목분석 > 재무분석 > 재무상태표 > 당해 추정 유동부채
+            투자자산 : 네이버 finance > 종목 > 종목분석 > 재무분석 > 재무상태표 > 당해 추정 투자자산
+            고정부채 : 네이버 finance > 종목 > 종목분석 > 투자지표 > 안정성 > 비유동부채비율 > 당해 추정 비유동부채
+             */
+
+            table
+                .getElementsByTag("tbody")[0]
+                .getElementsByTag("tr")
+                .map { element ->
+                    val tdList = element.getElementsByTag("td")
+                    val title = tdList[0].attr("title").trim()
+                    val values = element.getElementsByTag("td")
+                        .subList(1, tdList.size - 2)
+                        .map { td ->
+                            val text = td.text()
+                            text.startsWith("*")
+
+                            td.text().ifEmpty { null }
+
+                        }
+
+                    Pair(title, values)
+                }.associate {
+                    Pair(it.first.trim(), it.second)
+                }.run {
+                    /**
+                     * currentAssets
+                     * currentLiabilities
+                     * investmentAssets
+                     * nonCurrentLiabilities
+                     */
+                    println(headers)
+                    val financeStat = FinanceAnal.FinanceStat()
+                    financeStat.currentAssets.set(headers, this["유동자산"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat.currentLiabilities.set(headers, this["유동부채"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat.investmentAssets.set(headers, this["투자자산"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat.nonCurrentLiabilities.set(headers, this["비유동부채"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat
+                }
+        }
+
+        return FinanceAnal(
+            code = code,
+            financeStat = financeStat
+        )
     }
 }

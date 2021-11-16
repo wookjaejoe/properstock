@@ -1,7 +1,7 @@
 package app.properstock.financecollector.service.proper
 
 import app.properstock.financecollector.model.ProperPrice
-import app.properstock.financecollector.repository.FinanceAnalysisRepository
+import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.ProperPriceRepository
 import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.formula.ControllingInterestMultipliedByPer
@@ -17,7 +17,7 @@ import java.time.Instant
 class ProperPriceService(
     formulaList: List<ProperPriceFormula>,
     val tickerRepository: TickerRepository,
-    val financeAnalysisRepository: FinanceAnalysisRepository,
+    val corpStatRepository: CorpStatRepository,
     val properPriceRepository: ProperPriceRepository,
 
     val epsMultipliedByPer: EpsMultipliedByPer,
@@ -43,21 +43,10 @@ class ProperPriceService(
     }
 
     fun calculate(code: String): Map<String, ProperPriceFormula.Output> {
-        val financeAnalysis = financeAnalysisRepository.findByCode(code) ?: return emptyMap()
         return mapOf(
-            epsMultipliedByPer.symbol to epsMultipliedByPer.calculate(
-                epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
-                perList = financeAnalysis.financeSummary.per.data.toSortedMap()
-            ),
-            epsMultipliedByRoe.symbol to epsMultipliedByRoe.calculate(
-                epsList = financeAnalysis.financeSummary.eps.data.toSortedMap(),
-                roeList = financeAnalysis.financeSummary.roe.data.toSortedMap()
-            ),
-            controllingInterestMultipliedByPer.symbol to controllingInterestMultipliedByPer.calculate(
-                controllingInterestList = financeAnalysis.financeSummary.controllingInterest.data.toSortedMap(),
-                perList = financeAnalysis.financeSummary.per.data.toSortedMap(),
-                issuedCommonShares = financeAnalysis.financeSummary.issuedCommonShares.data.toSortedMap()
-            )
+            epsMultipliedByPer.symbol to epsMultipliedByPer.calculate(code),
+            epsMultipliedByRoe.symbol to epsMultipliedByRoe.calculate(code),
+            controllingInterestMultipliedByPer.symbol to controllingInterestMultipliedByPer.calculate(code)
         )
     }
 
@@ -95,6 +84,8 @@ interface ProperPriceFormula {
     val title: String
     val shortDescription: String
     val longDescription: String
+
+    fun calculate(code: String): Output
 
     class Output(
         val value: Double,

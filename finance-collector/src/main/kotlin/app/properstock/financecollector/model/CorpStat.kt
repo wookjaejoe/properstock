@@ -8,7 +8,7 @@ import java.time.Instant
 import java.time.YearMonth
 
 @Document
-data class FinanceAnalysis(
+data class CorpStat(
     @Id
     val id: String? = null,
     @Indexed(unique = true)
@@ -35,17 +35,4 @@ data class FinanceSummary(
     val per: TimeSeries<Double> = TimeSeries("PER", "PER(배)"),
     /** 발행주식수(보통주) */
     val issuedCommonShares: TimeSeries<Double> = TimeSeries("발행주식수", "발행주식수(보통주)")
-) {
-    class TimeSeries<V>(
-        val displayName: String,
-        val description: String? = null,
-        val data: MutableMap<YearMonth, V?> = mutableMapOf()
-    ) {
-        fun set(times: List<YearMonth>, data: List<V?>) {
-            if (times.size != data.size) throw KeyValueNotMatchException("Length not matched between times and data")
-            for (i in times.indices) {
-                this.data[times[i]] = data[i]
-            }
-        }
-    }
-}
+)

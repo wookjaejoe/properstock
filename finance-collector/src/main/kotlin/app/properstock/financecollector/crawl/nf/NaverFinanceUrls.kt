@@ -23,6 +23,7 @@ class NaverFinanceUrls {
         }
 
         fun companyInfo(code: String) = "https://navercomp.wisereport.co.kr/v2/company/c1010001.aspx?cmp_cd=$code"
+        fun financialAnalysis(code: String) = "https://navercomp.wisereport.co.kr/v2/company/c1030001.aspx?cmp_cd=$code"
         fun industries() = resolve("/sise/sise_group.naver?type=upjong")
         fun themes(page: Int) = resolve("/sise/theme.naver?page=$page")
         fun etf() = resolve("/sise/etf.naver")

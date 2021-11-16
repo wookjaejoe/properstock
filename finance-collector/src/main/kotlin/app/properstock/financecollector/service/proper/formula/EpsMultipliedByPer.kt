@@ -1,5 +1,6 @@
 package app.properstock.financecollector.service.proper.formula
 
+import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
 import java.text.NumberFormat
@@ -8,7 +9,9 @@ import java.util.*
 import kotlin.math.floor
 
 @Component
-class EpsMultipliedByPer : ProperPriceFormula {
+class EpsMultipliedByPer(
+    val corpStatRepository: CorpStatRepository
+) : ProperPriceFormula {
     override val symbol = "EPSPER"
     override val title = "EPS × PER"
     override val shortDescription = "순이익에 밸류에이션을 곱해서 기업의 주가를 계산하는 방식으로, 기업의 이익에 기초한 대중적으로 통용되는 가치평가 방법이다."
@@ -48,13 +51,12 @@ class EpsMultipliedByPer : ProperPriceFormula {
         PER : NAVER Finance에서 개별 기업의 과거 5년치 평균 PER로 계산하기(예외사항 적용 必)
     """.trimIndent()
 
-    fun calculate(
-        epsList: SortedMap<YearMonth, Double?>,
-        perList: SortedMap<YearMonth, Double?>
-    ): ProperPriceFormula.Output {
+    override fun calculate(code: String): ProperPriceFormula.Output {
+        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무제표 미확인")
+        val epsList = corpStat.financeSummary.eps.data.toSortedMap()
+        val perList = corpStat.financeSummary.per.data.toSortedMap()
         val per = calculatePerByAvg(epsList, perList).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
-
         val thisYear = YearMonth.now().year
         // EPS 계산: 당해년도 EPS
         val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.toLong()

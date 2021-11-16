@@ -4,7 +4,7 @@ import app.properstock.financecollector.TZ_KR
 import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
 import app.properstock.financecollector.model.Industry
 import app.properstock.financecollector.model.Theme
-import app.properstock.financecollector.repository.FinanceAnalysisRepository
+import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.IndustryRepository
 import app.properstock.financecollector.repository.ThemeRepository
 import app.properstock.financecollector.repository.TickerRepository
@@ -21,7 +21,7 @@ import java.time.Instant
 class ScheduledTasks(
     val naverFinanceCrawler: NaverFinanceCrawler,
     val tickerRepository: TickerRepository,
-    val financeAnalysisRepository: FinanceAnalysisRepository,
+    val corpStatRepository: CorpStatRepository,
     val properPriceService: ProperPriceService,
     val industryRepository: IndustryRepository,
     val themeRepository: ThemeRepository
@@ -133,20 +133,20 @@ class ScheduledTasks(
             .forEach {
                 try {
                     // 재무제표 업데이트
-                    val financeAnalysis = naverFinanceCrawler.crawlFinancialAnalysis(it.code)
-                    val oldData = financeAnalysisRepository.findByCode(it.code)
+                    val corpStat = naverFinanceCrawler.crawlCorpStat(it.code)
+                    val oldData = corpStatRepository.findByCode(it.code)
                     if (oldData != null) {
                         oldData.apply {
-                            code = financeAnalysis.code
-                            financeSummary = financeAnalysis.financeSummary
+                            code = corpStat.code
+                            financeSummary = corpStat.financeSummary
                             updated = Instant.now()
                         }
-                        financeAnalysisRepository.save(oldData)
+                        corpStatRepository.save(oldData)
                     } else {
-                        financeAnalysisRepository.save(financeAnalysis)
+                        corpStatRepository.save(corpStat)
                     }
 
-                    logger.info("financeAnalysis@${it.code} updated successfully.")
+                    logger.info("corpStat@${it.code} updated successfully.")
 
                     // 적정주가 업데이트
                     properPriceService.update(it.code)

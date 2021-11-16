@@ -1,14 +1,18 @@
 package app.properstock.financecollector.service.proper.formula
 
+import app.properstock.financecollector.repository.CorpStatRepository
+import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
 import java.text.NumberFormat
 import java.time.YearMonth
 import java.util.*
-import kotlin.math.floor
 
 @Component
-class ControllingInterestMultipliedByPer : ProperPriceFormula {
+class ControllingInterestMultipliedByPer(
+    val corpStatRepository: CorpStatRepository,
+    val tickerRepository: TickerRepository
+) : ProperPriceFormula {
     override val symbol = "CTRINTPER"
     override val title = "지배주주순이익 x PER"
     override val shortDescription =
@@ -55,14 +59,12 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
         순이익 x PER / 발행주식수
     """.trimIndent()
 
-    fun calculate(
-        controllingInterestList: SortedMap<YearMonth, Double?>,
-        perList: SortedMap<YearMonth, Double?>,
-        issuedCommonShares: SortedMap<YearMonth, Double?>
-    ): ProperPriceFormula.Output {
+    override fun calculate(code: String): ProperPriceFormula.Output {
+        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무제표 미확인")
+        val controllingInterestList = corpStat.financeSummary.controllingInterest.data.toSortedMap()
+        val perList = corpStat.financeSummary.per.data.toSortedMap()
         val per = calculatePerByAvg(controllingInterestList, perList).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
-
         val thisYear = YearMonth.now().year
         // 지배주주순이익 계산: 당해년도
         val controllingInterest = controllingInterestList[
@@ -71,14 +73,8 @@ class ControllingInterestMultipliedByPer : ProperPriceFormula {
                 .findLast { ym -> ym.year == thisYear }
         ]?.toLong() ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
 
-        // 발행주식수 계산: 당해년도
-        // fixme: 일단 작년 걸로 계산하고 있는데, 이거 현 시점 발행주식수로 수정해야한다.
-        val issued = issuedCommonShares[
-            issuedCommonShares
-                .keys
-                .findLast { ym -> ym.year == thisYear - 1 }
-        ]?.toLong() ?: return ProperPriceFormula.Output.dummy("당해년도 발행주식수 미확인")
-
+        // 상장주식수
+        val issued = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("당해년도 발행주식수 미확인")
         return ProperPriceFormula.Output(
             (per * controllingInterest / issued).round(),
             """

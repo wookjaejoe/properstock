@@ -43,4 +43,12 @@ class NaverFinanceCrawlerTest {
         naverFinanceCrawler.crawlEtfCodes().forEach { println(it) }
         naverFinanceCrawler.crawlEtnCodes().forEach { println(it) }
     }
+
+    @Test
+    fun crawlFinanceAnal() {
+        val x = naverFinanceCrawler.crawlFinanceAnal("001530")
+        println(x)
+    }
+
+
 }

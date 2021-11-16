@@ -1,10 +1,16 @@
 package app.properstock.financecollector.service.proper.formula
 
+import app.properstock.financecollector.repository.CorpStatRepository
+import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
+import java.time.YearMonth
 
 @Component
-class SmartInvestor : ProperPriceFormula {
+class SmartInvestor(
+    val corpStatRepository: CorpStatRepository,
+    val tickerRepository: TickerRepository
+) : ProperPriceFormula {
     override val symbol: String = "SMTINV"
     override val title: String = "Smart Investor"
     override val shortDescription: String = "(사업가치 + 재산가치 - 고정부채) / 발행주식수"
@@ -29,7 +35,7 @@ class SmartInvestor : ProperPriceFormula {
         확정부이자율 : 국공채와 같이 위험을 부담하지 않고 받을 수 있는 이자율
 
         3. 계산식
-        (사업가치 + 재산가치 - 고정부채) / 발행주식수 X 1억
+        (사업가치 + 재산가치 - 고정부채) / 발행주식수
         1) 사업가치 : 영업이익 3년 평균 X ((100% - 법인세율) / 기대수익률)
         		영업이익 : 3년치 영업이익의 평균값 산출 (Y 추정, Y-1, Y-2 영업이익 평균)
                                   * 영업이익은 당해년도 추정치, 1년전, 2년전 값으로 평균을 산출
@@ -44,7 +50,6 @@ class SmartInvestor : ProperPriceFormula {
                             상장기업의 유동비율 평균이 1.2배 (출처 : <현명한 초보투자자>)
                      투자자산 : 회사 재무제표에 제공
         3) 고정부채 : 회사 재무제표에서 제공
-        4) 1억 : NAVER Finance의 표시 단위가 (억)이므로 1억을 곱해줌
 
         4. 데이터 참조
         영업이익 3년치 평균 : 네이버 finance > 종목 > 종목분석 > 영업이익 3년치 평균 계산
@@ -74,4 +79,42 @@ class SmartInvestor : ProperPriceFormula {
         full 계산식
         {(영업이익 3년 평균 X ((100% - 법인세율) / 기대수익률)) + (유동자산 - (유동부채 X 1.2) + 투자자산) - 고정부채} / 발행주식수 X 1억
     """.trimIndent()
+
+    override fun calculate(code: String): ProperPriceFormula.Output {
+        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무제표 미확인")
+        // todo: 사업가치: 영업이익 3년 평균 X ((100% - 법인세율) / 기대수익률)
+        val thisYear = YearMonth.now().year
+        val profitCriteriaYears = 3
+        val operatingProfits = corpStat.financeSummary.operatingProfit.data.toSortedMap()
+            .filter {
+                val ym = it.key
+                thisYear - profitCriteriaYears <= ym.year && ym.year <= thisYear
+            }
+            .map { it.value }
+
+//        if (operatingProfits.any { it == null }) return ProperPriceFormula.Output.dummy("${profitCriteriaYears}년 영업이익 누락")
+
+        val operatingProfitAvg = operatingProfits.filterNotNull().sumOf { it } / profitCriteriaYears
+        val corporateTaxRate = 25
+        val fixedExpectedReturnRate = 8.31
+        val bussinessValue = operatingProfitAvg * (100 - corporateTaxRate / fixedExpectedReturnRate)
+
+        // todo: 재산가치: 유동자산 - (유동부채 X 1.2) + 투자자산
+
+        val assetValue = 0
+
+        // todo: 고정부채
+
+        val shares = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("상장주식수 미확인")
+
+        return ProperPriceFormula.Output(
+            value = 0.0,
+//            value = (operatingProfitAvg + ? - ?) / shares,
+            note = """
+                사업가치: 
+                재산가치:
+                고정부채:
+            """.trimIndent()
+        )
+    }
 }

@@ -1,5 +1,6 @@
 package app.properstock.financecollector.service.proper.formula
 
+import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
 import java.text.NumberFormat
@@ -8,7 +9,9 @@ import java.util.*
 import kotlin.math.floor
 
 @Component
-class EpsMultipliedByRoe : ProperPriceFormula {
+class EpsMultipliedByRoe(
+    val corpStatRepository: CorpStatRepository
+) : ProperPriceFormula {
     override val symbol: String = "EPSROE"
     override val title: String = "EPS × ROE"
     override val shortDescription: String = "주가지수는 경제 성장률 + 물가 상승률로서 EPSPER 공식의 추정 PER을 ROE를 통해 적정 PER로 산출하는 방법으로 슈퍼개미 김정환님이 제시하는 만능 공식이다."
@@ -42,10 +45,11 @@ class EpsMultipliedByRoe : ProperPriceFormula {
         영업이익이 낮고 PER이 고평가 되는 기업의 경우 주가에 비해 상당히 낮은 수치로 반영 될 수 있다.
     """.trimIndent()
 
-    fun calculate(
-        epsList: SortedMap<YearMonth, Double?>,
-        roeList: SortedMap<YearMonth, Double?>
-    ): ProperPriceFormula.Output {
+    override fun calculate(code: String): ProperPriceFormula.Output {
+        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무제표 미확인")
+        val epsList = corpStat.financeSummary.eps.data.toSortedMap()
+        val roeList = corpStat.financeSummary.roe.data.toSortedMap()
+
         val thisYear = YearMonth.now().year
         val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.toLong()
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
