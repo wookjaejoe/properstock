@@ -1,17 +1,18 @@
 package app.properstock.financecollector.service.proper.formula
 
+import java.text.NumberFormat
 import java.time.YearMonth
 import java.util.*
 
-fun Double.round(offset: Int = 0): Double {
-    return String.format("%.${offset}f", this).toDouble()
-}
+fun Double.round(offset: Int = 0): Double = String.format("%.${offset}f", this).toDouble()
+fun Long.formatMillion() = "${NumberFormat.getNumberInstance(Locale.KOREA).format(this / 1_0000_0000)}억"
+fun Long.format10Thousand() = "${NumberFormat.getNumberInstance(Locale.KOREA).format(this / 1_0000)}만"
 
 /**
  * 순이익이 연속 흑자 조건 만족하면 PER 반환
  */
 fun calculatePerByAvg(
-    earningCriteriaList: SortedMap<YearMonth, Double?>,
+    earningCriteriaList: SortedMap<YearMonth, Long?>,
     perList: SortedMap<YearMonth, Double?>
 ): Double {
     // 연속 흑자 년도 확인: 과거 3년 이상 연속 흑자 기록된 년도 리스트 확인
@@ -50,3 +51,5 @@ fun calculatePerByAvg(
     if (whitePerList.isNullOrEmpty()) return Double.NaN
     return whitePerList.sumOf { it } / surplusYearMonths.size
 }
+
+

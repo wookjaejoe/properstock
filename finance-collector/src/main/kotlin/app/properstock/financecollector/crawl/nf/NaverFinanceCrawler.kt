@@ -153,19 +153,19 @@ class NaverFinanceCrawler(
                 }.run {
                     financeSummary.sales.set(
                         headers,
-                        this["매출액"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                        this["매출액"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.operatingProfit.set(
                         headers,
-                        this["영업이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                        this["영업이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.netProfit.set(
                         headers,
-                        this["당기순이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                        this["당기순이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.controllingInterest.set(
                         headers,
-                        this["당기순이익(지배)"]!!.map { it?.convertToDouble()?.times(1_0000_0000) }
+                        this["당기순이익(지배)"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.roe.set(
                         headers,
@@ -173,7 +173,7 @@ class NaverFinanceCrawler(
                     )
                     financeSummary.eps.set(
                         headers,
-                        this["EPS(원)"]!!.map { it?.convertToDouble() }
+                        this["EPS(원)"]!!.map { it?.convertToDouble()?.toLong() }
                     )
                     financeSummary.per.set(
                         headers,
@@ -181,7 +181,7 @@ class NaverFinanceCrawler(
                     )
                     financeSummary.issuedCommonShares.set(
                         headers,
-                        this["발행주식수(보통주)"]!!.map { it?.convertToDouble() }
+                        this["발행주식수(보통주)"]!!.map { it?.convertToDouble()?.toLong() }
                     )
                 }
 
@@ -385,12 +385,6 @@ class NaverFinanceCrawler(
                 }.associate {
                     Pair(it.first.trim(), it.second)
                 }.run {
-                    /**
-                     * currentAssets
-                     * currentLiabilities
-                     * investmentAssets
-                     * nonCurrentLiabilities
-                     */
                     val financeStat = FinanceAnal.FinanceStat()
                     financeStat.currentAssets.set(headers, this["유동자산"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
                     financeStat.currentLiabilities.set(headers, this["유동부채"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })

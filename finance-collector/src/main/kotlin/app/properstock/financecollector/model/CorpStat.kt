@@ -18,19 +18,19 @@ data class CorpStat(
 
 data class FinanceSummary(
     /** 매출액 */
-    val sales: TimeSeries<Double> = TimeSeries("매출액"),
+    val sales: TimeSeries<Long> = TimeSeries("매출액"),
     /** 당기순이익 */
-    val netProfit: TimeSeries<Double> = TimeSeries("당기순이익"),
+    val netProfit: TimeSeries<Long> = TimeSeries("당기순이익"),
     /** 당기순이익(지배) */
-    val controllingInterest: TimeSeries<Double> = TimeSeries("당기순이익(지배)"),
+    val controllingInterest: TimeSeries<Long> = TimeSeries("당기순이익(지배)"),
     /** 영업이익 */
-    val operatingProfit: TimeSeries<Double> = TimeSeries("영업이익"),
+    val operatingProfit: TimeSeries<Long> = TimeSeries("영업이익"),
     /** ROE */
     val roe: TimeSeries<Double> = TimeSeries("ROE", "ROE(%)"),
     /** EPS */
-    val eps: TimeSeries<Double> = TimeSeries("EPS", "EPS(원)"),
+    val eps: TimeSeries<Long> = TimeSeries("EPS", "EPS(원)"),
     /** PER */
     val per: TimeSeries<Double> = TimeSeries("PER", "PER(배)"),
     /** 발행주식수(보통주) */
-    val issuedCommonShares: TimeSeries<Double> = TimeSeries("발행주식수", "발행주식수(보통주)")
+    val issuedCommonShares: TimeSeries<Long> = TimeSeries("발행주식수", "발행주식수(보통주)")
 )
