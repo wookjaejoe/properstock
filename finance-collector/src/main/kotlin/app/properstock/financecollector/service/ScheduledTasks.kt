@@ -4,10 +4,7 @@ import app.properstock.financecollector.TZ_KR
 import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
 import app.properstock.financecollector.model.Industry
 import app.properstock.financecollector.model.Theme
-import app.properstock.financecollector.repository.CorpStatRepository
-import app.properstock.financecollector.repository.IndustryRepository
-import app.properstock.financecollector.repository.ThemeRepository
-import app.properstock.financecollector.repository.TickerRepository
+import app.properstock.financecollector.repository.*
 import app.properstock.financecollector.service.proper.ProperPriceService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,6 +19,7 @@ class ScheduledTasks(
     val naverFinanceCrawler: NaverFinanceCrawler,
     val tickerRepository: TickerRepository,
     val corpStatRepository: CorpStatRepository,
+    val finAnalRepository: FinAnalRepository,
     val properPriceService: ProperPriceService,
     val industryRepository: IndustryRepository,
     val themeRepository: ThemeRepository
@@ -123,6 +121,39 @@ class ScheduledTasks(
             }
     }
 
+    fun updateCorpStat(code: String) {
+        // 기업현황 크롤링
+        val corpStat = naverFinanceCrawler.crawlCorpStat(code)
+        // 이전 데이터
+        val oldCorpStat = corpStatRepository.findByCode(code)
+        if (oldCorpStat != null) {
+            oldCorpStat.apply {
+                this.code = corpStat.code
+                this.financeSummary = corpStat.financeSummary
+                this.updated = Instant.now()
+            }
+            corpStatRepository.save(oldCorpStat)
+        } else {
+            corpStatRepository.save(corpStat)
+        }
+    }
+
+    fun updateFinanceAnal(code: String) {
+        // 재무분석 크롤링
+        val finAnal = naverFinanceCrawler.crawlFinanceAnal(code)
+        val oldFinAnal = finAnalRepository.findByCode(code)
+        if (oldFinAnal != null) {
+            oldFinAnal.apply {
+                this.code = finAnal.code
+                financeStat = finAnal.financeStat
+                updatedAt = Instant.now()
+            }
+            finAnalRepository.save(oldFinAnal)
+        } else {
+            finAnalRepository.save(finAnal)
+        }
+    }
+
     @Scheduled(cron = "0 0 0 * * *", zone = TZ_KR)
     fun updateFinanceData() {
         logger.info("Starting to update finance analysis...")
@@ -132,22 +163,22 @@ class ScheduledTasks(
             .filter { !excludes.contains(it.code) }
             .forEach {
                 try {
-                    // 재무제표 업데이트
-                    val corpStat = naverFinanceCrawler.crawlCorpStat(it.code)
-                    val oldData = corpStatRepository.findByCode(it.code)
-                    if (oldData != null) {
-                        oldData.apply {
-                            code = corpStat.code
-                            financeSummary = corpStat.financeSummary
-                            updated = Instant.now()
-                        }
-                        corpStatRepository.save(oldData)
-                    } else {
-                        corpStatRepository.save(corpStat)
-                    }
-
+                    // 기업현황 업데이트
+                    updateCorpStat(it.code)
                     logger.info("corpStat@${it.code} updated successfully.")
+                } catch (e: Throwable) {
+                    logger.warn("Failed to update corpStat@${it.code} caused by ${e.javaClass.simpleName}:${e.message}")
+                }
 
+                try {
+                    // 재무분석 업데이트
+                    updateFinanceAnal(it.code)
+                    logger.info("financeAnal@${it.code} updated successfully.")
+                } catch (e: Throwable) {
+                    logger.warn("Failed to update financeAnal@${it.code} caused by ${e.javaClass.simpleName}:${e.message}")
+                }
+
+                try {
                     // 적정주가 업데이트
                     properPriceService.update(it.code)
                 } catch (e: Throwable) {
