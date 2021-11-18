@@ -90,23 +90,26 @@ class SmartInvestor(
         val operatingProfits = corpStat.financeSummary.operatingProfit.data.toSortedMap()
             .filter {
                 val ym = it.key
-                thisYear - profitCriteriaYears <= ym.year && ym.year <= thisYear
+                thisYear - profitCriteriaYears + 1 <= ym.year && ym.year <= thisYear
             }
             .map { it.value }
+            .filterNotNull()
 
-        val operatingProfitAvg = (operatingProfits.filterNotNull().sumOf { it } / profitCriteriaYears).toLong()
-        val corporateTaxRate = 25  // 법인새율
+        if (operatingProfits.isEmpty() || operatingProfits.sumOf { it } == 0L) return ProperPriceFormula.Output.dummy("영업이익 미확인")
+        val operatingProfitAvg = (operatingProfits.sumOf { it } / operatingProfits.size)
+        val corporateTaxRate = 25  // 법인세율
         val fixedExpectedReturnRate = 8.31  // 기대수익율
 
         // 사업가치
-        val bussinessValue = operatingProfitAvg * (100 - corporateTaxRate / fixedExpectedReturnRate)
+        val bussinessValue = (operatingProfitAvg * ((100 - corporateTaxRate) / fixedExpectedReturnRate)).toLong()
 
         // 재산가치: 유동자산 - (유동부채 X 1.2) + 투자자산
         val finAnal = financeAnalRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무분석 미확인")
         val thisYearLastMonth = YearMonth.of(thisYear, 12)
         val currentAsset = finAnal.financeStat.currentAssets.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("유동자산 미확인")
         val currentLiability = finAnal.financeStat.currentLiabilities.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("유동부채 미확인")
-        val investmentAsset = finAnal.financeStat.investmentAssets.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("투자자산 미확인")
+        val investmentAsset =
+            finAnal.financeStat.investmentAssets.data[YearMonth.of(thisYear - 1, 12)] ?: return ProperPriceFormula.Output.dummy("투자자산 미확인")
         val assetValue = (currentAsset - (currentLiability * 1.2) + investmentAsset).toLong()
 
         // 고정부채
@@ -114,14 +117,13 @@ class SmartInvestor(
             finAnal.financeStat.nonCurrentLiabilities.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("고정부채 미확인")
         // 발행주식수
         val shares = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("상장주식수 미확인")
-
         return ProperPriceFormula.Output(
-            value = (bussinessValue + assetValue - nonCurrentLiability) / shares,
+            value = ((bussinessValue + assetValue - nonCurrentLiability) / shares).toDouble(),
             note = """
-                사업가치: $bussinessValue = 영업이익평균($operatingProfitAvg) * (100 - 법인세율($corporateTaxRate) / 기대수익율($fixedExpectedReturnRate))
-                재산가치: $assetValue = 유동자산($currentAsset) - (유동부채($currentLiability) * 1.2) + 투자자산($investmentAsset)
-                고정부채: $nonCurrentLiability
-                발행주식수: $shares
+                사업가치: ${bussinessValue.formatMillion()} = 영업이익평균(${operatingProfitAvg.formatMillion()}) * (100 - 법인세율($corporateTaxRate) / 기대수익율($fixedExpectedReturnRate))
+                재산가치: ${assetValue.formatMillion()} = 유동자산(${currentAsset.formatMillion()}) - (유동부채(${currentLiability.formatMillion()}) * 1.2) + 투자자산(${investmentAsset.formatMillion()})
+                고정부채: ${nonCurrentLiability.formatMillion()}
+                발행주식수: ${shares.toLong().format10Thousand()}
             """.trimIndent()
         )
     }
