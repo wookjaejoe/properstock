@@ -1,6 +1,7 @@
 package app.properstock.financecollector.service.proper.formula
 
 import app.properstock.financecollector.repository.CorpStatRepository
+import app.properstock.financecollector.repository.FinAnalRepository
 import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
@@ -9,7 +10,9 @@ import java.time.YearMonth
 @Component
 class SmartInvestor(
     val corpStatRepository: CorpStatRepository,
-    val tickerRepository: TickerRepository
+    val tickerRepository: TickerRepository,
+    val financeAnalRepository: FinAnalRepository
+
 ) : ProperPriceFormula {
     override val symbol: String = "SMTINV"
     override val title: String = "Smart Investor"
@@ -81,8 +84,7 @@ class SmartInvestor(
     """.trimIndent()
 
     override fun calculate(code: String): ProperPriceFormula.Output {
-        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무제표 미확인")
-        // todo: 사업가치: 영업이익 3년 평균 X ((100% - 법인세율) / 기대수익률)
+        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val thisYear = YearMonth.now().year
         val profitCriteriaYears = 3
         val operatingProfits = corpStat.financeSummary.operatingProfit.data.toSortedMap()
@@ -92,28 +94,34 @@ class SmartInvestor(
             }
             .map { it.value }
 
-//        if (operatingProfits.any { it == null }) return ProperPriceFormula.Output.dummy("${profitCriteriaYears}년 영업이익 누락")
+        val operatingProfitAvg = (operatingProfits.filterNotNull().sumOf { it } / profitCriteriaYears).toLong()
+        val corporateTaxRate = 25  // 법인새율
+        val fixedExpectedReturnRate = 8.31  // 기대수익율
 
-        val operatingProfitAvg = operatingProfits.filterNotNull().sumOf { it } / profitCriteriaYears
-        val corporateTaxRate = 25
-        val fixedExpectedReturnRate = 8.31
+        // 사업가치
         val bussinessValue = operatingProfitAvg * (100 - corporateTaxRate / fixedExpectedReturnRate)
 
-        // todo: 재산가치: 유동자산 - (유동부채 X 1.2) + 투자자산
+        // 재산가치: 유동자산 - (유동부채 X 1.2) + 투자자산
+        val finAnal = financeAnalRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무분석 미확인")
+        val thisYearLastMonth = YearMonth.of(thisYear, 12)
+        val currentAsset = finAnal.financeStat.currentAssets.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("유동자산 미확인")
+        val currentLiability = finAnal.financeStat.currentLiabilities.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("유동부채 미확인")
+        val investmentAsset = finAnal.financeStat.investmentAssets.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("투자자산 미확인")
+        val assetValue = (currentAsset - (currentLiability * 1.2) + investmentAsset).toLong()
 
-        val assetValue = 0
-
-        // todo: 고정부채
-
+        // 고정부채
+        val nonCurrentLiability =
+            finAnal.financeStat.nonCurrentLiabilities.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("고정부채 미확인")
+        // 발행주식수
         val shares = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("상장주식수 미확인")
 
         return ProperPriceFormula.Output(
-            value = 0.0,
-//            value = (operatingProfitAvg + ? - ?) / shares,
+            value = (bussinessValue + assetValue - nonCurrentLiability) / shares,
             note = """
-                사업가치: 
-                재산가치:
-                고정부채:
+                사업가치: $bussinessValue = 영업이익평균($operatingProfitAvg) * (100 - 법인세율($corporateTaxRate) / 기대수익율($fixedExpectedReturnRate))
+                재산가치: $assetValue = 유동자산($currentAsset) - (유동부채($currentLiability) * 1.2) + 투자자산($investmentAsset)
+                고정부채: $nonCurrentLiability
+                발행주식수: $shares
             """.trimIndent()
         )
     }

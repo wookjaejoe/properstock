@@ -52,7 +52,7 @@ class EpsMultipliedByPer(
     """.trimIndent()
 
     override fun calculate(code: String): ProperPriceFormula.Output {
-        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무제표 미확인")
+        val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val epsList = corpStat.financeSummary.eps.data.toSortedMap()
         val perList = corpStat.financeSummary.per.data.toSortedMap()
         val per = calculatePerByAvg(epsList, perList).round(2)

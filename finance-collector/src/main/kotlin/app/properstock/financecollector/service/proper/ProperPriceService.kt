@@ -15,14 +15,9 @@ import java.time.Instant
 
 @Service
 class ProperPriceService(
-    formulaList: List<ProperPriceFormula>,
+    val formulaList: List<ProperPriceFormula>,
     val tickerRepository: TickerRepository,
-    val corpStatRepository: CorpStatRepository,
     val properPriceRepository: ProperPriceRepository,
-
-    val epsMultipliedByPer: EpsMultipliedByPer,
-    val epsMultipliedByRoe: EpsMultipliedByRoe,
-    val controllingInterestMultipliedByPer: ControllingInterestMultipliedByPer
 ) {
     init {
         // 공식 심볼 중복 확인
@@ -43,11 +38,7 @@ class ProperPriceService(
     }
 
     fun calculate(code: String): Map<String, ProperPriceFormula.Output> {
-        return mapOf(
-            epsMultipliedByPer.symbol to epsMultipliedByPer.calculate(code),
-            epsMultipliedByRoe.symbol to epsMultipliedByRoe.calculate(code),
-            controllingInterestMultipliedByPer.symbol to controllingInterestMultipliedByPer.calculate(code)
-        )
+        return formulaList.associate { it.symbol to it.calculate(code) }
     }
 
     fun update(code: String) {

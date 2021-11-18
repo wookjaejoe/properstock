@@ -371,31 +371,20 @@ class NaverFinanceCrawler(
                     YearMonth.of(spl[0].toInt(), spl[1].toInt())
                 }
 
-            /**
-            유동자산 : 네이버 finance > 종목 > 종목분석 > 재무분석 > 재무상태표 > 당해 추정 유동자산
-            유동부채 : 네이버 finance > 종목 > 종목분석 > 재무분석 > 재무상태표 > 당해 추정 유동부채
-            투자자산 : 네이버 finance > 종목 > 종목분석 > 재무분석 > 재무상태표 > 당해 추정 투자자산
-            고정부채 : 네이버 finance > 종목 > 종목분석 > 투자지표 > 안정성 > 비유동부채비율 > 당해 추정 비유동부채
-             */
-
             table
                 .getElementsByTag("tbody")[0]
                 .getElementsByTag("tr")
+                .filter { !it.attr("style").contains("display: none;") }
                 .map { element ->
                     val tdList = element.getElementsByTag("td")
                     val title = tdList[0].attr("title").trim()
                     val values = element.getElementsByTag("td")
                         .subList(1, tdList.size - 2)
-                        .map { td ->
-                            val text = td.text()
-                            text.startsWith("*")
-
-                            td.text().ifEmpty { null }
-
-                        }
-
+                        .map { td -> td.text().ifEmpty { null } }
                     Pair(title, values)
                 }.associate {
+                    println(it.first.trim())
+                    println(it.second)
                     Pair(it.first.trim(), it.second)
                 }.run {
                     /**

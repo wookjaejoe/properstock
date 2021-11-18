@@ -1,11 +1,9 @@
 package app.properstock.financecollector.model
 
-import app.properstock.financecollector.exception.KeyValueNotMatchException
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
-import java.time.YearMonth
 
 @Document
 data class CorpStat(
