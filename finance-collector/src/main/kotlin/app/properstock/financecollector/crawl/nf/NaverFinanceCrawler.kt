@@ -383,8 +383,6 @@ class NaverFinanceCrawler(
                         .map { td -> td.text().ifEmpty { null } }
                     Pair(title, values)
                 }.associate {
-                    println(it.first.trim())
-                    println(it.second)
                     Pair(it.first.trim(), it.second)
                 }.run {
                     /**
@@ -393,7 +391,6 @@ class NaverFinanceCrawler(
                      * investmentAssets
                      * nonCurrentLiabilities
                      */
-                    println(headers)
                     val financeStat = FinanceAnal.FinanceStat()
                     financeStat.currentAssets.set(headers, this["유동자산"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
                     financeStat.currentLiabilities.set(headers, this["유동부채"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
