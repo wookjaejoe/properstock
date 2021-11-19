@@ -7,6 +7,8 @@ import app.properstock.financecollector.repository.TickerRepository
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import javax.servlet.http.HttpServletResponse
+import kotlin.reflect.full.declaredMemberProperties
 
 @RestController
 @RequestMapping("/proper/prices")
@@ -49,5 +51,39 @@ class ProperPriceController(
                 marginRate = (it.value - ticker.price) / ticker.price * 100
             )
         }.sortedBy { it.marginRate }.reversed()
+    }
+
+    @GetMapping("/report.csv")
+    fun report(response: HttpServletResponse) {
+        println()
+        val properPriceProperties = ProperPrice::class.declaredMemberProperties
+        response.contentType = "text/csv;charset=utf-8"
+        response.setHeader("Content-Disposition", "attachment; filename=\"report.csv\"")
+        val header = mutableListOf<String>()
+        properPriceProperties.forEach { header.add(it.name) }
+        listOf("name", "market", "industry").forEach { header.add(it) }
+        response.writer.println(header.joinToString(","))
+        val tickers = tickerRepository.findAll()
+        properPriceRepository.findAll()
+            .forEach { properPrice ->
+                val ticker = tickers.find { it.code == properPrice.tickerCode } ?: return
+                val row = mutableListOf<String>()
+                row.addAll(
+                    properPriceProperties.map {
+                        val value = it.getter.call(properPrice)
+                        val formattedValue = if (value is String) {
+                            "\"$value\""
+                        } else {
+                            value.toString()
+                        }
+                        formattedValue
+                    }
+                )
+
+                row.add(ticker.name)
+                row.add(ticker.market.name)
+                row.add(ticker.industry ?: "")
+                response.writer.println(row.joinToString(","))
+            }
     }
 }

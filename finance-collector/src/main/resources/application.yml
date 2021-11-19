@@ -5,6 +5,8 @@ server:
   servlet:
     session:
       timeout: 30
+    encoding:
+      charset: UTF-8
   ssl:
     key-store: classpath:cert/keystore.p12
     key-store-type: PKCS12

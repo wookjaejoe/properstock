@@ -5,7 +5,8 @@ import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@Document
+//@Document("corpStat") todo: 컬렉션 이름 수정
+@Document("financeAnalysis")
 data class CorpStat(
     @Id
     val id: String? = null,
