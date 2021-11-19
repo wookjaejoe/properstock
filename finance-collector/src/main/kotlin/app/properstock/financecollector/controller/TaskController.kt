@@ -12,7 +12,7 @@ class TaskController(
 ) {
     @PostMapping("/tickers")
     fun updateTickers() {
-        scheduledTasks.updateTickers()
+        scheduledTasks.updateTickerSummary()
     }
 
     @PostMapping("/finance-analysis")

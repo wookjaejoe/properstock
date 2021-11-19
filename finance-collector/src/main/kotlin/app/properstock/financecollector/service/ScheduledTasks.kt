@@ -28,7 +28,6 @@ class ScheduledTasks(
         val logger: Logger = LoggerFactory.getLogger(ScheduledTasks::class.java)
     }
 
-    @Scheduled(cron = "0 0 22 * * *", zone = TZ_KR)
     fun updateTickers() {
         logger.info("Starting to update tickers...")
         naverFinanceCrawler
@@ -41,7 +40,9 @@ class ScheduledTasks(
                         this.price = it.price
                         this.marketCap = it.marketCap
                         this.shares = it.shares
-                        this.link = it.link
+                        this.per = it.per
+                        this.roe = it.roe
+                        this.externalLinks = it.externalLinks
                     }
                     tickerRepository.save(oldData)
                 } else {
@@ -49,7 +50,9 @@ class ScheduledTasks(
                 }
                 logger.info("Updated: $it")
             }
+    }
 
+    fun updateIndustries() {
         naverFinanceCrawler
             .crawlIndustries()
             .forEach { industry ->
@@ -83,7 +86,9 @@ class ScheduledTasks(
                     }
                 }
             }
+    }
 
+    fun updateThemes() {
         naverFinanceCrawler.crawlThemes()
             .forEach { theme ->
                 // 테마 업데이트
@@ -119,6 +124,13 @@ class ScheduledTasks(
                 tickerRepository.save(ticker)
                 logger.info("Updated: $ticker")
             }
+    }
+
+    @Scheduled(cron = "0 0 22 * * *", zone = TZ_KR)
+    fun updateTickerSummary() {
+        updateTickers()
+        updateIndustries()
+        updateThemes()
     }
 
     fun updateCorpStat(code: String) {

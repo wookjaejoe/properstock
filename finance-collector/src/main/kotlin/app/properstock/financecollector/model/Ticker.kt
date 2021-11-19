@@ -30,8 +30,14 @@ data class Ticker(
     /** 상장주식수 */
     var shares: Int,
 
-    /** 링크 */
-    var link: String,
+    /** PER */
+    var per: Double?,
+
+    /** ROE */
+    var roe: Double?,
+
+    /** 외부 링크 */
+    var externalLinks: List<ExternalLink>?,
 
     /** 산업 */
     var industry: String? = null,

@@ -18,14 +18,8 @@ import kotlin.streams.asStream
 const val INNER_HTML = "innerHTML"
 const val OUTER_HTML = "outerHTML"
 
-fun String.convertToDouble(): Double? = try {
-    this.trim().replace(",", "").toDouble()
-} catch (e: Throwable) {
-    null
-}
-
 fun String.parseDouble(): Double? = try {
-    "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".toRegex().find(this)?.value?.convertToDouble()
+    "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?".toRegex().find(this.trim().replace(",", ""))?.value?.toDouble() ?: Double.NaN
 } catch (e: Throwable) {
     null
 }
@@ -92,14 +86,17 @@ class NaverFinanceCrawler(
                 .filter { !it.isEmpty() }
                 .map {
                     val link = it[headers.indexOf("종목명")].getElementsByTag("a")[0].attr("href")
+                    val code = "(?<=code=)[A-Za-z0-9]+".toRegex().find(link)!!.value
                     Ticker(
                         market = market,
-                        code = "(?<=code=)[A-Za-z0-9]+".toRegex().find(link)!!.value,
+                        code = code,
                         name = it[headers.indexOf("종목명")].text().replace(",", ""),
                         price = it[headers.indexOf("현재가")].text().replace(",", "").toInt(),
                         marketCap = it[headers.indexOf("시가총액")].text().replace(",", "").toLong() * 1_0000_0000,
                         shares = it[headers.indexOf("상장주식수")].text().replace(",", "").toInt() * 1000,
-                        link = NaverFinanceUrls.root + link,
+                        per = it[headers.indexOf("PER")].text().replace(",", "").parseDouble() ?: Double.NaN,
+                        roe = it[headers.indexOf("ROE")].text().replace(",", "").parseDouble() ?: Double.NaN,
+                        externalLinks = makeExternalLinkSets(code),
                         updated = Instant.now()
                     )
                 }
@@ -153,35 +150,35 @@ class NaverFinanceCrawler(
                 }.run {
                     financeSummary.sales.set(
                         headers,
-                        this["매출액"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
+                        this["매출액"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.operatingProfit.set(
                         headers,
-                        this["영업이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
+                        this["영업이익"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.netProfit.set(
                         headers,
-                        this["당기순이익"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
+                        this["당기순이익"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.controllingInterest.set(
                         headers,
-                        this["당기순이익(지배)"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() }
+                        this["당기순이익(지배)"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
                     )
                     financeSummary.roe.set(
                         headers,
-                        this["ROE(%)"]!!.map { it?.convertToDouble() }
+                        this["ROE(%)"]!!.map { it?.parseDouble() }
                     )
                     financeSummary.eps.set(
                         headers,
-                        this["EPS(원)"]!!.map { it?.convertToDouble()?.toLong() }
+                        this["EPS(원)"]!!.map { it?.parseDouble()?.toLong() }
                     )
                     financeSummary.per.set(
                         headers,
-                        this["PER(배)"]!!.map { it?.convertToDouble() }
+                        this["PER(배)"]!!.map { it?.parseDouble() }
                     )
                     financeSummary.issuedCommonShares.set(
                         headers,
-                        this["발행주식수(보통주)"]!!.map { it?.convertToDouble()?.toLong() }
+                        this["발행주식수(보통주)"]!!.map { it?.parseDouble()?.toLong() }
                     )
                 }
 
@@ -258,7 +255,7 @@ class NaverFinanceCrawler(
     }
 
     fun crawlThemes(): Stream<NaverFinanceTheme> {
-        var lastPage: Int
+        var lastPage: Int = 1
         val findThemeTable = { body: Element -> body.getElementsByTag("table").find { it.hasClass("theme") }!! }
         val findLastPage = { body: Element ->
             body.getElementsByTag("td")
@@ -271,18 +268,20 @@ class NaverFinanceCrawler(
 
         val themes: MutableList<NaverFinanceTheme> = mutableListOf()
         webDriverConnector.connect {
-            var url = NaverFinanceUrls.themes(1)
+            val url = NaverFinanceUrls.themes(1)
             logger.info("Opening $url")
             get(url)
-            var body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
+            val body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
             lastPage = findLastPage(body)
             themes.addAll(crawlThemes(findThemeTable(body)))
-
-            (2..lastPage).map { page ->
-                url = NaverFinanceUrls.themes(page)
+        }
+        
+        (2..lastPage).map { page ->
+            webDriverConnector.connect {
+                val url = NaverFinanceUrls.themes(page)
                 logger.info("Opening $url")
                 get(url)
-                body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
+                val body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
                 themes.addAll(crawlThemes(findThemeTable(body)))
             }
         }
@@ -386,10 +385,10 @@ class NaverFinanceCrawler(
                     Pair(it.first.trim(), it.second)
                 }.run {
                     val financeStat = FinanceAnal.FinanceStat()
-                    financeStat.currentAssets.set(headers, this["유동자산"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
-                    financeStat.currentLiabilities.set(headers, this["유동부채"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
-                    financeStat.investmentAssets.set(headers, this["투자자산"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
-                    financeStat.nonCurrentLiabilities.set(headers, this["비유동부채"]!!.map { it?.convertToDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat.currentAssets.set(headers, this["유동자산"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat.currentLiabilities.set(headers, this["유동부채"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat.investmentAssets.set(headers, this["투자자산"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() })
+                    financeStat.nonCurrentLiabilities.set(headers, this["비유동부채"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() })
                     financeStat
                 }
         }
