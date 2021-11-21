@@ -93,59 +93,59 @@ const ProperIndustry = () => {
           return (
             <div className="card mt" key={key}>
               <p className="card__title">{key}</p>
-              <table className="table custom-table">
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>종목 코드</th>
-                    <th>종목 명</th>
-                    <th className="pc-only">마켓</th>
-                    <th>현재 가격</th>
-                    <th>적정 주가</th>
-                    <th>차액</th>
-                    <th>괴리율</th>
-                    <th className="pc-only">비고</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tickerList.map((ticker, idx) => {
-                    if (idx >= 5 && !showMoreFlag.includes(key)) {
-                      return null;
-                    }
-                    return (
-                      <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{ticker.tickerCode}</td>
-                        <td>{ticker.tickerName}</td>
-                        <td className="pc-only">
-                          <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
-                            {ticker.tickerMarket}
-                          </span>
-                        </td>
-                        <td>
-                          <span>{ticker.currentPrice.toLocaleString()}</span>
-                        </td>
-                        <td>
-                          <span>{parseInt(ticker.value).toLocaleString()}</span>
-                        </td>
-                        <td>
-                          <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
-                            {parseInt(ticker.margin).toLocaleString()}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
-                            {parseInt(ticker.marginRate)}%
-                          </span>
-                        </td>
-                        <td className="pc-only">
-                          <pre>{ticker.note}</pre>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="table__container">
+                <table className="table custom-table">
+                  <thead>
+                    <tr>
+                      <th>종목 코드</th>
+                      <th>종목 명</th>
+                      <th className="pc-only">마켓</th>
+                      <th>현재 가격</th>
+                      <th>적정 주가</th>
+                      <th>차액</th>
+                      <th>괴리율</th>
+                      <th className="pc-only">비고</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tickerList.map((ticker, idx) => {
+                      if (idx >= 5 && !showMoreFlag.includes(key)) {
+                        return null;
+                      }
+                      return (
+                        <tr key={idx}>
+                          <td>{ticker.tickerCode}</td>
+                          <td>{ticker.tickerName}</td>
+                          <td className="pc-only">
+                            <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
+                              {ticker.tickerMarket}
+                            </span>
+                          </td>
+                          <td>
+                            <span>{ticker.currentPrice.toLocaleString()}</span>
+                          </td>
+                          <td>
+                            <span>{parseInt(ticker.value).toLocaleString()}</span>
+                          </td>
+                          <td>
+                            <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
+                              {parseInt(ticker.margin).toLocaleString()}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
+                              {parseInt(ticker.marginRate)}%
+                            </span>
+                          </td>
+                          <td className="pc-only">
+                            <pre>{ticker.note}</pre>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
               {tickerList.length > 5 && !showMoreFlag.includes(key) ? (
                 <div className="more-action" onClick={() => handleShowMore(key)}>
                   더 보기

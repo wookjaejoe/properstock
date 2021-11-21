@@ -206,7 +206,6 @@ aside {
   background-color: #171717;
   position: fixed;
   top: 40px;
-
   border-radius: 16px;
   overflow: auto;
 }
@@ -248,7 +247,6 @@ aside {
 /* Card */
 .card {
   background: #1c1c1c;
-  border-radius: 4px;
   padding: 8px;
 }
 .card .card__title {
@@ -495,7 +493,8 @@ aside {
   }
   .container {
     top: 46px;
-    min-width: 100%;
+    width: 100%;
+    height: calc(100% - 46px);
   }
   #side-toggle__input:checked ~ .container {
     left: 0;
@@ -536,6 +535,14 @@ aside {
     top: 30px;
     display: block;
     background-color: #171717;
+  }
+  .table thead {
+    top: 0;
+  }
+
+  .table__container {
+    margin: 0 -8px -8px -8px;
+    overflow-x: auto;
   }
 }
 
