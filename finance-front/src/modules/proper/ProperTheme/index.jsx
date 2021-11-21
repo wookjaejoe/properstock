@@ -118,15 +118,14 @@ const ProperTheme = () => {
                 <table className="table custom-table">
                   <thead>
                     <tr>
-                      <th>No</th>
                       <th>종목 코드</th>
                       <th>종목 명</th>
                       <th className="pc-only">마켓</th>
                       <th className="pc-only">업종</th>
-                      <th>현재 가격</th>
-                      <th>적정 주가</th>
-                      <th>차액</th>
-                      <th>괴리율</th>
+                      <th className="number-cell">현재 가격</th>
+                      <th className="number-cell">적정 주가</th>
+                      <th className="number-cell">차액</th>
+                      <th className="number-cell">괴리율</th>
                       <th className="pc-only">비고</th>
                     </tr>
                   </thead>
@@ -137,7 +136,6 @@ const ProperTheme = () => {
                       }
                       return (
                         <tr key={`${themeKey}_${idx}`}>
-                          <td>{idx + 1}</td>
                           <td>{ticker.tickerCode}</td>
                           <td>{ticker.tickerName}</td>
                           <td className="pc-only">
@@ -149,18 +147,18 @@ const ProperTheme = () => {
                             <span>{ticker.tickerIndustry}</span>
                           </td>
 
-                          <td>
+                          <td className="number-cell">
                             <span>{ticker.currentPrice.toLocaleString()}</span>
                           </td>
-                          <td>
+                          <td className="number-cell">
                             <span>{parseInt(ticker.value).toLocaleString()}</span>
                           </td>
-                          <td>
+                          <td className="number-cell">
                             <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
                               {parseInt(ticker.margin).toLocaleString()}
                             </span>
                           </td>
-                          <td>
+                          <td className="number-cell">
                             <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
                               {parseInt(ticker.marginRate)}%
                             </span>
