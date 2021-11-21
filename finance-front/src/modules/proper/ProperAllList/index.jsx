@@ -106,7 +106,7 @@ const ProperAllList = () => {
             <table className="table custom-table">
               <thead>
                 <tr>
-                  <th>종목 코드</th>
+                  <th className="pc-only">종목 코드</th>
                   <th>종목 명</th>
                   <th className="pc-only">마켓</th>
                   <th className="pc-only">업종</th>
