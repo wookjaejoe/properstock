@@ -114,7 +114,7 @@ const ProperIndustry = () => {
                       }
                       return (
                         <tr key={idx}>
-                          <td>{ticker.tickerCode}</td>
+                          <td className="pc-only">{ticker.tickerCode}</td>
                           <td>{ticker.tickerName}</td>
                           <td className="pc-only">
                             <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
@@ -127,7 +127,7 @@ const ProperIndustry = () => {
                           <td className="number-cell">
                             <span>{parseInt(ticker.value).toLocaleString()}</span>
                           </td>
-                          <td className="number-cell">
+                          <td className="number-cell pc-only">
                             <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
                               {parseInt(ticker.margin).toLocaleString()}
                             </span>
