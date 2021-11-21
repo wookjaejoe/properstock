@@ -44,7 +44,7 @@ const SearchBar = () => {
   const handleKeyEvent = useCallback(
     (event) => {
       if (event.keyCode === 13 && searchText.length > 0) {
-        ProperHttp.searchTickerByName({ searchText: searchText }).then((result) => {
+        ProperHttp.searchProperPriceByName({ searchText: searchText }).then((result) => {
           setShow(true);
           setResult(result);
         });

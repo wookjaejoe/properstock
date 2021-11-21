@@ -12,27 +12,35 @@ const ProperTheme = () => {
   const [selectedThemes, setSelectedThemes] = useState([]);
   const [formulas, setFormulas] = useState([]);
   const [formulaSymbol, setFormulaSymbol] = useState('');
-  const [tickerByTheme, setTckerByTheme] = useState({});
+  const [tickers, setTickers] = useState({});
+  const [properPriceByTheme, setProperPriceByTheme] = useState({});
   const [showMoreFlag, setShowMoreFlag] = useState([]);
 
   useEffect(() => {
-    axios.all([ProperHttp.searchThemeNames(), ProperHttp.searchFormulas()]).then(
-      axios.spread((themeNames, formulas) => {
-        setThemes(themeNames);
-        setFormulas(formulas);
-        setFormulaSymbol(formulas[0].symbol);
-        ProperHttp.searchTickerByTheme({ formulaSymbol: formulas[0].symbol }).then((res) => {
-          setTckerByTheme(res);
-        });
-      })
-    );
+    axios
+      .all([
+        ProperHttp.searchThemeNames(),
+        ProperHttp.searchFormulas(),
+        ProperHttp.searchTickersByCode(),
+      ])
+      .then(
+        axios.spread((themeNames, formulas, tickers) => {
+          setThemes(themeNames);
+          setFormulas(formulas);
+          setFormulaSymbol(formulas[0].symbol);
+          setTickers(tickers);
+          ProperHttp.searchProperPriceByTheme({ formulaSymbol: formulas[0].symbol }).then((res) => {
+            setProperPriceByTheme(res);
+          });
+        })
+      );
   }, []);
 
-  const filterTheme = useCallback((tickerByTheme, selectedThemes) => {
+  const filterTheme = useCallback((properPriceByTheme, selectedThemes) => {
     const filtered = {};
     selectedThemes.forEach((key) => {
-      if (tickerByTheme[key]) {
-        filtered[key] = tickerByTheme[key];
+      if (properPriceByTheme[key]) {
+        filtered[key] = properPriceByTheme[key];
       }
     });
     return filtered;
@@ -40,14 +48,14 @@ const ProperTheme = () => {
 
   const searchTickers = useCallback(
     (selectedThemes, formulaSymbol) => {
-      ProperHttp.searchTickerByTheme({
+      ProperHttp.searchProperPriceByTheme({
         themes: selectedThemes,
         formulaSymbol: formulaSymbol,
       }).then((res) => {
         if (selectedThemes.length == 0) {
-          setTckerByTheme(res);
+          setProperPriceByTheme(res);
         } else {
-          setTckerByTheme(filterTheme(res, selectedThemes));
+          setProperPriceByTheme(filterTheme(res, selectedThemes));
         }
       });
     },
@@ -61,8 +69,8 @@ const ProperTheme = () => {
 
   const handleClear = useCallback(() => {
     setSelectedThemes([]);
-    ProperHttp.searchTickerByTheme({ formulaSymbol: formulaSymbol }).then((res) =>
-      setTckerByTheme(res)
+    ProperHttp.searchProperPriceByTheme({ formulaSymbol: formulaSymbol }).then((res) =>
+      setProperPriceByTheme(res)
     );
   }, [formulaSymbol]);
 
@@ -108,8 +116,8 @@ const ProperTheme = () => {
           ></FilterListItem>
         </FilterContainer>
         <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
-        {Object.keys(tickerByTheme).map((themeKey, themeIdx) => {
-          const tickerList = tickerByTheme[themeKey] || [];
+        {Object.keys(properPriceByTheme).map((themeKey, themeIdx) => {
+          const tickerList = properPriceByTheme[themeKey] || [];
 
           return (
             <div className="card mt" key={themeIdx}>
@@ -126,45 +134,72 @@ const ProperTheme = () => {
                       <th className="number-cell">적정 주가</th>
                       <th className="number-cell pc-only">차액</th>
                       <th className="number-cell">괴리율</th>
+                      <th className="number-cell">PER</th>
+                      <th className="number-cell">ROE</th>
+                      <th className="pc-only">참고 데이터</th>
                       <th className="pc-only">비고</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {tickerList.map((ticker, idx) => {
+                    {tickerList.map((price, idx) => {
                       if (idx >= 5 && !showMoreFlag.includes(themeKey)) {
                         return null;
                       }
+                      const ticker = tickers[price.tickerCode];
+                      const margin = price.value - ticker.price;
+                      const marginRate = (margin / ticker.price) * 100;
                       return (
                         <tr key={`${themeKey}_${idx}`}>
-                          <td className="pc-only">{ticker.tickerCode}</td>
-                          <td>{ticker.tickerName}</td>
+                          <td className="pc-only">{price.tickerCode}</td>
+                          <td>{price.tickerName}</td>
                           <td className="pc-only">
-                            <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
-                              {ticker.tickerMarket}
+                            <span className={`badge ${ticker.market.toLowerCase()}`}>
+                              {ticker.market}
                             </span>
                           </td>
                           <td className="pc-only">
-                            <span>{ticker.tickerIndustry}</span>
+                            <span>{ticker.industry}</span>
                           </td>
 
                           <td className="number-cell">
-                            <span>{ticker.currentPrice.toLocaleString()}</span>
+                            <span>{ticker.price.toLocaleString()}</span>
                           </td>
                           <td className="number-cell">
-                            <span>{parseInt(ticker.value).toLocaleString()}</span>
+                            <span>{parseInt(price.value).toLocaleString()}</span>
                           </td>
                           <td className="number-cell pc-only">
-                            <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
-                              {parseInt(ticker.margin).toLocaleString()}
+                            <span className={margin > 0 ? 'font-green' : 'font-red'}>
+                              {parseInt(margin).toLocaleString()}
                             </span>
                           </td>
                           <td className="number-cell">
-                            <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
-                              {parseInt(ticker.marginRate)}%
+                            <span className={marginRate > 0 ? 'font-green' : 'font-red'}>
+                              {parseInt(marginRate)}%
                             </span>
                           </td>
+                          <td className="number-cell">
+                            <span>{ticker.per}</span>
+                          </td>
+                          <td className="number-cell">
+                            <span>{!Number.isNaN(Number.parseInt(ticker.roe)) && ticker.roe}</span>
+                          </td>
                           <td className="pc-only">
-                            <pre>{ticker.note}</pre>
+                            {ticker.externalLinks.map((link, index) => {
+                              return (
+                                <a
+                                  className="external_link"
+                                  href={link.url}
+                                  key={index}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <span className="badge">{link.domainName}</span>
+                                </a>
+                              );
+                            })}
+                          </td>
+                          <td className="pc-only">
+                            <pre>{price.note}</pre>
                           </td>
                         </tr>
                       );

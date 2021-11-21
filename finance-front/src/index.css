@@ -22,6 +22,10 @@ body {
   margin-top: 8px;
 }
 
+.external_link {
+  color: #cacaca !important;
+}
+
 /* SearchBar */
 .searchbar__container {
   position: fixed;

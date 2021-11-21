@@ -2,6 +2,18 @@ import axios from 'axios';
 
 const ProperHttp = {
   servideURL: 'https://home.jowookjae.in:9443',
+  searchTickersByCode() {
+    return axios
+      .get(`${this.servideURL}/tickers`)
+      .then((res) => res.data)
+      .then((tickers) => {
+        const tickerByCode = {};
+        tickers.forEach((ticker) => {
+          tickerByCode[ticker.code] = ticker;
+        });
+        return tickerByCode;
+      });
+  },
   searchFormulas() {
     return axios.get(`${this.servideURL}/proper/formulas`).then((res) => res.data);
   },
@@ -17,7 +29,7 @@ const ProperHttp = {
   searchIndustryNames() {
     return this.searchIndustries().then((res) => res.map((industry) => industry.name));
   },
-  searchTickerList({
+  searchProperPrice({
     market = [],
     industries = [],
     themes = [],
@@ -51,8 +63,8 @@ const ProperHttp = {
 
     return axios.get(`${this.servideURL}/proper/prices?${parameter}`).then((res) => res.data);
   },
-  searchTickerByName(param) {
-    return this.searchTickerList(param).then((data) => {
+  searchProperPriceByName(param) {
+    return this.searchProperPrice(param).then((data) => {
       const group = {};
 
       data.forEach((ticker) => {
@@ -62,13 +74,13 @@ const ProperHttp = {
       return group;
     });
   },
-  searchTop100(formulaSymbol) {
+  searchProperPriceTop100(formulaSymbol) {
     return axios
       .get(`${this.servideURL}/proper/prices?limit=100&formulaSymbol=${formulaSymbol}`)
       .then((res) => res.data);
   },
-  searchTickerByIndustry({ industries = [], formulaSymbol = '' }) {
-    return this.searchTickerList({ industries: industries, formulaSymbol: formulaSymbol }).then(
+  searchProperPriceByIndustry({ industries = [], formulaSymbol = '' }) {
+    return this.searchProperPrice({ industries: industries, formulaSymbol: formulaSymbol }).then(
       (data) => {
         const res = {};
         data.forEach((ticker) => {
@@ -79,8 +91,8 @@ const ProperHttp = {
       }
     );
   },
-  searchTickerByTheme({ themes = [], formulaSymbol = '' }) {
-    return this.searchTickerList({ themes: themes, formulaSymbol: formulaSymbol }).then((data) => {
+  searchProperPriceByTheme({ themes = [], formulaSymbol = '' }) {
+    return this.searchProperPrice({ themes: themes, formulaSymbol: formulaSymbol }).then((data) => {
       const res = {};
       data.forEach((ticker) => {
         ticker.tickerThemes.forEach((theme) => {

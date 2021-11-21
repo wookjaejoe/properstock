@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
@@ -6,20 +7,24 @@ import ProperHttp from '../../../common/https/ProperHttp';
 
 const ProperTop100 = () => {
   const [formulas, setFormulas] = useState([]);
-  const [tickerList, setTckerList] = useState([]);
-
+  const [properPriceTop100, setProperPriceTop100] = useState([]);
+  const [tickers, setTickers] = useState({});
   useEffect(() => {
-    ProperHttp.searchFormulas().then((formulas) => {
-      setFormulas(formulas);
-      ProperHttp.searchTop100(formulas[0].symbol).then((tickerList) => {
-        setTckerList(tickerList);
-      });
-    });
+    axios.all([ProperHttp.searchFormulas(), ProperHttp.searchTickersByCode()]).then(
+      axios.spread((formulas, tickers) => {
+        setFormulas(formulas);
+        setTickers(tickers);
+        console.log(formulas[0].symbol);
+        ProperHttp.searchProperPriceTop100(formulas[0].symbol).then((res) => {
+          setProperPriceTop100(res);
+        });
+      })
+    );
   }, []);
 
   const handleChangeType = useCallback((type) => {
-    ProperHttp.searchTop100(type.symbol).then((tickerList) => {
-      setTckerList(tickerList);
+    ProperHttp.searchProperPriceTop100(type.symbol).then((properPriceTop100) => {
+      setProperPriceTop100(properPriceTop100);
     });
   }, []);
 
@@ -40,41 +45,68 @@ const ProperTop100 = () => {
                 <th className="number-cell">적정 주가</th>
                 <th className="number-cell pc-only">차액</th>
                 <th className="number-cell">괴리율</th>
+                <th className="number-cell">PER</th>
+                <th className="number-cell">ROE</th>
+                <th className="pc-only">참고 데이터</th>
                 <th className="pc-only">비고</th>
               </tr>
             </thead>
             <tbody>
-              {tickerList.map((ticker, idx) => {
+              {properPriceTop100.map((price, idx) => {
+                const ticker = tickers[price.tickerCode];
+                const margin = price.value - ticker.price;
+                const marginRate = (margin / ticker.price) * 100;
                 return (
                   <tr key={idx}>
-                    <td className="pc-only">{ticker.tickerCode}</td>
-                    <td>{ticker.tickerName}</td>
+                    <td className="pc-only">{price.tickerCode}</td>
+                    <td>{price.tickerName}</td>
                     <td className="pc-only">
-                      <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
-                        {ticker.tickerMarket}
+                      <span className={`badge ${price.tickerMarket.toLowerCase()}`}>
+                        {price.tickerMarket}
                       </span>
                     </td>
                     <td className="pc-only">
-                      <span>{ticker.tickerIndustry}</span>
+                      <span>{price.tickerIndustry}</span>
                     </td>
                     <td className="number-cell">
-                      <span>{ticker.currentPrice.toLocaleString()}</span>
+                      <span>{price.currentPrice.toLocaleString()}</span>
                     </td>
                     <td className="number-cell">
-                      <span>{parseInt(ticker.value).toLocaleString()}</span>
+                      <span>{parseInt(price.value).toLocaleString()}</span>
                     </td>
                     <td className="number-cell pc-only">
-                      <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
-                        {parseInt(ticker.margin).toLocaleString()}
+                      <span className={margin > 0 ? 'font-green' : 'font-red'}>
+                        {parseInt(margin).toLocaleString()}
                       </span>
                     </td>
                     <td className="number-cell">
-                      <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
-                        {parseInt(ticker.marginRate)}%
+                      <span className={marginRate > 0 ? 'font-green' : 'font-red'}>
+                        {parseInt(marginRate)}%
                       </span>
                     </td>
+                    <td className="number-cell">
+                      <span>{ticker.per}</span>
+                    </td>
+                    <td className="number-cell">
+                      <span>{!Number.isNaN(Number.parseInt(ticker.roe)) && ticker.roe}</span>
+                    </td>
                     <td className="pc-only">
-                      <pre>{ticker.note}</pre>
+                      {ticker.externalLinks.map((link, index) => {
+                        return (
+                          <a
+                            className="external_link"
+                            href={link.url}
+                            key={index}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <span className="badge">{link.domainName}</span>
+                          </a>
+                        );
+                      })}
+                    </td>
+                    <td className="pc-only">
+                      <pre>{price.note}</pre>
                     </td>
                   </tr>
                 );
