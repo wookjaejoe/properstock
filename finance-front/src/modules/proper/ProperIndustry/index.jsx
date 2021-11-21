@@ -104,7 +104,7 @@ const ProperIndustry = () => {
                     <th width="100px">현재 가격</th>
                     <th width="100px">적정 주가</th>
                     <th width="100px">차액</th>
-                    <th width="80px">차액 비율</th>
+                    <th width="80px">괴리율</th>
                     <th width="200px">비고</th>
                   </tr>
                 </thead>

@@ -108,7 +108,7 @@ const SearchBar = () => {
                           </span>
                         </p>
                         <p>
-                          차액 비율:
+                          괴리율:
                           <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
                             {parseInt(ticker.marginRate)}%
                           </span>
