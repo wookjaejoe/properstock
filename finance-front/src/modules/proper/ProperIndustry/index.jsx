@@ -96,16 +96,15 @@ const ProperIndustry = () => {
               <table className="table custom-table">
                 <thead>
                   <tr>
-                    <th width="60px">No</th>
-                    <th width="80px">종목 코드</th>
-                    <th width="160px">종목 명</th>
-                    <th width="100px">마켓</th>
-                    <th width="300px">테마</th>
-                    <th width="100px">현재 가격</th>
-                    <th width="100px">적정 주가</th>
-                    <th width="100px">차액</th>
-                    <th width="80px">괴리율</th>
-                    <th width="200px">비고</th>
+                    <th>No</th>
+                    <th>종목 코드</th>
+                    <th>종목 명</th>
+                    <th className="pc-only">마켓</th>
+                    <th>현재 가격</th>
+                    <th>적정 주가</th>
+                    <th>차액</th>
+                    <th>괴리율</th>
+                    <th className="pc-only">비고</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -118,19 +117,10 @@ const ProperIndustry = () => {
                         <td>{idx + 1}</td>
                         <td>{ticker.tickerCode}</td>
                         <td>{ticker.tickerName}</td>
-                        <td>
+                        <td className="pc-only">
                           <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
                             {ticker.tickerMarket}
                           </span>
-                        </td>
-                        <td>
-                          {ticker.tickerThemes.map((theme, index) => {
-                            return (
-                              <span className="badge" key={index}>
-                                {theme}
-                              </span>
-                            );
-                          })}
                         </td>
                         <td>
                           <span>{ticker.currentPrice.toLocaleString()}</span>
@@ -148,7 +138,7 @@ const ProperIndustry = () => {
                             {parseInt(ticker.marginRate)}%
                           </span>
                         </td>
-                        <td>
+                        <td className="pc-only">
                           <pre>{ticker.note}</pre>
                         </td>
                       </tr>

@@ -105,16 +105,15 @@ const ProperAllList = () => {
           <table className="table custom-table">
             <thead>
               <tr>
-                <th width="80px">종목 코드</th>
-                <th width="160px">종목 명</th>
-                <th width="100px">마켓</th>
-                <th width="200px">업종</th>
-                <th>테마</th>
-                <th width="100px">현재 가격</th>
-                <th width="100px">적정 주가</th>
-                <th width="100px">차액</th>
-                <th width="80px">괴리율</th>
-                <th width="200px">비고</th>
+                <th>종목 코드</th>
+                <th>종목 명</th>
+                <th className="pc-only">마켓</th>
+                <th className="pc-only">업종</th>
+                <th>현재 가격</th>
+                <th>적정 주가</th>
+                <th>차액</th>
+                <th>괴리율</th>
+                <th className="pc-only">비고</th>
               </tr>
             </thead>
             <tbody>
@@ -123,23 +122,13 @@ const ProperAllList = () => {
                   <tr key={idx}>
                     <td>{ticker.tickerCode}</td>
                     <td>{ticker.tickerName}</td>
-                    <td>
+                    <td className="pc-only">
                       <span className={`badge ${ticker.tickerMarket.toLowerCase()}`}>
                         {ticker.tickerMarket}
                       </span>
                     </td>
-                    <td>
+                    <td className="pc-only">
                       <span>{ticker.tickerIndustry}</span>
-                    </td>
-
-                    <td width="300px">
-                      {ticker.tickerThemes.map((theme, index) => {
-                        return (
-                          <span className="badge" key={index}>
-                            {theme}
-                          </span>
-                        );
-                      })}
                     </td>
                     <td>
                       <span>{ticker.currentPrice.toLocaleString()}</span>
@@ -157,7 +146,7 @@ const ProperAllList = () => {
                         {parseInt(ticker.marginRate)}%
                       </span>
                     </td>
-                    <td>
+                    <td className="pc-only">
                       <pre>{ticker.note}</pre>
                     </td>
                   </tr>
