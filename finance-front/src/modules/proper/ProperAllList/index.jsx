@@ -112,7 +112,7 @@ const ProperAllList = () => {
                   <th className="pc-only">업종</th>
                   <th className="number-cell">현재 가격</th>
                   <th className="number-cell">적정 주가</th>
-                  <th className="number-cell">차액</th>
+                  <th className="number-cell pc-only">차액</th>
                   <th className="number-cell">괴리율</th>
                   <th className="pc-only">비고</th>
                 </tr>
