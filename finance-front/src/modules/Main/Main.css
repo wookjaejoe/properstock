@@ -3,14 +3,42 @@
   height: 100%;
   flex-direction: column;
   align-items: center;
-  margin-top: 200px;
-  width: 80%;
-  margin: auto;
+}
+
+@media (max-width: 768px) {
+  .main-area {
+    margin: 0;
+    width: 100%;
+  }
+  .main-area > img {
+    width: 100px;
+  }
+
+  .main-area > h2 {
+    width: 90%;
+    font-size: 16px;
+    margin-top: 16px;
+  }
+
+  .main-area .proper__desc__list {
+    width: 97%;
+    margin-top: 16px;
+  }
+}
+
+@media (min-width: 769px) {
+  .main-area {
+    margin-top: 200px;
+    width: 80%;
+    margin: auto;
+  }
+  .main-area > h2 {
+    margin-top: 40px;
+    width: 80%;
+  }
 }
 
 .main-area > h2 {
-  margin-top: 40px;
-  width: 80%;
   text-align: center;
 }
 .main-area > h2 > span {

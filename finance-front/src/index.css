@@ -206,10 +206,7 @@ aside {
   background-color: #171717;
   position: fixed;
   top: 40px;
-  height: calc(100% - 72px);
-  margin: 16px;
-  padding: 16px;
-  padding-top: 0px;
+
   border-radius: 16px;
   overflow: auto;
 }
@@ -484,6 +481,9 @@ aside {
 }
 
 @media (max-width: 768px) {
+  .page__title {
+    padding-left: 8px;
+  }
   .container {
     left: 0;
     margin: 0;
@@ -494,7 +494,8 @@ aside {
     width: 100%;
   }
   .container {
-    width: 100%;
+    top: 46px;
+    min-width: 100%;
   }
   #side-toggle__input:checked ~ .container {
     left: 0;
@@ -507,7 +508,11 @@ aside {
     text-align: center;
   }
   .searchbar__container > .searchbar > input {
-    width: 400px;
+    width: 300px;
+  }
+  .searchbar__container > .search-result {
+    width: 100%;
+    margin-left: 0;
   }
   .pc-only {
     display: none;
@@ -538,6 +543,10 @@ aside {
   .container {
     left: 270px;
     width: calc(100% - 302px);
+    margin: 16px;
+    padding: 16px;
+    padding-top: 0px;
+    height: calc(100% - 72px);
   }
 
   #side-toggle__input ~ .side-toggle__icon {
