@@ -73,7 +73,7 @@ class KrxCurrentPricePublisher:
         self.fetcher = KrxCurrentPriceFetcher()
         logger.info(f'Connecting to {rmq_host}:{rmq_port}...')
         self.rmq_conn = pika.BlockingConnection(
-            pika.ConnectionParameters(host=rmq_host, port=rmq_port)
+            pika.ConnectionParameters(host=rmq_host, port=rmq_port, socket_timeout=3600)
         )
 
     def start(self):
