@@ -3,10 +3,9 @@ package app.properstock.financecollector.service.proper.formula
 import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
+import app.properstock.financecollector.util.isCommonStock
 import org.springframework.stereotype.Component
-import java.text.NumberFormat
 import java.time.YearMonth
-import java.util.*
 
 @Component
 class ControllingInterestMultipliedByPer(
@@ -60,6 +59,7 @@ class ControllingInterestMultipliedByPer(
     """.trimIndent()
 
     override fun calculate(code: String): ProperPriceFormula.Output {
+        if(!isCommonStock(code)) return ProperPriceFormula.Output.dummy("미취급(본 공식은 보통주에 대해서만 적용 가능)")
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val controllingInterestList = corpStat.financeSummary.controllingInterest.data.toSortedMap()
         val perList = corpStat.financeSummary.per.data.toSortedMap()

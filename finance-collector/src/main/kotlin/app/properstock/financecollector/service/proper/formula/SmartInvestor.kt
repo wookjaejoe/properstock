@@ -4,6 +4,7 @@ import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.FinAnalRepository
 import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
+import app.properstock.financecollector.util.isCommonStock
 import org.springframework.stereotype.Component
 import java.time.YearMonth
 
@@ -84,6 +85,7 @@ class SmartInvestor(
     """.trimIndent()
 
     override fun calculate(code: String): ProperPriceFormula.Output {
+        if(!isCommonStock(code)) return ProperPriceFormula.Output.dummy("미취급(본 공식은 보통주에 대해서만 적용 가능)")
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val thisYear = YearMonth.now().year
         val profitCriteriaYears = 3
@@ -121,6 +123,7 @@ class SmartInvestor(
             value = ((bussinessValue + assetValue - nonCurrentLiability) / shares).toDouble(),
             note = """
                 사업가치: ${bussinessValue.formatMillion()} = 영업이익평균(${operatingProfitAvg.formatMillion()}) * (100 - 법인세율($corporateTaxRate) / 기대수익율($fixedExpectedReturnRate))
+                - 영업이익: ${operatingProfits.map { it.formatMillion() }}
                 재산가치: ${assetValue.formatMillion()} = 유동자산(${currentAsset.formatMillion()}) - (유동부채(${currentLiability.formatMillion()}) * 1.2) + 투자자산(${investmentAsset.formatMillion()})
                 고정부채: ${nonCurrentLiability.formatMillion()}
                 발행주식수: ${shares.toLong().format10Thousand()}
