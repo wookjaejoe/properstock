@@ -13,7 +13,7 @@ class ControllingInterestMultipliedByPer(
     val tickerRepository: TickerRepository
 ) : ProperPriceFormula {
     override val symbol = "CTRINTPER"
-    override val title = "지배주주순이익 x PER"
+    override val title = "지배주주순이익과 벨류에이션"
     override val shortDescription =
         "지배주주순이익은 모회사(지배기업) 순이익에 자회사(관계기업, 종속기업) 순이익 지분 만큼을 합산하여 적용한 순이익이다. 지배주주순이익 계산을 통해 자회사의 가치까지 합산한 기업의 순이익을 구할 수 있다. 지배주주순이익을 구하는 방법은 관계기업, 종속기업 각각의 순이익에 모회사 지분율을 곱한 뒤 합산하여 구한다. 이를 통해 IFRS 회계법으로 표현되지 않는 지배주주순이익을 구할 수 있다는 장점이 있다."
     override val longDescription = """

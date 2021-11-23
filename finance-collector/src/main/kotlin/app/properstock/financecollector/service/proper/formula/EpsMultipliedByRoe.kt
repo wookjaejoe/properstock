@@ -13,7 +13,7 @@ class EpsMultipliedByRoe(
     val corpStatRepository: CorpStatRepository
 ) : ProperPriceFormula {
     override val symbol: String = "EPSROE"
-    override val title: String = "EPS × ROE"
+    override val title: String = "순이익과 성장성"
     override val shortDescription: String = "주가지수는 경제 성장률 + 물가 상승률로서 EPSPER 공식의 추정 PER을 ROE를 통해 적정 PER로 산출하는 방법으로 슈퍼개미 김정환님이 제시하는 만능 공식이다."
     override val longDescription: String = """
         1. 개요

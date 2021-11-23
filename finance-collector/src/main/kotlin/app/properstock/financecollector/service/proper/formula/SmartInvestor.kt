@@ -16,7 +16,7 @@ class SmartInvestor(
 
 ) : ProperPriceFormula {
     override val symbol: String = "SMTINV"
-    override val title: String = "Smart Investor"
+    override val title: String = "현명한 투자자"
     override val shortDescription: String = "(사업가치 + 재산가치 - 고정부채) / 발행주식수"
     override val longDescription: String = """
         1. 개요

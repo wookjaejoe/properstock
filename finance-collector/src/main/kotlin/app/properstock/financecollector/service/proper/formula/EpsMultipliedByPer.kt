@@ -13,7 +13,7 @@ class EpsMultipliedByPer(
     val corpStatRepository: CorpStatRepository
 ) : ProperPriceFormula {
     override val symbol = "EPSPER"
-    override val title = "EPS × PER"
+    override val title = "순이익과 벨류에이션"
     override val shortDescription = "순이익에 밸류에이션을 곱해서 기업의 주가를 계산하는 방식으로, 기업의 이익에 기초한 대중적으로 통용되는 가치평가 방법이다."
     override val longDescription = """
         1. 개요
