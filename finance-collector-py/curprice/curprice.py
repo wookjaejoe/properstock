@@ -8,6 +8,7 @@ from typing import *
 import jsons
 import pika
 from pykrx import stock as krx
+from retrying import retry
 
 
 logger = logging.getLogger(__name__)
@@ -52,14 +53,19 @@ class KrxCurrentPriceFetcher:
     def __init__(self):
         self.ref_date_str = date_str(nearest_business_date())
 
+    @retry(wait_exponential_multiplier=2_000, wait_exponential_max=64_000)
     def fetch(self) -> List[KrxStockCurrentInfo]:
-        prices_by_code = krx.get_market_price_change_by_ticker(
-            fromdate=self.ref_date_str,
-            todate=self.ref_date_str,
-            market='ALL'
-        )['종가'].to_dict()
-        now = datetime.now(timezone.utc)
-        return [KrxStockCurrentInfo(code, price, now) for code, price in prices_by_code.items()]
+        try:
+            prices_by_code = krx.get_market_price_change_by_ticker(
+                fromdate=self.ref_date_str,
+                todate=self.ref_date_str,
+                market='ALL'
+            )['종가'].to_dict()
+            now = datetime.now(timezone.utc)
+            return [KrxStockCurrentInfo(code, price, now) for code, price in prices_by_code.items()]
+        except BaseException as e:
+            logger.warning(f'An error occurs while fetching current price from krx: {e}')
+            raise e
 
 
 class KrxCurrentPricePublisher:
