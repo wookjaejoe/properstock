@@ -2,14 +2,13 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import date, timedelta
-from datetime import datetime, timezone, tzinfo
+from datetime import datetime, timezone
 from typing import *
 
 import jsons
 import pika
 from pykrx import stock as krx
 from retrying import retry
-
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +89,13 @@ class KrxCurrentPricePublisher:
         prev_infos: Dict[str, KrxStockCurrentInfo] = {}
         while True:
             cur_infos = self.fetcher.fetch()
+
+            # fixme: 테스트용 코드
+            temp = [cur for cur in cur_infos if cur.code == '005930']
+            if len(temp) > 0:
+                with open('005930.txt', 'a') as f:
+                    f.write(str(temp[0].price) + '\n')
+
             logger.info(f'{len(cur_infos)} prices fetched.')
             updated_infos = {}
             for cur_info in cur_infos:
