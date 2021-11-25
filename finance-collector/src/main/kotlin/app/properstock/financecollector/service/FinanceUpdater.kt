@@ -163,33 +163,30 @@ class FinanceUpdater(
     fun updateFinanceData() {
         logger.info("Starting to update finance data...")
         val excludes = naverFinanceCrawler.run { crawlEtfCodes() + crawlEtnCodes() }
-        tickerRepository
-            .findAll()
-            .filter { !excludes.contains(it.code) }
-            .forEach {
-                try {
-                    // 기업현황 업데이트
-                    updateCorpStat(it.code)
-                    logger.info("corpStat@${it.code} updated successfully.")
-                } catch (e: Throwable) {
-                    logger.warn("Failed to update corpStat@${it.code} caused by ${e.javaClass.simpleName}:${e.message}")
-                }
-
-                try {
-                    // 재무분석 업데이트
-                    updateFinanceAnal(it.code)
-                    logger.info("financeAnal@${it.code} updated successfully.")
-                } catch (e: Throwable) {
-                    logger.warn("Failed to update financeAnal@${it.code} caused by ${e.javaClass.simpleName}:${e.message}")
-                }
-
-                try {
-                    // 적정주가 업데이트
-                    properPriceService.update(it.code)
-                } catch (e: Throwable) {
-                    logger.warn("Failed to update ${it.code} caused by ${e.javaClass.simpleName}:${e.message}")
-                }
+        val tickers = tickerRepository.findAll().filter { !excludes.contains(it.code) }
+        tickers.forEachIndexed { index, ticker ->
+            logger.info("[${index + 1}/${tickers.size}] Starting to update finance data for ${ticker.code}")
+            try {
+                // 기업현황 업데이트
+                updateCorpStat(ticker.code)
+            } catch (e: Throwable) {
+                logger.warn("Failed to update corpStat@${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
             }
+
+            try {
+                // 재무분석 업데이트
+                updateFinanceAnal(ticker.code)
+            } catch (e: Throwable) {
+                logger.warn("Failed to update financeAnal@${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
+            }
+
+            try {
+                // 적정주가 업데이트
+                properPriceService.update(ticker.code)
+            } catch (e: Throwable) {
+                logger.warn("Failed to update ${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
+            }
+        }
     }
 
     fun updateTickerFromCorpStat() {

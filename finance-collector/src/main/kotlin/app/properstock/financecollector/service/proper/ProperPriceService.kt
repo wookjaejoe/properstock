@@ -28,8 +28,10 @@ class ProperPriceService(
 
     fun updateAll() {
         logger.info("Starting to update properPrice for all tickers...")
-        tickerRepository.findAll().forEach {
-            update(it.code)
+        val tickers = tickerRepository.findAll()
+        tickers.forEachIndexed { index, ticker ->
+            logger.info("[${index + 1}/${tickers.size}] Starting to update properPrice@${ticker.code}...")
+            update(ticker.code)
         }
     }
 
@@ -38,7 +40,6 @@ class ProperPriceService(
     }
 
     fun update(code: String) {
-        logger.info("Starting to update properPrice@$code...")
         calculate(code).forEach { update(code, it.key, it.value) }
     }
 

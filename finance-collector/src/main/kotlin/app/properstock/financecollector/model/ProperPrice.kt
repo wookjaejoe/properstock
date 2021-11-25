@@ -22,7 +22,7 @@ data class ProperPrice(
     val tickerCode: String,
     val formulaSymbol: String,
     var value: Double,
-    var arguments: Map<String, Any>,
+    var arguments: Map<String, Any>?,
     var note: String? = null,
     var updated: Instant = Instant.now()
 ) {
