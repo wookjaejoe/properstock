@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
 @Document
-data class FinanceAnal(
+data class FinanceAnalysis(
     @Id
     val id: String? = null,
     @Indexed(unique = true)

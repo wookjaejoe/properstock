@@ -1,5 +1,6 @@
 package app.properstock.financecollector.service.proper.formula
 
+import app.properstock.financecollector.model.FinanceSummary
 import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
@@ -47,8 +48,8 @@ class EpsMultipliedByRoe(
 
     override fun calculate(code: String): ProperPriceFormula.Output {
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
-        val epsList = corpStat.financeSummary.eps.data.toSortedMap()
-        val roeList = corpStat.financeSummary.roe.data.toSortedMap()
+        val epsList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.data.toSortedMap()
+        val roeList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.roe.data.toSortedMap()
 
         val thisYear = YearMonth.now().year
         val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.toLong()

@@ -1,5 +1,6 @@
 package app.properstock.financecollector.service.proper.formula
 
+import app.properstock.financecollector.model.FinanceSummary
 import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
@@ -53,13 +54,13 @@ class EpsMultipliedByPer(
 
     override fun calculate(code: String): ProperPriceFormula.Output {
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
-        val epsList = corpStat.financeSummary.eps.data.toSortedMap()
-        val perList = corpStat.financeSummary.per.data.toSortedMap()
+        val epsList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.data.toSortedMap()
+        val perList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.per.data.toSortedMap()
         val per = calculatePerByAvg(epsList, perList).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
         val thisYear = YearMonth.now().year
         // EPS 계산: 당해년도 EPS
-        val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.toLong()
+        val eps = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.thisYearLast()
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
 
         // 결과 반환

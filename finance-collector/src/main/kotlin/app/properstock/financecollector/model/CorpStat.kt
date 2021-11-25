@@ -5,19 +5,19 @@ import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-//@Document("corpStat") todo: 컬렉션 이름 수정
-@Document("financeAnalysis")
+@Document
 data class CorpStat(
     @Id
     val id: String? = null,
     @Indexed(unique = true)
     var code: String,
-    var financeSummary: FinanceSummary,
+    var financeSummaries: Map<FinanceSummary.Period, FinanceSummary>,
     /** 마지막 업데이트 시각 */
     var updated: Instant = Instant.now()
 )
 
 data class FinanceSummary(
+    val period: Period,
     /** 매출액 */
     val sales: TimeSeries<Long> = TimeSeries("매출액"),
     /** 당기순이익 */
@@ -34,4 +34,9 @@ data class FinanceSummary(
     val per: TimeSeries<Double> = TimeSeries("PER", "PER(배)"),
     /** 발행주식수(보통주) */
     val issuedCommonShares: TimeSeries<Long> = TimeSeries("발행주식수", "발행주식수(보통주)")
-)
+) {
+    enum class Period {
+        YEAR,
+        QUARTER
+    }
+}

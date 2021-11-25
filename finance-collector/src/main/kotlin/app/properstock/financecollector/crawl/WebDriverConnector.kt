@@ -16,7 +16,7 @@ class WebDriverConnector {
     lateinit var chromeRemoteUrl: String
 
     fun <R> connect(todo: CloseableWebDriver.() -> R): R {
-        logger.info("Connecting with remote webdriver: $chromeRemoteUrl")
+        logger.debug("Connecting with remote webdriver: $chromeRemoteUrl")
         return CloseableWebDriver(
             URL(chromeRemoteUrl),
             ChromeOptions().apply {
@@ -25,7 +25,7 @@ class WebDriverConnector {
         ).use {
             it.manage().timeouts().pageLoadTimeout(15, TimeUnit.SECONDS)
             it.manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS)
-            logger.info("Remote webdriver connected.")
+            logger.debug("Remote webdriver connected.")
             todo(it)
         }
     }

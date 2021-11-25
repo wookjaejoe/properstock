@@ -1,5 +1,6 @@
 package app.properstock.financecollector.service.proper.formula
 
+import app.properstock.financecollector.model.FinanceSummary
 import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
@@ -61,8 +62,8 @@ class ControllingInterestMultipliedByPer(
     override fun calculate(code: String): ProperPriceFormula.Output {
         if(!isCommonStock(code)) return ProperPriceFormula.Output.dummy("미취급(본 공식은 보통주에 대해서만 적용 가능)")
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
-        val controllingInterestList = corpStat.financeSummary.controllingInterest.data.toSortedMap()
-        val perList = corpStat.financeSummary.per.data.toSortedMap()
+        val controllingInterestList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.controllingInterest.data.toSortedMap()
+        val perList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.per.data.toSortedMap()
         val per = calculatePerByAvg(controllingInterestList, perList).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
         val thisYear = YearMonth.now().year
@@ -79,7 +80,7 @@ class ControllingInterestMultipliedByPer(
             (per * controllingInterest / issued).round(),
             """
                 당해년도 추정 지배주주순이익: ${controllingInterest.formatMillion()}
-                3~5년 연속 흑자 PER 평균: $per
+                추정 PER: $per
                 발행주식수: ${issued.toLong().format10Thousand()}
             """.trimIndent()
         )

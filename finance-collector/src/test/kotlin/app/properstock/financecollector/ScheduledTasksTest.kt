@@ -19,14 +19,6 @@ class ScheduledTasksTest {
         val logger: Logger = LoggerFactory.getLogger(ScheduledTasks::class.java)
     }
 
-    /**
-     * 티커 목록 업데이트
-     */
-    @Test
-    fun updateTickers() {
-        scheduledTasks.updateTickers()
-    }
-
     @Test
     fun updateTickerSummary() {
         scheduledTasks.updateTickerSummary()

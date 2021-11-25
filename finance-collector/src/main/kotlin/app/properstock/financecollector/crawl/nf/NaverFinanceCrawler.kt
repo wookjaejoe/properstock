@@ -6,6 +6,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 import org.openqa.selenium.By
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.interactions.Actions
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -36,7 +37,7 @@ class NaverFinanceCrawler(
      * 네이버 파이낸스에서 크롤링 가능한 모든 티커 목록을 크롤링하여 반환
      */
     fun crawlAllTickers(): Stream<Ticker> {
-        logger.info("Crawling all tickers started.")
+        logger.debug("Crawling all tickers started.")
         return sequence {
             for (ticker in crawlTickers(Market.KOSPI)) yield(ticker)
             for (ticker in crawlTickers(Market.KOSDAQ)) yield(ticker)
@@ -47,7 +48,7 @@ class NaverFinanceCrawler(
      * 특정 시장의 모든 티커 목록 크롤링하여 반환
      */
     fun crawlTickers(market: Market): Stream<Ticker> {
-        logger.info("Crawling ticker in ${market.name} started.")
+        logger.debug("Crawling ticker in ${market.name} started.")
         var page = 1
         return sequence {
             while (true) {
@@ -64,7 +65,7 @@ class NaverFinanceCrawler(
     fun crawlTickers(market: Market, page: Int): List<Ticker> {
         val url = NaverFinanceUrls.tickers(market, page)
         return webDriverConnector.connect {
-            logger.info("Opening $url")
+            logger.debug("Opening $url")
             get(url)
             // 테이블 탐색
             val tableHtml = findElements(By.tagName("table"))
@@ -103,88 +104,95 @@ class NaverFinanceCrawler(
         }
     }
 
+    fun crawlFinanceSummary(
+        webDriver: WebDriver,
+        tabBy: By,
+        period: FinanceSummary.Period
+    ): Pair<FinanceSummary.Period, FinanceSummary> {
+        val tab = webDriver.findElement(tabBy)
+        val actions = Actions(webDriver)
+        actions.click(tab).build().perform()
+
+        val tableHtml = webDriver.findElements(By.tagName("table")).find {
+            try {
+                it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
+            } catch (e: Throwable) {
+                false
+            }
+        }!!.getAttribute(OUTER_HTML)
+
+        val table = Jsoup.parse(tableHtml)
+        val headers = table
+            .getElementsByTag("thead")[0]
+            .getElementsByTag("tr")[1]
+            .getElementsByTag("th")
+            .map {
+                val str = "[0-9]{4}/[0-9]{2}".toRegex().find(it.text())?.value!!
+                val spl = str.split("/")
+                YearMonth.of(spl[0].toInt(), spl[1].toInt())
+            }
+
+        val financeSummary = FinanceSummary(period)
+
+        table
+            .getElementsByTag("tbody")[0]
+            .getElementsByTag("tr").map { element ->
+                val title = element.getElementsByTag("th")[0].text()
+                val values = element.getElementsByTag("td").map { td -> td.text() }
+                Pair(title, values)
+            }.associate {
+                Pair(it.first.trim(), it.second)
+            }.run {
+                financeSummary.sales.set(
+                    headers,
+                    this["매출액"]!!.map { it.parseDouble()?.times(1_0000_0000)?.toLong() }
+                )
+                financeSummary.operatingProfit.set(
+                    headers,
+                    this["영업이익"]!!.map { it.parseDouble()?.times(1_0000_0000)?.toLong() }
+                )
+                financeSummary.netProfit.set(
+                    headers,
+                    this["당기순이익"]!!.map { it.parseDouble()?.times(1_0000_0000)?.toLong() }
+                )
+                financeSummary.controllingInterest.set(
+                    headers,
+                    this["당기순이익(지배)"]!!.map { it.parseDouble()?.times(1_0000_0000)?.toLong() }
+                )
+                financeSummary.roe.set(
+                    headers,
+                    this["ROE(%)"]!!.map { it.parseDouble() }
+                )
+                financeSummary.eps.set(
+                    headers,
+                    this["EPS(원)"]!!.map { it.parseDouble()?.toLong() }
+                )
+                financeSummary.per.set(
+                    headers,
+                    this["PER(배)"]!!.map { it.parseDouble() }
+                )
+                financeSummary.issuedCommonShares.set(
+                    headers,
+                    this["발행주식수(보통주)"]!!.map { it.parseDouble()?.toLong() }
+                )
+            }
+        return Pair(period, financeSummary)
+    }
+
     fun crawlCorpStat(code: String): CorpStat {
         val url = NaverFinanceUrls.companyInfo(code)
         return webDriverConnector.connect {
-            val actions = Actions(this)
-            logger.info("Opening $url")
+            logger.debug("Opening $url")
             get(url)
-            // 연간 탭 클릭
-            val yearlyTab = findElement(By.id("cns_Tab21"))
-            actions.click(yearlyTab).build().perform()
 
-            val tableHtml = findElements(By.tagName("table")).find {
-                try {
-                    it.findElement(By.tagName("caption")).getAttribute(INNER_HTML) == "주요재무정보"
-                } catch (e: Throwable) {
-                    false
-                }
-            }!!.getAttribute(OUTER_HTML)
-
-            val table = Jsoup.parse(tableHtml)
-            val headers = table
-                .getElementsByTag("thead")[0]
-                .getElementsByTag("tr")[1]
-                .getElementsByTag("th")
-                .map {
-                    val str = "[0-9]{4}/[0-9]{2}".toRegex().find(it.text())?.value!!
-                    val spl = str.split("/")
-                    YearMonth.of(spl[0].toInt(), spl[1].toInt())
-                }
-
-            val financeSummary = FinanceSummary()
-
-            table
-                .getElementsByTag("tbody")[0]
-                .getElementsByTag("tr").map { element ->
-                    val title = element.getElementsByTag("th")[0].text()
-                    val values = element.getElementsByTag("td").map { td ->
-                        td.text()
-                            .replace(",", "")
-                            .ifEmpty { null }
-                    }
-
-                    Pair(title, values)
-                }.associate {
-                    Pair(it.first.trim(), it.second)
-                }.run {
-                    financeSummary.sales.set(
-                        headers,
-                        this["매출액"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
-                    )
-                    financeSummary.operatingProfit.set(
-                        headers,
-                        this["영업이익"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
-                    )
-                    financeSummary.netProfit.set(
-                        headers,
-                        this["당기순이익"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
-                    )
-                    financeSummary.controllingInterest.set(
-                        headers,
-                        this["당기순이익(지배)"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() }
-                    )
-                    financeSummary.roe.set(
-                        headers,
-                        this["ROE(%)"]!!.map { it?.parseDouble() }
-                    )
-                    financeSummary.eps.set(
-                        headers,
-                        this["EPS(원)"]!!.map { it?.parseDouble()?.toLong() }
-                    )
-                    financeSummary.per.set(
-                        headers,
-                        this["PER(배)"]!!.map { it?.parseDouble() }
-                    )
-                    financeSummary.issuedCommonShares.set(
-                        headers,
-                        this["발행주식수(보통주)"]!!.map { it?.parseDouble()?.toLong() }
-                    )
-                }
+            val financeSummaries = mapOf(
+                crawlFinanceSummary(this, By.id("cns_Tab21"), FinanceSummary.Period.YEAR),
+                crawlFinanceSummary(this, By.id("cns_Tab22"), FinanceSummary.Period.QUARTER),
+            )
 
             CorpStat(
                 code = code,
-                financeSummary = financeSummary
+                financeSummaries = financeSummaries
             )
         }
     }
@@ -255,7 +263,7 @@ class NaverFinanceCrawler(
     }
 
     fun crawlThemes(): Stream<NaverFinanceTheme> {
-        var lastPage: Int = 1
+        var lastPage: Int
         val findThemeTable = { body: Element -> body.getElementsByTag("table").find { it.hasClass("theme") }!! }
         val findLastPage = { body: Element ->
             body.getElementsByTag("td")
@@ -268,20 +276,18 @@ class NaverFinanceCrawler(
 
         val themes: MutableList<NaverFinanceTheme> = mutableListOf()
         webDriverConnector.connect {
-            val url = NaverFinanceUrls.themes(1)
-            logger.info("Opening $url")
+            var url = NaverFinanceUrls.themes(1)
+            logger.debug("Opening $url")
             get(url)
-            val body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
+            var body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
             lastPage = findLastPage(body)
             themes.addAll(crawlThemes(findThemeTable(body)))
-        }
-        
-        (2..lastPage).map { page ->
-            webDriverConnector.connect {
-                val url = NaverFinanceUrls.themes(page)
-                logger.info("Opening $url")
+
+            (2..lastPage).map { page ->
+                url = NaverFinanceUrls.themes(page)
+                logger.debug("Opening $url")
                 get(url)
-                val body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
+                body = Jsoup.parse(findElements(By.tagName("body"))[0].getAttribute(OUTER_HTML))
                 themes.addAll(crawlThemes(findThemeTable(body)))
             }
         }
@@ -309,6 +315,7 @@ class NaverFinanceCrawler(
     fun crawlEtfCodes(): List<String> {
         val url = NaverFinanceUrls.etf()
         return webDriverConnector.connect {
+            logger.debug("Opening $url")
             get(url)
             val html = findElement(By.tagName("html")).getAttribute(OUTER_HTML)
             Jsoup.parse(html)
@@ -328,6 +335,7 @@ class NaverFinanceCrawler(
     fun crawlEtnCodes(): List<String> {
         val url = NaverFinanceUrls.etn()
         return webDriverConnector.connect {
+            logger.debug("Opening $url")
             get(url)
             val html = findElement(By.tagName("html")).getAttribute(OUTER_HTML)
             Jsoup.parse(html)
@@ -344,10 +352,10 @@ class NaverFinanceCrawler(
         }
     }
 
-    fun crawlFinanceAnal(code: String): FinanceAnal {
+    fun crawlFinanceAnal(code: String): FinanceAnalysis {
         val url = NaverFinanceUrls.financialAnalysis(code)
         val financeStat = webDriverConnector.connect {
-            logger.info("Opening $url")
+            logger.debug("Opening $url")
             get(url)
 
             // 재무재표 상태표 탭 클릭
@@ -384,7 +392,7 @@ class NaverFinanceCrawler(
                 }.associate {
                     Pair(it.first.trim(), it.second)
                 }.run {
-                    val financeStat = FinanceAnal.FinanceStat()
+                    val financeStat = FinanceAnalysis.FinanceStat()
                     financeStat.currentAssets.set(headers, this["유동자산"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() })
                     financeStat.currentLiabilities.set(headers, this["유동부채"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() })
                     financeStat.investmentAssets.set(headers, this["투자자산"]!!.map { it?.parseDouble()?.times(1_0000_0000)?.toLong() })
@@ -393,7 +401,7 @@ class NaverFinanceCrawler(
                 }
         }
 
-        return FinanceAnal(
+        return FinanceAnalysis(
             code = code,
             financeStat = financeStat
         )

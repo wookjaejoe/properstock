@@ -1,5 +1,10 @@
 package app.properstock.financecollector.model
 
+import app.properstock.financecollector.TZ_KR
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
 data class ExternalLinkFormat(
     val domainName: String,
     val format: String,
@@ -40,13 +45,17 @@ val DAUM = ExternalLinkFormat(
     argNames = listOf("code")
 )
 
-val FN_GUIDE = ExternalLinkFormat(
-    domainName = "FnGuide",
-    format = "http://comp.fnguide.com/SVO2/ASP/SVD_Main.asp?gicode=A{0}",
+val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+private fun startDate() = ZonedDateTime.now(ZoneId.of(TZ_KR)).minusYears(1).format(DATE_FORMAT)
+private fun endDate() = ZonedDateTime.now(ZoneId.of(TZ_KR)).format(DATE_FORMAT)
+
+val HANKYUNG = ExternalLinkFormat(
+    domainName = "Hankyung",
+    format = "http://consensus.hankyung.com/apps.analysis/analysis.list?sdate=${startDate()}&edate=${endDate()}&now_page=1&pagenum=20&search_text={0}",
     argNames = listOf("code")
 )
 
-val ALL_EXTERNAL_LINKS = listOf(NAVER, DART, DAUM, FN_GUIDE)
+val ALL_EXTERNAL_LINKS = listOf(NAVER, DART, DAUM, HANKYUNG)
 
 fun makeExternalLinkSets(code: String): List<ExternalLink> {
     return ALL_EXTERNAL_LINKS.map { it.format(code) }
