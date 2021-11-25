@@ -49,10 +49,11 @@ class EpsMultipliedByRoe(
     override fun calculate(code: String): ProperPriceFormula.Output {
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val epsList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.data.toSortedMap()
+        if(checkSurplus(epsList, 3, 5)) return ProperPriceFormula.Output.dummy("연속 흑자 조건 미충족")
         val roeList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.roe.data.toSortedMap()
 
         val thisYear = YearMonth.now().year
-        val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]?.toLong()
+        val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
         val roe = roeList[roeList.keys.findLast { ym -> ym.year == thisYear }]?.round(2)
             ?: return ProperPriceFormula.Output.dummy("ROE 미확인")

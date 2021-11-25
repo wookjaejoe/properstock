@@ -55,8 +55,9 @@ class EpsMultipliedByPer(
     override fun calculate(code: String): ProperPriceFormula.Output {
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val epsList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.data.toSortedMap()
+        if(checkSurplus(epsList, 3, 5)) return ProperPriceFormula.Output.dummy("연속 흑자 조건 미충족")
         val perList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.per.data.toSortedMap()
-        val per = calculatePerByAvg(epsList, perList).round(2)
+        val per = calculatePerByAvgInSurplus(epsList, perList, 3, 5).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
         val thisYear = YearMonth.now().year
         // EPS 계산: 당해년도 EPS

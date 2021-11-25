@@ -63,8 +63,9 @@ class ControllingInterestMultipliedByPer(
         if(!isCommonStock(code)) return ProperPriceFormula.Output.dummy("미취급(본 공식은 보통주에 대해서만 적용 가능)")
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val controllingInterestList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.controllingInterest.data.toSortedMap()
+        if(checkSurplus(controllingInterestList, 3, 5)) return ProperPriceFormula.Output.dummy("연속 흑자 조건 미충족")
         val perList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.per.data.toSortedMap()
-        val per = calculatePerByAvg(controllingInterestList, perList).round(2)
+        val per = calculatePerByAvgInSurplus(controllingInterestList, perList, 3, 5).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
         val thisYear = YearMonth.now().year
         // 지배주주순이익 계산: 당해년도
