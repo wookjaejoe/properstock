@@ -1,12 +1,8 @@
 package app.properstock.financecollector.service.proper
 
 import app.properstock.financecollector.model.ProperPrice
-import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.ProperPriceRepository
 import app.properstock.financecollector.repository.TickerRepository
-import app.properstock.financecollector.service.proper.formula.ControllingInterestMultipliedByPer
-import app.properstock.financecollector.service.proper.formula.EpsMultipliedByPer
-import app.properstock.financecollector.service.proper.formula.EpsMultipliedByRoe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -50,6 +46,7 @@ class ProperPriceService(
         val oldData = properPriceRepository.findByTickerCodeAndFormulaSymbol(tickerCode, formulaSymbol)
         return if (oldData != null) {
             oldData.value = formulaOut.value
+            oldData.arguments = formulaOut.arguments
             oldData.note = formulaOut.note
             oldData.updated = Instant.now()
             properPriceRepository.save(oldData).apply {
@@ -60,6 +57,7 @@ class ProperPriceService(
                 tickerCode = tickerCode,
                 formulaSymbol = formulaSymbol,
                 value = formulaOut.value,
+                arguments = formulaOut.arguments,
                 note = formulaOut.note
             )
             properPriceRepository.save(newData).apply {
@@ -80,10 +78,20 @@ interface ProperPriceFormula {
 
     class Output(
         val value: Double,
+        val arguments: Map<String, Any>,
         val note: String? = null
     ) {
         companion object {
-            fun dummy(note: String) = Output(Double.NaN, note)
+            fun dummy(
+                arguments: Map<String, Any>,
+                note: String
+            ) = Output(
+                Double.NaN,
+                arguments = arguments,
+                note
+            )
+
+            fun dummy(note: String) = dummy(mapOf(), note)
         }
     }
 }

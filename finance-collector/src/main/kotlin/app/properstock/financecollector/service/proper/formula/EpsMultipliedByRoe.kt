@@ -17,33 +17,9 @@ class EpsMultipliedByRoe(
     override val title: String = "순이익과 성장성"
     override val shortDescription: String = "주가지수는 경제 성장률 + 물가 상승률로서 EPSPER 공식의 추정 PER을 ROE를 통해 적정 PER로 산출하는 방법으로 슈퍼개미 김정환님이 제시하는 만능 공식이다."
     override val longDescription: String = """
-        1. 개요
-        주가지수는 경제 성장률 + 물가 상승률로서 1번 공식의 추정 PER을 ROE를 통해 적정 PER로 산출하는 방법으로 슈퍼개미 김정환님이 제시하는 만능 공식임.
-        
-        2. 용어설명
-        EPS(Earning per Share) : 기업이 벌어들인 순이익을 총 발행 주식수로 나눈 값이다.
-        BPS(Book value per share) 주당 순자산가치, 기업 순자산/발행주식수
-        ROE(Return On Equity) : 자본을 이용하여 얼마만큼의 이익을 냈는지를 나타내는 지표
-        당기순이익/자본
-        BPS(자본), ROE(성장수익)
-        ex) 자본총액이 1억인 회사가 1000만원의 당기순이익을 냈다면 ROE 10%가 된다.
-        
-        3. 계산식
-        EPS X ROE = 적정주가
-        <ROE = 적정 PER 임을 산출>
-        EPS X ROE = 적정주가
-        ROE = 적정주가 X 1/EPS
-        * EPS = 주당순이익 = 순이익/주식수
-        → ROE = 적정주가 X 주식수/순이익
-        → ROE = 적정시총 / 순이익 = 적정 PER
-        (당해 년도 예상 EPS, ROE 사용)
-        
-        4. 데이터 참조
-        네이버 finance > 종목 > 기업실적 분석 > EPS, ROE 
-        
-        5. 예외사항
-        영업이익이 없어 EPS 및 ROE 가 산출되지 않는 기업의 경우 제외 한다.
-        영업이익이 낮고 PER이 고평가 되는 기업의 경우 주가에 비해 상당히 낮은 수치로 반영 될 수 있다.
+        재무 상 기업가치를 측정하는 가장 기본적인 방법은 기업이 얼마 만큼의 돈을 꾸준하게 벌고 있고, 미래에 매출의 연속성이 있는가에 기초한다. 따라서, 기업이 실적을 발표할 때 예상한 이익보다 높거나 낮음에 따라 주가 변동이 일어난다.
+        해당 공식에서는 기업이 벌고 있는 지표를 나타내는 특정값(EPS)에 자산대비 얼만큼 효율적으로 돈을 벌고 있는 지를 나타내는 지표인 ROE를 곱해 적정가치를 산출한다.
+        EX) 2000만원 자본을 가지고 200만원을 벌 경우 ROE 10%, 4000만원 자본을 가지고 200만원을 별 경우 ROE 5%
     """.trimIndent()
 
     override fun calculate(code: String): ProperPriceFormula.Output {
@@ -59,10 +35,11 @@ class EpsMultipliedByRoe(
             ?: return ProperPriceFormula.Output.dummy("ROE 미확인")
         return ProperPriceFormula.Output(
             value = floor(eps * roe),
-            note = """
-                당해년도 추정 EPS: ${NumberFormat.getNumberInstance(Locale.KOREA).format(eps)}
-                당해년도 추정 ROE: ${NumberFormat.getNumberInstance(Locale.KOREA).format(roe)}
-            """.trimIndent()
+            arguments = mapOf(
+                "당해년도 추정 EPS" to NumberFormat.getNumberInstance(Locale.KOREA).format(eps),
+                "당해년도 추정 ROE" to NumberFormat.getNumberInstance(Locale.KOREA).format(roe)
+            ),
+            note = ""
         )
     }
 }
