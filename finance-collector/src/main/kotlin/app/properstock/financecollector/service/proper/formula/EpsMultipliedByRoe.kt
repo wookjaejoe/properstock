@@ -2,6 +2,7 @@ package app.properstock.financecollector.service.proper.formula
 
 import app.properstock.financecollector.model.FinanceSummary
 import app.properstock.financecollector.repository.CorpStatRepository
+import app.properstock.financecollector.repository.TickerRepository
 import app.properstock.financecollector.service.proper.ProperPriceFormula
 import org.springframework.stereotype.Component
 import java.text.NumberFormat
@@ -11,7 +12,8 @@ import kotlin.math.floor
 
 @Component
 class EpsMultipliedByRoe(
-    val corpStatRepository: CorpStatRepository
+    val corpStatRepository: CorpStatRepository,
+    val tickerRepository: TickerRepository
 ) : ProperPriceFormula {
     override val symbol: String = "EPSROE"
     override val title: String = "순이익과 성장성"
@@ -25,14 +27,14 @@ class EpsMultipliedByRoe(
     override fun calculate(code: String): ProperPriceFormula.Output {
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val epsList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.data.toSortedMap()
-        if(checkSurplus(epsList, 3, 5)) return ProperPriceFormula.Output.dummy("연속 흑자 조건 미충족")
-        val roeList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.roe.data.toSortedMap()
-
-        val thisYear = YearMonth.now().year
-        val eps = epsList[epsList.keys.findLast { ym -> ym.year == thisYear }]
+        if(!checkSurplus(epsList, 3, 5)) return ProperPriceFormula.Output.dummy("연속 흑자 조건 미충족")
+        val ticker = tickerRepository.findByCode(code)
+        val eps = corpStat.financeSummaries[FinanceSummary.Period.QUARTER]!!.eps.nearestFixed()
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
-        val roe = roeList[roeList.keys.findLast { ym -> ym.year == thisYear }]?.round(2)
-            ?: return ProperPriceFormula.Output.dummy("ROE 미확인")
+        val roe = ticker?.roe
+        if(roe == null || roe.isNaN()) {
+            return ProperPriceFormula.Output.dummy("ROE 미확인")
+        }
         return ProperPriceFormula.Output(
             value = floor(eps * roe),
             arguments = mapOf(
