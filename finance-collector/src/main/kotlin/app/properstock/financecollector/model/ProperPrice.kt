@@ -30,6 +30,7 @@ data class ProperPrice(
         val tickerCode: String,
         val formulaSymbol: String,
         val value: Double,
+        val arguments: Map<String, Any>?,
         val note: String,
         val updated: Instant,
 
