@@ -34,7 +34,6 @@ body {
   top: 4px;
   z-index: 2;
   display: flex;
-  align-items: center;
   justify-content: center;
 }
 .searchbar__container > .search-result {
@@ -555,7 +554,7 @@ aside {
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 769px) and (max-width: 1024px) {
   .container {
     left: 270px;
     width: calc(100% - 302px);
@@ -563,6 +562,96 @@ aside {
     padding: 16px;
     padding-top: 0px;
     height: calc(100% - 72px);
+  }
+  .searchbar__container {
+    left: 100px;
+  }
+
+  .side-toggle__icon {
+    display: none;
+  }
+  #side-toggle__input ~ .side-toggle__icon {
+    cursor: pointer;
+    position: absolute;
+    left: 240px;
+    top: 10px;
+    font-size: 30px;
+    z-index: 10;
+  }
+
+  #side-toggle__input ~ .side-toggle__icon {
+    left: 24px;
+  }
+
+  #side-toggle__input ~ aside {
+    z-index: 9;
+  }
+
+  #side-toggle__input ~ aside .logo {
+    margin: 60px 8px 0px 8px;
+    padding: 8px;
+  }
+
+  #side-toggle__input ~ aside .logo > .logo-normal {
+    display: none;
+  }
+
+  #side-toggle__input ~ aside .logo > .logo-simple {
+    display: block;
+    width: 40px;
+  }
+
+  #side-toggle__input ~ aside,
+  #side-toggle__input ~ .side-toggle__icon {
+    width: 70px;
+  }
+
+  #side-toggle__input ~ .container {
+    left: 60px;
+    width: calc(100% - 92px);
+  }
+
+  #side-toggle__input ~ aside .section__title {
+    margin: 8px;
+    text-align: center;
+  }
+
+  #side-toggle__input ~ aside .section__title .section__label {
+    display: none;
+  }
+
+  #side-toggle__input ~ aside .section__menu {
+    display: none;
+  }
+
+  #side-toggle__input ~ aside .section > li:hover > .section__menu {
+    display: block;
+    position: absolute;
+    width: 240px;
+    top: 0px;
+    margin-top: 0;
+    left: 55px;
+    padding: 0px;
+    background-color: #2e2e2e;
+  }
+}
+
+@media (min-width: 1025px) {
+  .container {
+    left: 270px;
+    width: calc(100% - 302px);
+    margin: 16px;
+    padding: 16px;
+    padding-top: 0px;
+    height: calc(100% - 72px);
+  }
+
+  .searchbar__container {
+    left: 360px;
+  }
+
+  #side-toggle__input:checked ~ .searchbar__container {
+    left: 100px;
   }
 
   #side-toggle__input ~ .side-toggle__icon {
