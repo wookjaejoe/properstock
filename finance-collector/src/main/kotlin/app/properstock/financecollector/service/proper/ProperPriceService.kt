@@ -1,11 +1,11 @@
 package app.properstock.financecollector.service.proper
 
 import app.properstock.financecollector.model.ProperPrice
+import app.properstock.financecollector.model.ProperPriceFormula
 import app.properstock.financecollector.repository.ProperPriceRepository
 import app.properstock.financecollector.repository.TickerRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -64,35 +64,6 @@ class ProperPriceService(
             properPriceRepository.save(newData).apply {
                 logger.info("New proper price: $newData")
             }
-        }
-    }
-}
-
-@Component
-interface ProperPriceFormula {
-    val symbol: String
-    val title: String
-    val shortDescription: String
-    val longDescription: String
-
-    fun calculate(code: String): Output
-
-    class Output(
-        val value: Double,
-        val arguments: Map<String, Any>,
-        val note: String? = null
-    ) {
-        companion object {
-            fun dummy(
-                arguments: Map<String, Any>,
-                note: String
-            ) = Output(
-                Double.NaN,
-                arguments = arguments,
-                note
-            )
-
-            fun dummy(note: String) = dummy(mapOf(), note)
         }
     }
 }

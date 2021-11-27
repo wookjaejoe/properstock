@@ -1,10 +1,10 @@
 package app.properstock.financecollector.service.proper.formula
 
 import app.properstock.financecollector.model.FinanceSummary
+import app.properstock.financecollector.model.ProperPriceFormula
 import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.FinanceAnalRepository
 import app.properstock.financecollector.repository.TickerRepository
-import app.properstock.financecollector.service.proper.ProperPriceFormula
 import app.properstock.financecollector.util.isCommonStock
 import org.springframework.stereotype.Component
 import java.time.YearMonth
@@ -14,7 +14,6 @@ class SmartInvestor(
     val corpStatRepository: CorpStatRepository,
     val tickerRepository: TickerRepository,
     val financeAnalRepository: FinanceAnalRepository
-
 ) : ProperPriceFormula {
     override val symbol: String = "SMTINV"
     override val title: String = "현명한 투자자"
@@ -25,7 +24,7 @@ class SmartInvestor(
     """.trimIndent()
 
     override fun calculate(code: String): ProperPriceFormula.Output {
-        if(!isCommonStock(code)) return ProperPriceFormula.Output.dummy("미취급(본 공식은 보통주에 대해서만 적용 가능)")
+        if (!isCommonStock(code)) return ProperPriceFormula.Output.dummy("미취급(본 공식은 보통주에 대해서만 적용 가능)")
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val thisYear = YearMonth.now().year
         val profitCriteriaYears = 3
