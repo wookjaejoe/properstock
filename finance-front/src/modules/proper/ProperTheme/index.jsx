@@ -137,7 +137,6 @@ const ProperTheme = () => {
                       <th className="number-cell">PER</th>
                       <th className="number-cell">ROE</th>
                       <th className="pc-only">참고 데이터</th>
-                      <th className="pc-only">비고</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -197,9 +196,6 @@ const ProperTheme = () => {
                                 </a>
                               );
                             })}
-                          </td>
-                          <td className="pc-only">
-                            <pre>{price.note}</pre>
                           </td>
                         </tr>
                       );
