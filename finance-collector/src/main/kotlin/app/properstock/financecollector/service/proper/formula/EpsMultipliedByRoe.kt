@@ -27,8 +27,12 @@ class EpsMultipliedByRoe(
 
     override fun calculate(code: String): ProperPriceFormula.Output {
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
-        val epsList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.data.toSortedMap()
-        if (!checkSurplus(epsList, 3, 5)) return ProperPriceFormula.Output.dummy("연속 흑자 조건 미충족")
+        val yearlyEps = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.data
+        if (!checkSurplus(yearlyEps, 3, 5))
+            return ProperPriceFormula.Output.dummy(
+                arguments = mapOf("연도별 EPS" to yearlyEps),
+                note = "연속 흑자 조건 미충족"
+            )
         val ticker = tickerRepository.findByCode(code)
         val eps = corpStat.financeSummaries[FinanceSummary.Period.QUARTER]!!.eps.nearestFixed()
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")

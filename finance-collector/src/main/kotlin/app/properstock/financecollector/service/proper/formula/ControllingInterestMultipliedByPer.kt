@@ -28,7 +28,11 @@ class ControllingInterestMultipliedByPer(
         if (!isCommonStock(code)) return ProperPriceFormula.Output.dummy("미취급(본 공식은 보통주에 대해서만 적용 가능)")
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val controllingInterestList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.controllingInterest.data.toSortedMap()
-        if (!checkSurplus(controllingInterestList, 3, 5)) return ProperPriceFormula.Output.dummy("연속 흑자 조건 미충족")
+        if (!checkSurplus(controllingInterestList, 3, 5))
+            return ProperPriceFormula.Output.dummy(
+                arguments = mapOf("연도별 지배주주순이익" to controllingInterestList),
+                note = "연속 흑자 조건 미충족"
+            )
         val perList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.per.data.toSortedMap()
         val per = calculatePerByAvgInSurplus(controllingInterestList, perList, 3, 5).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
@@ -41,7 +45,7 @@ class ControllingInterestMultipliedByPer(
         ] ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
 
         // 상장주식수
-        val issued = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("당해년도 발행주식수 미확인")
+        val issued = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("발행주식수 미확인")
         return ProperPriceFormula.Output(
             value = (per * controllingInterest / issued).round(),
             arguments = mapOf(
