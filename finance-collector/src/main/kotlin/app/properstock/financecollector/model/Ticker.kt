@@ -28,7 +28,7 @@ data class Ticker(
     var marketCap: Long,
 
     /** 상장주식수 */
-    var shares: Int,
+    var shares: Long,
 
     /** PER */
     var per: Double?,

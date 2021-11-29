@@ -94,7 +94,7 @@ class NaverFinanceCrawler(
                         name = it[headers.indexOf("종목명")].text().replace(",", ""),
                         price = it[headers.indexOf("현재가")].text().replace(",", "").toInt(),
                         marketCap = it[headers.indexOf("시가총액")].text().replace(",", "").toLong() * 1_0000_0000,
-                        shares = it[headers.indexOf("상장주식수")].text().replace(",", "").toInt() * 1000,
+                        shares = it[headers.indexOf("상장주식수")].text().replace(",", "").toLong() * 1000,
                         per = it[headers.indexOf("PER")].text().replace(",", "").parseDouble() ?: Double.NaN,
                         roe = it[headers.indexOf("ROE")].text().replace(",", "").parseDouble() ?: Double.NaN,
                         externalLinks = makeExternalLinkSets(code),

@@ -24,6 +24,7 @@ class ProperPriceController(
         formulaSymbol: String?,
         limit: Int?,
         searchText: String?,
+        available: Boolean = true
     ): List<ProperPrice.Dto> {
         // 종목 필터
         var tickers = tickerRepository.findAll()
@@ -35,7 +36,8 @@ class ProperPriceController(
 
         // 기타 필터
         val tickersByCode = tickers.associateBy { it.code }
-        var properPrices = properPriceRepository.findAllByTickerCodeInAndValueNot(tickers.map { it.code }, Double.NaN)
+        var properPrices = properPriceRepository.findAllByTickerCodeIn(tickers.map { it.code })
+        if (available) properPrices.filter { !it.value.isNaN() }
         if (formulaSymbol != null) properPrices = properPrices.filter { it.formulaSymbol == formulaSymbol }
         if (limit != null) properPrices = properPrices.take(limit)
         return properPrices.map {
