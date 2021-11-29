@@ -42,8 +42,8 @@ class EpsMultipliedByPer(
         return ProperPriceFormula.Output(
             value = floor(eps * per),
             arguments = mapOf(
-                "당해년도 추정 EPS" to NumberFormat.getNumberInstance(Locale.KOREA).format(eps),
-                "추정 PER" to NumberFormat.getNumberInstance(Locale.KOREA).format(per)
+                "당해년도 추정 EPS" to eps,
+                "추정 PER" to per.round(2)
             ),
             note = ""
         )

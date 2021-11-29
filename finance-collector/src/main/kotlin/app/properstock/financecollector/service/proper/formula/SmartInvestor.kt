@@ -28,11 +28,12 @@ class SmartInvestor(
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val thisYear = YearMonth.now().year
         val profitCriteriaYears = 3
-        val operatingProfits = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.operatingProfit.data.toSortedMap()
+        val operatingProfitMap = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.operatingProfit.data.toSortedMap()
             .filter {
                 val ym = it.key
                 thisYear - profitCriteriaYears + 1 <= ym.year && ym.year <= thisYear
             }
+        val operatingProfits = operatingProfitMap
             .map { it.value }
             .filterNotNull()
 
@@ -61,17 +62,17 @@ class SmartInvestor(
         return ProperPriceFormula.Output(
             value = ((businessValue + assetValue - nonCurrentLiability) / shares).toDouble(),
             arguments = mapOf(
-                "영업이익" to operatingProfits.map { it.formatMillion() },
-                "영업이익평균" to operatingProfitAvg.formatMillion(),
+                "영업이익" to operatingProfitMap,
+                "영업이익평균" to operatingProfitAvg,
                 "법인세율" to corporateTaxRate,
-                "기대수익율" to fixedExpectedReturnRate,
-                "사업가치" to businessValue.formatMillion(),
-                "유동자산" to currentAsset.formatMillion(),
-                "유동부채" to currentLiability.formatMillion(),
-                "투자자산" to investmentAsset.formatMillion(),
-                "재산가치" to assetValue.formatMillion(),
-                "고정부채" to nonCurrentLiability.formatMillion(),
-                "발행주식수" to shares.toLong().format10Thousand()
+                "기대수익율" to fixedExpectedReturnRate.round(2),
+                "사업가치" to businessValue,
+                "유동자산" to currentAsset,
+                "유동부채" to currentLiability,
+                "투자자산" to investmentAsset,
+                "재산가치" to assetValue,
+                "고정부채" to nonCurrentLiability,
+                "발행주식수" to shares
             ),
             note = ""
         )

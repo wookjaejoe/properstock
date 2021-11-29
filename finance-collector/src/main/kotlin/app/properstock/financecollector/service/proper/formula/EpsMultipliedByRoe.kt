@@ -43,8 +43,8 @@ class EpsMultipliedByRoe(
         return ProperPriceFormula.Output(
             value = floor(eps * roe),
             arguments = mapOf(
-                "당해년도 추정 EPS" to NumberFormat.getNumberInstance(Locale.KOREA).format(eps),
-                "당해년도 추정 ROE" to NumberFormat.getNumberInstance(Locale.KOREA).format(roe)
+                "당해년도 추정 EPS" to eps,
+                "당해년도 추정 ROE" to roe.round(2)
             ),
             note = ""
         )

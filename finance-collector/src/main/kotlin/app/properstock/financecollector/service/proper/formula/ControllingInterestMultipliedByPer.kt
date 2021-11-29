@@ -45,13 +45,13 @@ class ControllingInterestMultipliedByPer(
         ] ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
 
         // 상장주식수
-        val issued = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("발행주식수 미확인")
+        val shares = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("발행주식수 미확인")
         return ProperPriceFormula.Output(
-            value = (per * controllingInterest / issued).round(),
+            value = (per * controllingInterest / shares).round(),
             arguments = mapOf(
-                "당해년도 추정 지배주주순이익" to controllingInterest.formatMillion(),
-                "추정 PER" to per,
-                "발행주식수" to issued.toLong().format10Thousand()
+                "당해년도 추정 지배주주순이익" to controllingInterest,
+                "추정 PER" to per.round(2),
+                "발행주식수" to shares
             ),
             note = ""
         )
