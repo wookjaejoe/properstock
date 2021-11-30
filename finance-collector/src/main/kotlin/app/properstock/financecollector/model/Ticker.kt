@@ -37,7 +37,7 @@ data class Ticker(
     var roe: Double?,
 
     /** 외부 링크 */
-    var externalLinks: List<ExternalLink>?,
+    var externalLinks: List<ExternalLink> = listOf(),
 
     /** 산업 */
     var industry: String? = null,
