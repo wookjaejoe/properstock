@@ -19,10 +19,6 @@ spring:
       auto-index-creation: true
       username: admin
       password: qwe123
-  rabbitmq:
-    host: home.jowookjae.in
-    username: guest
-    password: guest
   jackson:
     serialization:
       indent_output: true
