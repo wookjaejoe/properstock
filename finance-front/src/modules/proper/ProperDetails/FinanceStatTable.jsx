@@ -11,7 +11,7 @@ const FinanceStatTable = ({ stat, unit }) => {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              paddingTop: 0,
+              padding: 0,
               paddingBottom: 4,
               alignItems: 'end',
             }}
