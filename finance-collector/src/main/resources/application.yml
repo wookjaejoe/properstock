@@ -22,3 +22,10 @@ spring:
   jackson:
     serialization:
       indent_output: true
+
+logging:
+  level:
+    org:
+      openqa:
+        selenium:
+          remote: warn
