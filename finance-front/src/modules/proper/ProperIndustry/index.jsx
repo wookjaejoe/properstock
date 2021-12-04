@@ -82,6 +82,7 @@ const ProperIndustry = observer(() => {
                       <th>종목 명</th>
                       <th className="pc-only">마켓</th>
                       <th className="number-cell">현재 가격</th>
+                      <th className="number-cell">목표 주가</th>
                       <th className="number-cell">적정 주가</th>
                       <th className="number-cell pc-only">차액</th>
                       <th className="number-cell">괴리율</th>
@@ -111,6 +112,9 @@ const ProperIndustry = observer(() => {
                           </td>
                           <td className="number-cell">
                             <span>{ticker.price.toLocaleString()}</span>
+                          </td>
+                          <td className="number-cell">
+                            <span>{ticker.targetPrice?.toLocaleString()}</span>
                           </td>
                           <td className="number-cell">
                             <span>{parseInt(price.value).toLocaleString()}</span>

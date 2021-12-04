@@ -34,6 +34,9 @@ const ProperDetails = () => {
                   <th style={{ width: 150 }} className="number-cell">
                     현재 가격
                   </th>
+                  <th style={{ width: 150 }} className="number-cell">
+                    목표 주가
+                  </th>
                   <th style={{ width: 200 }} className="number-cell">
                     시가총액
                   </th>
@@ -56,6 +59,9 @@ const ProperDetails = () => {
                     <span className={`badge ${ticker.market.toLowerCase()}`}>{ticker.market}</span>
                   </td>
                   <td className="number-cell">{Number(ticker.price).toLocaleString()}</td>
+                  <td className="number-cell">
+                    <span>{ticker.targetPrice?.toLocaleString()}</span>
+                  </td>
                   <td className="number-cell">{`${(ticker.marketCap / 100000000).toFixed(
                     1
                   )} 억원`}</td>
