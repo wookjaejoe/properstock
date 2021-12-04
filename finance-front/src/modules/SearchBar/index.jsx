@@ -1,9 +1,11 @@
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useState } from 'react';
 import ProperHttp from '../../common/https/ProperHttp';
+import GlobalStore from '../../store/GlobalStore';
 
-const SearchBar = () => {
+const SearchBar = observer(() => {
   const [searchText, setSearchText] = useState('');
   const [result, setResult] = useState({});
   const [show, setShow] = useState(false);
@@ -75,6 +77,8 @@ const SearchBar = () => {
       <div className="search-result">
         {Object.keys(result).map((key) => {
           const tickerList = result[key] || [];
+          const tickerInfo = GlobalStore.tickers[tickerList[0].tickerCode];
+
           return (
             <div className="result__item" key={key}>
               <div className="result__item__header">
@@ -91,26 +95,28 @@ const SearchBar = () => {
 
               <div className="result__item__proper__container">
                 {tickerList.map((ticker, idx) => {
+                  const margin = ticker.value - tickerInfo.price;
+                  const marginRate = (margin / tickerInfo.price) * 100;
                   return (
                     <div className="result__item__proper" key={idx}>
                       <p>{formulas[ticker.formulaSymbol]}</p>
                       <div className="result__item__proper__result">
                         <p>
-                          현재가: <span>{ticker.currentPrice.toLocaleString()}</span>
+                          현재가: <span>{tickerInfo.price.toLocaleString()}</span>
                         </p>
                         <p>
                           적정주가: <span> {parseInt(ticker.value).toLocaleString()}</span>
                         </p>
                         <p>
                           차액:
-                          <span className={ticker.margin > 0 ? 'font-green' : 'font-red'}>
-                            {parseInt(ticker.margin).toLocaleString()}
+                          <span className={margin > 0 ? 'font-green' : 'font-red'}>
+                            {parseInt(margin).toLocaleString()}
                           </span>
                         </p>
                         <p>
                           괴리율:
-                          <span className={ticker.marginRate > 0 ? 'font-green' : 'font-red'}>
-                            {parseInt(ticker.marginRate)}%
+                          <span className={marginRate > 0 ? 'font-green' : 'font-red'}>
+                            {parseInt(marginRate)}%
                           </span>
                         </p>
                       </div>
@@ -130,6 +136,6 @@ const SearchBar = () => {
       </div>
     </div>
   );
-};
+});
 
 export default SearchBar;
