@@ -11,11 +11,11 @@ const FinanceSummaries = ({ financeSummaries }) => {
             분기별
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            <FinanceStatTable stat={financeSummaries.QUARTER.controllingInterest} />
+            <FinanceStatTable stat={financeSummaries.QUARTER.controllingInterest} unit />
+            <FinanceStatTable stat={financeSummaries.QUARTER.netProfit} unit />
+            <FinanceStatTable stat={financeSummaries.QUARTER.operatingProfit} unit />
+            <FinanceStatTable stat={financeSummaries.QUARTER.sales} unit />
             <FinanceStatTable stat={financeSummaries.QUARTER.issuedCommonShares} />
-            <FinanceStatTable stat={financeSummaries.QUARTER.netProfit} />
-            <FinanceStatTable stat={financeSummaries.QUARTER.operatingProfit} />
-            <FinanceStatTable stat={financeSummaries.QUARTER.sales} />
             <FinanceStatTable stat={financeSummaries.QUARTER.eps} />
             <FinanceStatTable stat={financeSummaries.QUARTER.per} />
             <FinanceStatTable stat={financeSummaries.QUARTER.roe} />
@@ -28,11 +28,11 @@ const FinanceSummaries = ({ financeSummaries }) => {
             년도별
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            <FinanceStatTable stat={financeSummaries.YEAR.controllingInterest} />
+            <FinanceStatTable stat={financeSummaries.YEAR.controllingInterest} unit />
+            <FinanceStatTable stat={financeSummaries.YEAR.netProfit} unit />
+            <FinanceStatTable stat={financeSummaries.YEAR.operatingProfit} unit />
+            <FinanceStatTable stat={financeSummaries.YEAR.sales} unit />
             <FinanceStatTable stat={financeSummaries.YEAR.issuedCommonShares} />
-            <FinanceStatTable stat={financeSummaries.YEAR.netProfit} />
-            <FinanceStatTable stat={financeSummaries.YEAR.operatingProfit} />
-            <FinanceStatTable stat={financeSummaries.YEAR.sales} />
             <FinanceStatTable stat={financeSummaries.YEAR.eps} />
             <FinanceStatTable stat={financeSummaries.YEAR.per} />
             <FinanceStatTable stat={financeSummaries.YEAR.roe} />

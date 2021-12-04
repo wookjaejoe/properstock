@@ -1,14 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const FinanceStatTable = ({ stat }) => {
+const FinanceStatTable = ({ stat, unit }) => {
   return (
     <>
       {stat && (
         <div className="card" style={{ flexGrow: 1 }}>
-          <p className="card__title" style={{ paddingTop: 0 }}>
-            {stat.displayName}
-          </p>
+          <div
+            className="card__title"
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              paddingTop: 0,
+              alignItems: 'end',
+            }}
+          >
+            <p>{stat.displayName}</p>
+            <p style={{ fontSize: 11 }}>{unit && <span>(단위: 억원)</span>}</p>
+          </div>
           <table
             className="table custom-table"
             style={{
@@ -23,7 +32,9 @@ const FinanceStatTable = ({ stat }) => {
                   <tr key={date}>
                     <th style={{ background: 'rgb(102 102 102 / 24%)', padding: 8 }}>{date}</th>
                     <td style={{ padding: 8, textAlign: 'right' }}>
-                      {!isNaN(Number(value)) && Number(value).toLocaleString(0)}
+                      {unit && <span>{(value / 100000000).toFixed(1)}</span>}
+
+                      {!unit && !isNaN(Number(value)) && Number(value).toLocaleString(0)}
                     </td>
                   </tr>
                 );
@@ -38,6 +49,7 @@ const FinanceStatTable = ({ stat }) => {
 
 FinanceStatTable.propTypes = {
   stat: PropTypes.object.isRequired,
+  unit: PropTypes.bool,
 };
 
 export default FinanceStatTable;

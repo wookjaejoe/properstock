@@ -91,7 +91,9 @@ const ProperPriceDetails = ({ ticker, properPrices }) => {
                               style={{ padding: 8, textAlign: 'right' }}
                               className="number-cell"
                             >
-                              {!isNaN(Number(value)) && Number(value).toLocaleString(0)}
+                              {!isNaN(Number(value)) && Number(value) > 100000000
+                                ? `${(Number(value) / 100000000).toFixed(1)} 억원`
+                                : Number(value).toLocaleString(0)}
                             </td>
                           );
                         })}

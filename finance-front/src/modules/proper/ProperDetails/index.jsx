@@ -56,7 +56,9 @@ const ProperDetails = () => {
                     <span className={`badge ${ticker.market.toLowerCase()}`}>{ticker.market}</span>
                   </td>
                   <td className="number-cell">{Number(ticker.price).toLocaleString()}</td>
-                  <td className="number-cell">{Number(ticker.marketCap).toLocaleString()}</td>
+                  <td className="number-cell">{`${(ticker.marketCap / 100000000).toFixed(
+                    1
+                  )} 억원`}</td>
                   <td className="number-cell">{ticker.per}</td>
                   <td className="number-cell">{ticker.roe}</td>
                   <td className="number-cell">{Number(ticker.shares).toLocaleString()}</td>
@@ -70,10 +72,10 @@ const ProperDetails = () => {
       {financeStat && (
         <div className="card mt">
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            <FinanceStatTable stat={financeStat.currentAssets} />
-            <FinanceStatTable stat={financeStat.currentLiabilities} />
-            <FinanceStatTable stat={financeStat.investmentAssets} />
-            <FinanceStatTable stat={financeStat.nonCurrentLiabilities} />
+            <FinanceStatTable stat={financeStat.currentAssets} unit />
+            <FinanceStatTable stat={financeStat.currentLiabilities} unit />
+            <FinanceStatTable stat={financeStat.investmentAssets} unit />
+            <FinanceStatTable stat={financeStat.nonCurrentLiabilities} unit />
           </div>
         </div>
       )}
