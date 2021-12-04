@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
-import React from 'react';
+import React, { useRef } from 'react';
 import AsideNav from '../AsideNav';
 import ProperAllList from '../proper/ProperAllList';
 import ProperIndustry from '../proper/ProperIndustry';
@@ -10,8 +10,15 @@ import ProperTop100 from '../proper/ProperTop100';
 import Main from '../Main';
 import SearchBar from '../SearchBar';
 import ProperDetails from '../proper/ProperDetails';
+import { observer } from 'mobx-react-lite';
+import GlobalStore from '../../store/GlobalStore';
 
-const Dashboard = () => {
+const Dashboard = observer(() => {
+  const containerRef = useRef();
+  React.useEffect(() => {
+    if (containerRef.current) GlobalStore.init(containerRef.current);
+  }, [containerRef]);
+
   return (
     <>
       <Router>
@@ -21,7 +28,11 @@ const Dashboard = () => {
         </label>
         <AsideNav />
         <SearchBar />
-        <div className="container">
+        <div
+          ref={containerRef}
+          className="container"
+          onScroll={(e) => GlobalStore.setScrollStatus(e.target.scrollLeft, e.target.scrollTop)}
+        >
           <Switch>
             <Route exact path="/proper/all" component={ProperAllList} />
             <Route exact path="/proper/rank" component={ProperTop100} />
@@ -34,7 +45,7 @@ const Dashboard = () => {
       </Router>
     </>
   );
-};
+});
 
 Dashboard.propTypes = {};
 

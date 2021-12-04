@@ -1,110 +1,48 @@
-import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import React, { useCallback } from 'react';
 import { useHistory } from 'react-router';
 import FilterContainer from '../../../common/components/FilterContainer';
 import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
-import ProperHttp from '../../../common/https/ProperHttp';
+import GlobalStore from '../../../store/GlobalStore';
+import UIStore from './UIStore';
 
-const ProperTheme = () => {
-  const [themes, setThemes] = useState([]);
-  const [selectedThemes, setSelectedThemes] = useState([]);
-  const [formulas, setFormulas] = useState([]);
-  const [formulaSymbol, setFormulaSymbol] = useState('');
-  const [tickers, setTickers] = useState({});
-  const [properPriceByTheme, setProperPriceByTheme] = useState({});
-  const [showMoreFlag, setShowMoreFlag] = useState([]);
+const ProperTheme = observer(() => {
   const history = useHistory();
-  useEffect(() => {
-    axios
-      .all([
-        ProperHttp.searchThemeNames(),
-        ProperHttp.searchFormulas(),
-        ProperHttp.searchTickersByCode(),
-      ])
-      .then(
-        axios.spread((themeNames, formulas, tickers) => {
-          setThemes(themeNames);
-          setFormulas(formulas);
-          setFormulaSymbol(formulas[0].symbol);
-          setTickers(tickers);
-          ProperHttp.searchProperPriceByTheme({ formulaSymbol: formulas[0].symbol }).then((res) => {
-            setProperPriceByTheme(res);
-          });
-        })
-      );
-  }, []);
 
-  const filterTheme = useCallback((properPriceByTheme, selectedThemes) => {
-    const filtered = {};
-    selectedThemes.forEach((key) => {
-      if (properPriceByTheme[key]) {
-        filtered[key] = properPriceByTheme[key];
+  React.useEffect(() => {
+    if (UIStore.goDetail) {
+      GlobalStore.restoreScroll(UIStore.scrollPos);
+      UIStore.setGoDetail(false);
+    }
+
+    return () => {
+      if (!UIStore.goDetail) {
+        UIStore.init();
       }
-    });
-    return filtered;
+    };
   }, []);
 
-  const searchTickers = useCallback(
-    (selectedThemes, formulaSymbol) => {
-      ProperHttp.searchProperPriceByTheme({
-        themes: selectedThemes,
-        formulaSymbol: formulaSymbol,
-      }).then((res) => {
-        if (selectedThemes.length == 0) {
-          setProperPriceByTheme(res);
-        } else {
-          setProperPriceByTheme(filterTheme(res, selectedThemes));
-        }
-      });
-    },
-    [filterTheme]
-  );
-
-  const handleSubmit = useCallback(() => {
-    setShowMoreFlag([]);
-    searchTickers(selectedThemes, formulaSymbol);
-  }, [selectedThemes, formulaSymbol]);
-
-  const handleClear = useCallback(() => {
-    setSelectedThemes([]);
-    ProperHttp.searchProperPriceByTheme({ formulaSymbol: formulaSymbol }).then((res) =>
-      setProperPriceByTheme(res)
-    );
-  }, [formulaSymbol]);
-
-  const handleChangeType = useCallback(
-    (type) => {
-      setShowMoreFlag([]);
-      setFormulaSymbol(type.symbol);
-      searchTickers(selectedThemes, type.symbol);
-    },
-    [selectedThemes]
-  );
-
-  const handleChangeFilter = useCallback((item) => {
-    setSelectedThemes((pre) => {
-      let currentSelected;
-      if (pre.includes(item)) {
-        currentSelected = pre.filter((p) => p !== item);
-      } else {
-        currentSelected = [...pre, item];
+  React.useEffect(() => {
+    if (GlobalStore.formulas.length > 0) {
+      if (!UIStore.formulaSymbol) {
+        UIStore.changeType(GlobalStore.formulas[0]);
+        UIStore.searchProperPrice();
       }
+    }
+  }, [GlobalStore.formulas]);
 
-      return currentSelected;
-    });
-  }, []);
-
-  const handleShowMore = useCallback((key) => {
-    setShowMoreFlag((prev) => {
-      return [...prev, key];
-    });
-  }, []);
+  React.useEffect(() => {
+    if (GlobalStore.scroll) {
+      UIStore.setScrollStatus(GlobalStore.scroll.x, GlobalStore.scroll.y);
+    }
+  }, [GlobalStore.scroll]);
 
   const goDetails = useCallback(
     (code) => {
+      UIStore.setGoDetail(true);
       history.push(`/proper/${code}`);
     },
     [history]
@@ -113,18 +51,25 @@ const ProperTheme = () => {
     <>
       <PageTitle title="적정주가 (테마 별 랭킹)" />
       <PageContents>
-        <FilterContainer title="필터" onSubmit={handleSubmit} onClear={handleClear}>
+        <FilterContainer
+          title="필터"
+          onSubmit={() => UIStore.sumbit()}
+          onClear={() => UIStore.clear()}
+        >
           <FilterListItem
             title="테마"
-            options={themes}
-            values={selectedThemes}
+            options={GlobalStore.theme}
+            values={UIStore.selectedThemes}
             border={true}
-            onChange={(item) => handleChangeFilter(item)}
+            onChange={(item) => UIStore.changeFilter(item)}
           ></FilterListItem>
         </FilterContainer>
-        <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
-        {Object.keys(properPriceByTheme).map((themeKey, themeIdx) => {
-          const tickerList = properPriceByTheme[themeKey] || [];
+        <TypeSelector
+          formulas={GlobalStore.formulas}
+          onChange={(type) => UIStore.changeType(type)}
+        ></TypeSelector>
+        {Object.keys(UIStore.properPriceByTheme).map((themeKey, themeIdx) => {
+          const tickerList = UIStore.properPriceByTheme[themeKey] || [];
 
           return (
             <div className="card mt" key={themeIdx}>
@@ -148,10 +93,10 @@ const ProperTheme = () => {
                   </thead>
                   <tbody>
                     {tickerList.map((price, idx) => {
-                      if (idx >= 5 && !showMoreFlag.includes(themeKey)) {
+                      if (idx >= 5 && !UIStore.showMoreFlag.includes(themeKey)) {
                         return null;
                       }
-                      const ticker = tickers[price.tickerCode];
+                      const ticker = GlobalStore.tickers[price.tickerCode];
                       const margin = price.value - ticker.price;
                       const marginRate = (margin / ticker.price) * 100;
                       return (
@@ -212,8 +157,8 @@ const ProperTheme = () => {
                   </tbody>
                 </table>
               </div>
-              {tickerList.length > 5 && !showMoreFlag.includes(themeKey) ? (
-                <div className="more-action" onClick={() => handleShowMore(themeKey)}>
+              {tickerList.length > 5 && !UIStore.showMoreFlag.includes(themeKey) ? (
+                <div className="more-action" onClick={() => UIStore.changeShowMore(themeKey)}>
                   더 보기
                 </div>
               ) : (
@@ -225,6 +170,6 @@ const ProperTheme = () => {
       </PageContents>
     </>
   );
-};
+});
 
 export default ProperTheme;

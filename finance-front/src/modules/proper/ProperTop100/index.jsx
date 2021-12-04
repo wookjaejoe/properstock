@@ -1,37 +1,46 @@
-import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import React, { useCallback } from 'react';
 import { useHistory } from 'react-router';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
-import ProperHttp from '../../../common/https/ProperHttp';
+import GlobalStore from '../../../store/GlobalStore';
+import UIStore from './UIStore';
 
-const ProperTop100 = () => {
-  const [formulas, setFormulas] = useState([]);
-  const [properPriceTop100, setProperPriceTop100] = useState([]);
-  const [tickers, setTickers] = useState({});
+const ProperTop100 = observer(() => {
   const history = useHistory();
-  useEffect(() => {
-    axios.all([ProperHttp.searchFormulas(), ProperHttp.searchTickersByCode()]).then(
-      axios.spread((formulas, tickers) => {
-        setFormulas(formulas);
-        setTickers(tickers);
-        console.log(formulas[0].symbol);
-        ProperHttp.searchProperPriceTop100(formulas[0].symbol).then((res) => {
-          setProperPriceTop100(res);
-        });
-      })
-    );
+
+  React.useEffect(() => {
+    if (UIStore.goDetail) {
+      GlobalStore.restoreScroll(UIStore.scrollPos);
+      UIStore.setGoDetail(false);
+    }
+
+    return () => {
+      if (!UIStore.goDetail) {
+        UIStore.init();
+      }
+    };
   }, []);
 
-  const handleChangeType = useCallback((type) => {
-    ProperHttp.searchProperPriceTop100(type.symbol).then((properPriceTop100) => {
-      setProperPriceTop100(properPriceTop100);
-    });
-  }, []);
+  React.useEffect(() => {
+    if (GlobalStore.formulas.length > 0) {
+      if (!UIStore.formulaSymbol) {
+        UIStore.changeType(GlobalStore.formulas[0]);
+        UIStore.searchProperPrice();
+      }
+    }
+  }, [GlobalStore.formulas]);
+
+  React.useEffect(() => {
+    if (GlobalStore.scroll) {
+      UIStore.setScrollStatus(GlobalStore.scroll.x, GlobalStore.scroll.y);
+    }
+  }, [GlobalStore.scroll]);
 
   const goDetails = useCallback(
     (code) => {
+      UIStore.setGoDetail(true);
       history.push(`/proper/${code}`);
     },
     [history]
@@ -41,7 +50,10 @@ const ProperTop100 = () => {
     <>
       <PageTitle title="적정주가 (랭킹 Top 100)" />
       <PageContents>
-        <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
+        <TypeSelector
+          formulas={GlobalStore.formulas}
+          onChange={(type) => UIStore.changeType(type)}
+        ></TypeSelector>
         <div className="table__container">
           <table className="table custom-table">
             <thead className="sticky">
@@ -60,8 +72,8 @@ const ProperTop100 = () => {
               </tr>
             </thead>
             <tbody>
-              {properPriceTop100.map((price, idx) => {
-                const ticker = tickers[price.tickerCode];
+              {UIStore.properPriceTop100.map((price, idx) => {
+                const ticker = GlobalStore.tickers[price.tickerCode];
                 const margin = price.value - ticker.price;
                 const marginRate = (margin / ticker.price) * 100;
                 return (
@@ -124,6 +136,6 @@ const ProperTop100 = () => {
       </PageContents>
     </>
   );
-};
+});
 
 export default ProperTop100;

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './TypeSelector.css';
+import { observer } from 'mobx-react-lite';
 
 const TypeSelector = ({ formulas, onChange }) => {
   const [show, setShow] = useState(false);
@@ -45,6 +46,7 @@ const TypeSelector = ({ formulas, onChange }) => {
 
   const handleChangeType = useCallback(
     (type) => {
+      console.log(type);
       setSelected(type);
       onChange(type);
       setShow(false);

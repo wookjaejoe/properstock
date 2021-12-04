@@ -1,87 +1,47 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import React, { useCallback } from 'react';
 import { useHistory } from 'react-router';
 import FilterContainer from '../../../common/components/FilterContainer';
 import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
-import ProperHttp from '../../../common/https/ProperHttp';
+import GlobalStore from '../../../store/GlobalStore';
+import UIStore from './UIStore';
 
-const ProperAllList = () => {
-  const [industries, setIndustries] = useState([]);
-  const [themes, setThemes] = useState([]);
-  const [filter, setFilter] = useState({});
-  const [formulas, setFormulas] = useState([]);
-  const [formulaSymbol, setFormulaSymbol] = useState('');
-  const [tickers, setTickers] = useState({});
-  const [properPriceList, setProperPriceList] = useState([]);
+const ProperAllList = observer(() => {
   const history = useHistory();
-  useEffect(() => {
-    axios
-      .all([
-        ProperHttp.searchIndustryNames(),
-        ProperHttp.searchThemeNames(),
-        ProperHttp.searchFormulas(),
-        ProperHttp.searchTickersByCode(),
-      ])
-      .then(
-        axios.spread((industryNames, themeNames, formulas, tickers) => {
-          setIndustries(industryNames);
-          setThemes(themeNames);
-          setFormulas(formulas);
-          setFormulaSymbol(formulas[0].symbol);
-          setTickers(tickers);
-          ProperHttp.searchProperPrice({ formulaSymbol: formulas[0].symbol }).then((res) =>
-            setProperPriceList(res)
-          );
-        })
-      );
-  }, []);
+  React.useEffect(() => {
+    if (UIStore.goDetail) {
+      GlobalStore.restoreScroll(UIStore.scrollPos);
+      UIStore.setGoDetail(false);
+    }
 
-  const handleSubmit = useCallback(() => {
-    ProperHttp.searchProperPrice({ ...filter, formulaSymbol: formulaSymbol }).then((res) =>
-      setProperPriceList(res)
-    );
-  }, [filter, formulaSymbol]);
-
-  const handleClear = useCallback(() => {
-    setFilter({});
-    ProperHttp.searchProperPrice({ ormulaSymbol: formulaSymbol }).then((res) =>
-      setProperPriceList(res)
-    );
-  }, [formulaSymbol]);
-
-  const handleChangeType = useCallback(
-    (type) => {
-      setFormulaSymbol(type.symbol);
-      ProperHttp.searchProperPrice({ ...filter, formulaSymbol: type.symbol }).then((res) =>
-        setProperPriceList(res)
-      );
-    },
-    [filter]
-  );
-
-  const handleChangeFilter = useCallback((key, item) => {
-    setFilter((pre) => {
-      const preSelected = pre[key] || [];
-      let currentSelected;
-      if (preSelected.includes(item)) {
-        currentSelected = preSelected.filter((p) => p !== item);
-      } else {
-        currentSelected = [...preSelected, item];
+    return () => {
+      if (!UIStore.goDetail) {
+        UIStore.init();
       }
-
-      return {
-        ...pre,
-        [key]: currentSelected,
-      };
-    });
+    };
   }, []);
 
-  const goDetails = useCallback(
+  React.useEffect(() => {
+    if (GlobalStore.formulas.length > 0) {
+      if (!UIStore.formulaSymbol) {
+        UIStore.changeType(GlobalStore.formulas[0]);
+        UIStore.searchProperPrice();
+      }
+    }
+  }, [GlobalStore.formulas]);
+
+  React.useEffect(() => {
+    if (GlobalStore.scroll) {
+      UIStore.setScrollStatus(GlobalStore.scroll.x, GlobalStore.scroll.y);
+    }
+  }, [GlobalStore.scroll]);
+
+  const goDetail = useCallback(
     (code) => {
+      UIStore.setGoDetail(true);
       history.push(`/proper/${code}`);
     },
     [history]
@@ -91,29 +51,36 @@ const ProperAllList = () => {
     <>
       <PageTitle title="적정주가 (전체)" />
       <PageContents>
-        <FilterContainer title="필터" onSubmit={handleSubmit} onClear={handleClear}>
+        <FilterContainer
+          title="필터"
+          onSubmit={() => UIStore.searchProperPrice()}
+          onClear={() => UIStore.clear()}
+        >
           <FilterListItem
             title="마켓"
             options={['KOSDAQ', 'KOSPI']}
-            values={filter['market'] || []}
-            onChange={(item) => handleChangeFilter('market', item)}
+            values={UIStore.filter['market'] || []}
+            onChange={(item) => UIStore.changeFilter('market', item)}
           ></FilterListItem>
           <FilterListItem
             title="업종"
-            options={industries}
-            values={filter['industries'] || []}
+            options={GlobalStore.industryNames}
+            values={UIStore.filter['industries'] || []}
             border={true}
-            onChange={(item) => handleChangeFilter('industries', item)}
+            onChange={(item) => UIStore.changeFilter('industries', item)}
           ></FilterListItem>
           <FilterListItem
             title="테마"
-            options={themes}
-            values={filter['themes'] || []}
+            options={GlobalStore.theme}
+            values={UIStore.filter['themes'] || []}
             border={true}
-            onChange={(item) => handleChangeFilter('themes', item)}
+            onChange={(item) => UIStore.changeFilter('themes', item)}
           ></FilterListItem>
         </FilterContainer>
-        <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
+        <TypeSelector
+          formulas={GlobalStore.formulas}
+          onChange={(type) => UIStore.changeType(type)}
+        ></TypeSelector>
         <div className="card mt">
           <p className="card__title">조회 목록</p>
           <div className="table__container">
@@ -134,14 +101,14 @@ const ProperAllList = () => {
                 </tr>
               </thead>
               <tbody>
-                {properPriceList.map((price, idx) => {
-                  const ticker = tickers[price.tickerCode];
+                {UIStore.properPriceList.map((price, idx) => {
+                  const ticker = GlobalStore.tickers[price.tickerCode];
                   const margin = price.value - ticker.price;
                   const marginRate = (margin / ticker.price) * 100;
                   return (
                     <tr key={idx}>
                       <td className="pc-only">{price.tickerCode}</td>
-                      <td onClick={() => goDetails(price.tickerCode)} className="go-detail">
+                      <td onClick={() => goDetail(price.tickerCode)} className="go-detail">
                         {price.tickerName}
                       </td>
                       <td className="pc-only">
@@ -209,6 +176,6 @@ const ProperAllList = () => {
       </PageContents>
     </>
   );
-};
+});
 
 export default ProperAllList;

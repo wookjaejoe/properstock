@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 
 const FilterListItem = ({ title, options, values, border, onChange }) => {
   const handleSelectItem = useCallback(

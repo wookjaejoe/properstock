@@ -1,92 +1,48 @@
-import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import React, { useCallback } from 'react';
 import { useHistory } from 'react-router';
 import FilterContainer from '../../../common/components/FilterContainer';
 import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
-import ProperHttp from '../../../common/https/ProperHttp';
+import GlobalStore from '../../../store/GlobalStore';
+import UIStore from './UIStore';
 
-const ProperIndustry = () => {
-  const [industries, setIndustries] = useState([]);
-  const [selectedIndustries, setSelectedIndustries] = useState([]);
-  const [formulas, setFormulas] = useState([]);
-  const [formulaSymbol, setFormulaSymbol] = useState('');
-  const [tickers, setTickers] = useState({});
-  const [properPriceByIndustry, setProperPriceByIndustry] = useState({});
-  const [showMoreFlag, setShowMoreFlag] = useState([]);
+const ProperIndustry = observer(() => {
   const history = useHistory();
-  useEffect(() => {
-    axios
-      .all([
-        ProperHttp.searchIndustryNames(),
-        ProperHttp.searchFormulas(),
-        ProperHttp.searchTickersByCode(),
-      ])
-      .then(
-        axios.spread((industryNames, formulas, tickers) => {
-          setIndustries(industryNames);
-          setFormulas(formulas);
-          setFormulaSymbol(formulas[0].symbol);
-          setTickers(tickers);
-          ProperHttp.searchProperPriceByIndustry({ formulaSymbol: formulas[0].symbol }).then(
-            (res) => {
-              setProperPriceByIndustry(res);
-            }
-          );
-        })
-      );
-  }, []);
 
-  const handleSubmit = useCallback(() => {
-    setShowMoreFlag([]);
-    ProperHttp.searchProperPriceByIndustry({
-      industries: selectedIndustries,
-      formulaSymbol: formulaSymbol,
-    }).then((res) => setProperPriceByIndustry(res));
-  }, [selectedIndustries, formulaSymbol]);
+  React.useEffect(() => {
+    if (UIStore.goDetail) {
+      GlobalStore.restoreScroll(UIStore.scrollPos);
+      UIStore.setGoDetail(false);
+    }
 
-  const handleClear = useCallback(() => {
-    setSelectedIndustries([]);
-    ProperHttp.searchProperPriceByIndustry({ formulaSymbol: formulaSymbol }).then((res) =>
-      setProperPriceByIndustry(res)
-    );
-  }, [formulaSymbol]);
-
-  const handleChangeType = useCallback(
-    (type) => {
-      setShowMoreFlag([]);
-      setFormulaSymbol(type.symbol);
-      ProperHttp.searchProperPriceByIndustry({
-        industries: selectedIndustries,
-        formulaSymbol: type.symbol,
-      }).then((res) => setProperPriceByIndustry(res));
-    },
-    [selectedIndustries]
-  );
-
-  const handleChangeFilter = useCallback((item) => {
-    setSelectedIndustries((pre) => {
-      let currentSelected;
-      if (pre.includes(item)) {
-        currentSelected = pre.filter((p) => p !== item);
-      } else {
-        currentSelected = [...pre, item];
+    return () => {
+      if (!UIStore.goDetail) {
+        UIStore.init();
       }
-
-      return currentSelected;
-    });
+    };
   }, []);
 
-  const handleShowMore = useCallback((key) => {
-    setShowMoreFlag((prev) => {
-      return [...prev, key];
-    });
-  }, []);
+  React.useEffect(() => {
+    if (GlobalStore.formulas.length > 0) {
+      if (!UIStore.formulaSymbol) {
+        UIStore.changeType(GlobalStore.formulas[0]);
+        UIStore.searchProperPrice();
+      }
+    }
+  }, [GlobalStore.formulas]);
+
+  React.useEffect(() => {
+    if (GlobalStore.scroll) {
+      UIStore.setScrollStatus(GlobalStore.scroll.x, GlobalStore.scroll.y);
+    }
+  }, [GlobalStore.scroll]);
 
   const goDetails = useCallback(
     (code) => {
+      UIStore.setGoDetail(true);
       history.push(`/proper/${code}`);
     },
     [history]
@@ -96,18 +52,25 @@ const ProperIndustry = () => {
     <>
       <PageTitle title="적정주가 (업종 별 랭킹)" />
       <PageContents>
-        <FilterContainer title="필터" onSubmit={handleSubmit} onClear={handleClear}>
+        <FilterContainer
+          title="필터"
+          onSubmit={() => UIStore.sumbit()}
+          onClear={() => UIStore.clear()}
+        >
           <FilterListItem
             title="업종"
-            options={industries}
-            values={selectedIndustries}
+            options={GlobalStore.industryNames}
+            values={UIStore.selectedIndustries}
             border={true}
-            onChange={(item) => handleChangeFilter(item)}
+            onChange={(item) => UIStore.changeFilter(item)}
           ></FilterListItem>
         </FilterContainer>
-        <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
-        {Object.keys(properPriceByIndustry).map((key) => {
-          const tickerList = properPriceByIndustry[key] || [];
+        <TypeSelector
+          formulas={GlobalStore.formulas}
+          onChange={(type) => UIStore.changeType(type)}
+        ></TypeSelector>
+        {Object.keys(UIStore.properPriceByIndustry).map((key) => {
+          const tickerList = UIStore.properPriceByIndustry[key] || [];
           return (
             <div className="card mt" key={key}>
               <p className="card__title">{key}</p>
@@ -129,10 +92,10 @@ const ProperIndustry = () => {
                   </thead>
                   <tbody>
                     {tickerList.map((price, idx) => {
-                      if (idx >= 5 && !showMoreFlag.includes(key)) {
+                      if (idx >= 5 && !UIStore.showMoreFlag.includes(key)) {
                         return null;
                       }
-                      const ticker = tickers[price.tickerCode];
+                      const ticker = GlobalStore.tickers[price.tickerCode];
                       const margin = price.value - ticker.price;
                       const marginRate = (margin / ticker.price) * 100;
                       return (
@@ -189,8 +152,8 @@ const ProperIndustry = () => {
                   </tbody>
                 </table>
               </div>
-              {tickerList.length > 5 && !showMoreFlag.includes(key) ? (
-                <div className="more-action" onClick={() => handleShowMore(key)}>
+              {tickerList.length > 5 && !UIStore.showMoreFlag.includes(key) ? (
+                <div className="more-action" onClick={() => UIStore.changeShowMore(key)}>
                   더 보기
                 </div>
               ) : (
@@ -202,6 +165,6 @@ const ProperIndustry = () => {
       </PageContents>
     </>
   );
-};
+});
 
 export default ProperIndustry;
