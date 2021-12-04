@@ -8,6 +8,8 @@ import org.jsoup.select.Elements
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
 import org.openqa.selenium.interactions.Actions
+import org.openqa.selenium.support.ui.ExpectedCondition
+import org.openqa.selenium.support.ui.WebDriverWait
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -112,6 +114,9 @@ class NaverFinanceCrawler(
         val tab = webDriver.findElement(tabBy)
         val actions = Actions(webDriver)
         actions.click(tab).build().perform()
+        WebDriverWait(webDriver, 10).until(ExpectedCondition { driver ->
+            driver!!.findElement(tabBy).getAttribute("class").split(" ").contains("on")
+        })
 
         val tableHtml = webDriver.findElements(By.tagName("table")).find {
             try {
@@ -185,9 +190,6 @@ class NaverFinanceCrawler(
             logger.debug("Opening $url")
             get(url)
 
-            // todo 투자정보 크롤링
-            println()
-
             val html = findElement(By.xpath("/html"))!!
                 .getAttribute(OUTER_HTML)
                 .run { Jsoup.parse(this) }
@@ -210,8 +212,8 @@ class NaverFinanceCrawler(
             )
 
             val financeSummaries = mapOf(
-                crawlFinanceSummary(this, By.id("cns_Tab21"), CorpStat.FinanceSummary.Period.YEAR),
-                crawlFinanceSummary(this, By.id("cns_Tab22"), CorpStat.FinanceSummary.Period.QUARTER),
+                crawlFinanceSummary(this, By.id("cns_td21"), CorpStat.FinanceSummary.Period.YEAR),
+                crawlFinanceSummary(this, By.id("cns_td22"), CorpStat.FinanceSummary.Period.QUARTER),
             )
 
             CorpStat(
@@ -385,9 +387,11 @@ class NaverFinanceCrawler(
 
             // 재무재표 상태표 탭 클릭
             val actions = Actions(this)
-            val financeStatTab = findElements(By.tagName("a")).findLast { it.getAttribute("title") == "재무상태표" }
+            val financeStatTab = findElement(By.id("rpt_tab2"))
             actions.click(financeStatTab).build().perform()
-
+            WebDriverWait(this, 10).until(ExpectedCondition { driver ->
+                driver!!.findElement(By.id("rpt_td2")).getAttribute("class").split(" ").contains("on")
+            })
             val html = findElement(By.tagName("html")).getAttribute(OUTER_HTML)
             val table = Jsoup.parse(html)
                 .getElementsByTag("table").last()!!
