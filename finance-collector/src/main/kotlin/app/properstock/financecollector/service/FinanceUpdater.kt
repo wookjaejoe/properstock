@@ -1,7 +1,7 @@
 package app.properstock.financecollector.service
 
 import app.properstock.financecollector.crawl.nf.NaverFinanceCrawler
-import app.properstock.financecollector.model.FinanceSummary
+import app.properstock.financecollector.model.CorpStat
 import app.properstock.financecollector.model.Industry
 import app.properstock.financecollector.model.Theme
 import app.properstock.financecollector.repository.*
@@ -195,7 +195,7 @@ class FinanceUpdater(
             .mapNotNull {
                 val roe = corpStatRepository.findByCode(it.code)
                     ?.financeSummaries
-                    ?.get(FinanceSummary.Period.QUARTER)
+                    ?.get(CorpStat.FinanceSummary.Period.QUARTER)
                     ?.roe
                     ?.nearestFixed()
                 if (roe != null && !roe.isNaN()) {

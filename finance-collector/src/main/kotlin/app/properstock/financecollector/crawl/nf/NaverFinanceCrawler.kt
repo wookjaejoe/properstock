@@ -107,8 +107,8 @@ class NaverFinanceCrawler(
     fun crawlFinanceSummary(
         webDriver: WebDriver,
         tabBy: By,
-        period: FinanceSummary.Period
-    ): Pair<FinanceSummary.Period, FinanceSummary> {
+        period: CorpStat.FinanceSummary.Period
+    ): Pair<CorpStat.FinanceSummary.Period, CorpStat.FinanceSummary> {
         val tab = webDriver.findElement(tabBy)
         val actions = Actions(webDriver)
         actions.click(tab).build().perform()
@@ -132,7 +132,7 @@ class NaverFinanceCrawler(
                 YearMonth.of(spl[0].toInt(), spl[1].toInt())
             }
 
-        val financeSummary = FinanceSummary(period)
+        val financeSummary = CorpStat.FinanceSummary(period)
 
         table
             .getElementsByTag("tbody")[0]
@@ -185,14 +185,39 @@ class NaverFinanceCrawler(
             logger.debug("Opening $url")
             get(url)
 
+            // todo 투자정보 크롤링
+            println()
+
+            val html = findElement(By.xpath("/html"))!!
+                .getAttribute(OUTER_HTML)
+                .run { Jsoup.parse(this) }
+
+            val investOpinionElement = html.getElementById("cTB15")!!
+            val investOpinionMap = investOpinionElement.getElementsByTag("th")
+                .subList(1, 5)
+                .map { it.text().split("(")[0] }
+                .zip(
+                    investOpinionElement.getElementsByTag("td")
+                        .subList(2, 6)
+                        .map { element -> element.text() }
+                )
+                .toMap()
+            val investOpinion = CorpStat.InvestOpinion(
+                targetPrice = investOpinionMap["목표주가"]?.parseDouble()?.toInt(),
+                eps = investOpinionMap["EPS"]?.parseDouble()?.toInt(),
+                per = investOpinionMap["PER"]?.parseDouble(),
+                numberOfOrgans = investOpinionMap["추정기관수"]?.parseDouble()?.toInt()
+            )
+
             val financeSummaries = mapOf(
-                crawlFinanceSummary(this, By.id("cns_Tab21"), FinanceSummary.Period.YEAR),
-                crawlFinanceSummary(this, By.id("cns_Tab22"), FinanceSummary.Period.QUARTER),
+                crawlFinanceSummary(this, By.id("cns_Tab21"), CorpStat.FinanceSummary.Period.YEAR),
+                crawlFinanceSummary(this, By.id("cns_Tab22"), CorpStat.FinanceSummary.Period.QUARTER),
             )
 
             CorpStat(
                 code = code,
-                financeSummaries = financeSummaries
+                financeSummaries = financeSummaries,
+                investOpinion = investOpinion
             )
         }
     }

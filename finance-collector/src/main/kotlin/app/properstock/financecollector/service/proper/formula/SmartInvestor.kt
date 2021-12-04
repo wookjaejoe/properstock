@@ -1,6 +1,6 @@
 package app.properstock.financecollector.service.proper.formula
 
-import app.properstock.financecollector.model.FinanceSummary
+import app.properstock.financecollector.model.CorpStat
 import app.properstock.financecollector.model.ProperPriceFormula
 import app.properstock.financecollector.repository.CorpStatRepository
 import app.properstock.financecollector.repository.FinanceAnalRepository
@@ -28,7 +28,7 @@ class SmartInvestor(
         val corpStat = corpStatRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("기업현황 미확인")
         val thisYear = YearMonth.now().year
         val profitCriteriaYears = 3
-        val operatingProfitMap = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.operatingProfit.data.toSortedMap()
+        val operatingProfitMap = corpStat.financeSummaries[CorpStat.FinanceSummary.Period.YEAR]!!.operatingProfit.data.toSortedMap()
             .filter {
                 val ym = it.key
                 thisYear - profitCriteriaYears + 1 <= ym.year && ym.year <= thisYear
