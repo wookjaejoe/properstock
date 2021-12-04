@@ -15,8 +15,10 @@ const FinanceStatTable = ({ stat, unit }) => {
               alignItems: 'end',
             }}
           >
-            <p>{stat.displayName}</p>
-            <p style={{ fontSize: 11 }}>{unit && <span>(단위: 억원)</span>}</p>
+            <p style={{ fontSize: 12, fontWeight: 'normal' }}>{stat.displayName}</p>
+            <p style={{ fontSize: 11, fontWeight: 'normal' }}>
+              {unit && <span>(단위: 억원)</span>}
+            </p>
           </div>
           <table
             className="table custom-table"
@@ -30,7 +32,9 @@ const FinanceStatTable = ({ stat, unit }) => {
                 const value = stat.data[date];
                 return (
                   <tr key={date}>
-                    <th style={{ background: 'rgb(102 102 102 / 24%)', padding: 8 }}>{date}</th>
+                    <th style={{ background: 'rgb(102 102 102 / 24%)', padding: 8, width: 80 }}>
+                      {date}
+                    </th>
                     <td style={{ padding: 8, textAlign: 'right' }}>
                       {unit && <span>{(value / 100000000).toFixed(1)}</span>}
 
