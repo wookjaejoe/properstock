@@ -51,7 +51,7 @@ const ProperPriceDetails = observer(({ ticker, properPrices }) => {
                       )}
                     </div>
                     <p title={GlobalStore.getFormulas(properPrice.formulaSymbol)?.shortDescription}>
-                      <FontAwesomeIcon icon={faQuestionCircle} />
+                      <FontAwesomeIcon icon={faQuestionCircle} style={{ marginRight: 8 }} />
                       {GlobalStore.getFormulas(properPrice.formulaSymbol)?.title}
                     </p>
                   </div>
@@ -81,7 +81,11 @@ const ProperPriceDetails = observer(({ ticker, properPrices }) => {
                       <tr>
                         {Object.keys(properPrice.arguments).map((argument) => {
                           return (
-                            <th key={argument} className="number-cell">
+                            <th
+                              key={argument}
+                              className="number-cell"
+                              style={{ padding: '0.5rem' }}
+                            >
                               {argument}
                             </th>
                           );
