@@ -5,7 +5,7 @@ class GlobalStore {
   industryNames = [];
   theme = [];
   formulas = [];
-  tickers = [];
+  tickers = {};
   scroll = null;
   scrollContainer = null;
 
