@@ -48,6 +48,16 @@ class GlobalStore {
     this.formulas = yield ProperHttp.searchFormulas();
   }
 
+  getFormulas(symbol) {
+    let find = null;
+    this.formulas.forEach((value) => {
+      if (value.symbol === symbol) {
+        find = value;
+      }
+    });
+    return find;
+  }
+
   *searchTickersByCode() {
     this.tickers = yield ProperHttp.searchTickersByCode();
   }

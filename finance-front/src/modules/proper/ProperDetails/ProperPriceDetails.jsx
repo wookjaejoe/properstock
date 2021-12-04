@@ -1,7 +1,11 @@
+import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import React from 'react';
+import GlobalStore from '../../../store/GlobalStore';
 
-const ProperPriceDetails = ({ ticker, properPrices }) => {
+const ProperPriceDetails = observer(({ ticker, properPrices }) => {
   return (
     <>
       {properPrices && ticker && (
@@ -46,7 +50,10 @@ const ProperPriceDetails = ({ ticker, properPrices }) => {
                         </>
                       )}
                     </div>
-                    <p>타입: {properPrice.formulaSymbol}</p>
+                    <p title={GlobalStore.getFormulas(properPrice.formulaSymbol)?.shortDescription}>
+                      <FontAwesomeIcon icon={faQuestionCircle} />
+                      {GlobalStore.getFormulas(properPrice.formulaSymbol)?.title}
+                    </p>
                   </div>
                   {isNaN(Number(properPrice.value)) && (
                     <div
@@ -108,7 +115,7 @@ const ProperPriceDetails = ({ ticker, properPrices }) => {
       )}
     </>
   );
-};
+});
 
 ProperPriceDetails.propTypes = {
   ticker: PropTypes.object.isRequired,
