@@ -125,15 +125,15 @@ class FinanceUpdater(
             }
     }
 
-    private fun updateCorpStat(code: String) {
-        logger.info("Starting to update corporation status...")
+    private fun updateCorpStat(code: String): CorpStat {
         // 기업현황 크롤링
         val corpStat = naverFinanceCrawler.crawlCorpStat(code)
         // 이전 데이터
         val oldCorpStat = corpStatRepository.findByCode(code)
-        if (oldCorpStat != null) {
+        return if (oldCorpStat != null) {
             oldCorpStat.apply {
                 this.code = corpStat.code
+                this.investOpinion = corpStat.investOpinion
                 this.financeSummaries = corpStat.financeSummaries
                 this.updated = Instant.now()
             }
@@ -144,7 +144,6 @@ class FinanceUpdater(
     }
 
     private fun updateFinanceAnal(code: String) {
-        logger.info("Starting to update finance analysis...")
         // 재무분석 크롤링
         val finAnal = naverFinanceCrawler.crawlFinanceAnal(code)
         val oldFinAnal = finAnalRepository.findByCode(code)
@@ -161,14 +160,15 @@ class FinanceUpdater(
     }
 
     fun updateFinanceData() {
-        logger.info("Starting to update finance data...")
         val excludes = naverFinanceCrawler.run { crawlEtfCodes() + crawlEtnCodes() }
         val tickers = tickerRepository.findAll().filter { !excludes.contains(it.code) }
         tickers.forEachIndexed { index, ticker ->
             logger.info("[${index + 1}/${tickers.size}] Starting to update finance data for ${ticker.code}")
             try {
                 // 기업현황 업데이트
-                updateCorpStat(ticker.code)
+                updateCorpStat(ticker.code).also {
+                    ticker.targetPrice = it.investOpinion?.targetPrice
+                }
             } catch (e: Throwable) {
                 logger.warn("Failed to update corpStat@${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
             }
@@ -186,6 +186,8 @@ class FinanceUpdater(
             } catch (e: Throwable) {
                 logger.warn("Failed to update ${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
             }
+
+            tickerRepository.save(ticker)
         }
     }
 

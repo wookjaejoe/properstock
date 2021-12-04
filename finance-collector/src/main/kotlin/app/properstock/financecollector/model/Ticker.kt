@@ -45,6 +45,9 @@ data class Ticker(
     /** 테마 */
     var themes: List<String> = listOf(),
 
+    /** 목표주가 */
+    var targetPrice: Int? = null,
+
     /** 마지막 업데이트 시각 */
     var updated: Instant = Instant.now()
 )
