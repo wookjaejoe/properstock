@@ -34,7 +34,7 @@ class EpsMultipliedByRoe(
                 note = "연속 흑자 조건 미충족"
             )
         val ticker = tickerRepository.findByCode(code)
-        val eps = corpStat.financeSummaries[FinanceSummary.Period.QUARTER]!!.eps.nearestFixed()
+        val eps = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.eps.nearestFixed()
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
         val roe = ticker?.roe
         if (roe == null || roe.isNaN()) {
@@ -43,8 +43,8 @@ class EpsMultipliedByRoe(
         return ProperPriceFormula.Output(
             value = floor(eps * roe),
             arguments = mapOf(
-                "당해년도 추정 EPS" to eps,
-                "당해년도 추정 ROE" to roe.round(2)
+                "추정 EPS" to eps,
+                "추정 ROE" to roe.round(2)
             ),
             note = ""
         )

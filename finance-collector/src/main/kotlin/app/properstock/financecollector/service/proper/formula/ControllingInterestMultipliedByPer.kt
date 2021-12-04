@@ -36,20 +36,16 @@ class ControllingInterestMultipliedByPer(
         val perList = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.per.data.toSortedMap()
         val per = calculatePerByAvgInSurplus(controllingInterestList, perList, 3, 5).round(2)
         if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
-        val thisYear = YearMonth.now().year
         // 지배주주순이익 계산: 당해년도
-        val controllingInterest = controllingInterestList[
-            controllingInterestList
-                .keys
-                .findLast { ym -> ym.year == thisYear }
-        ] ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
+        val controllingInterest = corpStat.financeSummaries[FinanceSummary.Period.YEAR]!!.controllingInterest.nearestEstimate()
+            ?: return ProperPriceFormula.Output.dummy("당해년도 지배주순이익 미확인")
 
         // 상장주식수
         val shares = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("발행주식수 미확인")
         return ProperPriceFormula.Output(
             value = (per * controllingInterest / shares).round(),
             arguments = mapOf(
-                "당해년도 추정 지배주주순이익" to controllingInterest,
+                "추정 지배주주순이익" to controllingInterest,
                 "추정 PER" to per.round(2),
                 "발행주식수" to shares
             ),
