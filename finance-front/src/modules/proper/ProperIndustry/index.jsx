@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 import FilterContainer from '../../../common/components/FilterContainer';
 import FilterListItem from '../../../common/components/FilterListItem';
 import PageContents from '../../../common/components/PageContents';
@@ -15,7 +16,7 @@ const ProperIndustry = () => {
   const [tickers, setTickers] = useState({});
   const [properPriceByIndustry, setProperPriceByIndustry] = useState({});
   const [showMoreFlag, setShowMoreFlag] = useState([]);
-
+  const history = useHistory();
   useEffect(() => {
     axios
       .all([
@@ -84,6 +85,13 @@ const ProperIndustry = () => {
     });
   }, []);
 
+  const goDetails = useCallback(
+    (code) => {
+      history.push(`/proper/${code}`);
+    },
+    [history]
+  );
+
   return (
     <>
       <PageTitle title="적정주가 (업종 별 랭킹)" />
@@ -105,7 +113,7 @@ const ProperIndustry = () => {
               <p className="card__title">{key}</p>
               <div className="table__container">
                 <table className="table custom-table">
-                  <thead>
+                  <thead className="sticky">
                     <tr>
                       <th className="pc-only">종목 코드</th>
                       <th>종목 명</th>
@@ -130,7 +138,9 @@ const ProperIndustry = () => {
                       return (
                         <tr key={idx}>
                           <td className="pc-only">{price.tickerCode}</td>
-                          <td>{price.tickerName}</td>
+                          <td onClick={() => goDetails(price.tickerCode)} className="go-detail">
+                            {price.tickerName}
+                          </td>
                           <td className="pc-only">
                             <span className={`badge ${ticker.market.toLowerCase()}`}>
                               {ticker.market}

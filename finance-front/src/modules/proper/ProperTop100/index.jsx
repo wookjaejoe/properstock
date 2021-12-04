@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 import PageContents from '../../../common/components/PageContents';
 import PageTitle from '../../../common/components/PageTitle';
 import TypeSelector from '../../../common/components/TypeSelector';
@@ -9,6 +10,7 @@ const ProperTop100 = () => {
   const [formulas, setFormulas] = useState([]);
   const [properPriceTop100, setProperPriceTop100] = useState([]);
   const [tickers, setTickers] = useState({});
+  const history = useHistory();
   useEffect(() => {
     axios.all([ProperHttp.searchFormulas(), ProperHttp.searchTickersByCode()]).then(
       axios.spread((formulas, tickers) => {
@@ -28,6 +30,13 @@ const ProperTop100 = () => {
     });
   }, []);
 
+  const goDetails = useCallback(
+    (code) => {
+      history.push(`/proper/${code}`);
+    },
+    [history]
+  );
+
   return (
     <>
       <PageTitle title="적정주가 (랭킹 Top 100)" />
@@ -35,7 +44,7 @@ const ProperTop100 = () => {
         <TypeSelector formulas={formulas} onChange={handleChangeType}></TypeSelector>
         <div className="table__container">
           <table className="table custom-table">
-            <thead>
+            <thead className="sticky">
               <tr>
                 <th className="pc-only">종목 코드</th>
                 <th>종목 명</th>
@@ -58,7 +67,9 @@ const ProperTop100 = () => {
                 return (
                   <tr key={idx}>
                     <td className="pc-only">{price.tickerCode}</td>
-                    <td>{price.tickerName}</td>
+                    <td onClick={() => goDetails(price.tickerCode)} className="go-detail">
+                      {price.tickerName}
+                    </td>
                     <td className="pc-only">
                       <span className={`badge ${price.tickerMarket.toLowerCase()}`}>
                         {price.tickerMarket}

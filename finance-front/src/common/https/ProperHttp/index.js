@@ -29,6 +29,9 @@ const ProperHttp = {
   searchIndustryNames() {
     return this.searchIndustries().then((res) => res.map((industry) => industry.name));
   },
+  searchDetails(code) {
+    return axios.get(`${this.servideURL}/ticker-details/${code}`).then((res) => res.data);
+  },
   searchProperPrice({
     market = [],
     industries = [],

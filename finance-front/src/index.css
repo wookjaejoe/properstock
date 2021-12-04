@@ -25,6 +25,10 @@ body {
   color: #cacaca !important;
 }
 
+.go-detail {
+  cursor: pointer;
+}
+
 /* SearchBar */
 .searchbar__container {
   position: fixed;
@@ -364,6 +368,8 @@ aside {
 .table thead {
   text-align: left;
   background: rgb(38 38 38);
+}
+.table thead.sticky {
   position: sticky;
   top: 50px;
 }
