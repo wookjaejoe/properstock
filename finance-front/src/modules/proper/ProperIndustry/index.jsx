@@ -76,13 +76,6 @@ const ProperIndustry = observer(() => {
             <div className="card mt" key={key}>
               <p className="card__title">{key}</p>
               <StockTable properPriceList={tickerList} onClick={(code) => goDetails(code)} />
-              {tickerList.length > 5 && !UIStore.showMoreFlag.includes(key) ? (
-                <div className="more-action" onClick={() => UIStore.changeShowMore(key)}>
-                  더 보기
-                </div>
-              ) : (
-                <></>
-              )}
             </div>
           );
         })}
