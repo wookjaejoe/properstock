@@ -86,7 +86,7 @@ const ProperAllList = observer(() => {
           <p className="card__title">조회 목록</p>
           <StockTable
             properPriceList={UIStore.properPriceList}
-            onClick={(code) => UIStore.goDetails(code)}
+            onClick={(code) => goDetails(code)}
           />
 
           {/* <div className="pagination">

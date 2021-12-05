@@ -57,7 +57,7 @@ const ProperTop100 = observer(() => {
         ></TypeSelector>
         <StockTable
           properPriceList={UIStore.properPriceTop100}
-          onClick={(code) => UIStore.goDetails(code)}
+          onClick={(code) => goDetails(code)}
         />
       </PageContents>
     </>

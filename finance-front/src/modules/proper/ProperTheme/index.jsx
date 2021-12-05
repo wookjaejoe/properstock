@@ -75,10 +75,7 @@ const ProperTheme = observer(() => {
           return (
             <div className="card mt" key={themeIdx}>
               <p className="card__title">{themeKey}</p>
-              <StockTable
-                properPriceList={tickerList}
-                onClick={(code) => UIStore.goDetails(code)}
-              />
+              <StockTable properPriceList={tickerList} onClick={(code) => goDetails(code)} />
               {tickerList.length > 5 && !UIStore.showMoreFlag.includes(themeKey) ? (
                 <div className="more-action" onClick={() => UIStore.changeShowMore(themeKey)}>
                   더 보기
