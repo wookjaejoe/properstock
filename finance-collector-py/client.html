@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Websocket Test</title>
+</head>
+<body>
+    <script type="text/javascript">
+        var webSocket = new WebSocket("ws://localhost:9090");
+        webSocket.onopen = function (message) {
+            // 소켓 열림
+        };
+        webSocket.onclose = function (message) {
+            // 소켓 닫힘
+        };
+        webSocket.onerror = function (message) {
+            // 오류
+        };
+        webSocket.onmessage = function (message) {
+            // 메세지 수신
+            console.log("MESSAGE RECEIVED: " + message.data)
+        };
+    </script>
+</body>
+</html>

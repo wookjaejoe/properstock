@@ -5,5 +5,6 @@ COPY . .
 RUN pip3 install -r requirements.txt
 
 ENV RMQ_HOST home.jowookjae.in
-ENV RMQ_PORT 5672
-CMD [ "python3", "start_pub.py"]
+ENV RMQ_PORT 9090
+
+CMD [ "python3", "main.py"]

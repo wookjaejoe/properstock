@@ -3,7 +3,7 @@ import os
 
 import paramiko
 
-import start_pub
+import main
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument('--user', required=True)
@@ -17,11 +17,11 @@ def print_hr():
     print('=' * 80)
 
 
-def main():
+def deploy():
     # 도커 이미지 제작
     registry = 'home.jowookjae.in:5000'
     container_name = 'finance-collactor-py-pub'
-    version = start_pub.VERSION
+    version = main.VERSION
     image_name = f'{registry}/{container_name}:{version}'
     run_cmd = f'docker build -t {image_name} .'
 
@@ -58,8 +58,8 @@ def main():
     execute(f'docker rm {container_name}')
     execute(f'docker rmi {container_name}')
     execute(f'docker pull {image_name}')
-    execute(f'docker run -d --name {container_name} {image_name}')
+    execute(f'docker run -d -p 9090:9090 --name {container_name} {image_name}')
 
 
 if __name__ == '__main__':
-    main()
+    deploy()
