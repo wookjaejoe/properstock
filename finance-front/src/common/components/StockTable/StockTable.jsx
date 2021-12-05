@@ -11,7 +11,6 @@ const StockTable = observer(({ properPriceList, onClick }) => {
             <th className="pc-only">종목 코드</th>
             <th>종목 명</th>
             <th className="pc-only">마켓</th>
-            <th className="pc-only">업종</th>
             <th className="number-cell">현재 가격</th>
             <th className="number-cell">목표 주가</th>
             <th className="number-cell">적정 주가</th>
@@ -35,9 +34,6 @@ const StockTable = observer(({ properPriceList, onClick }) => {
                 </td>
                 <td className="pc-only">
                   <span className={`badge ${ticker.market.toLowerCase()}`}>{ticker.market}</span>
-                </td>
-                <td className="pc-only">
-                  <span>{ticker.industry}</span>
                 </td>
                 <td className="number-cell">
                   <span>{ticker.price.toLocaleString()}</span>
