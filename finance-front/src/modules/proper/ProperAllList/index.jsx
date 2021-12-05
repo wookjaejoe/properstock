@@ -40,7 +40,7 @@ const ProperAllList = observer(() => {
     }
   }, [GlobalStore.scroll]);
 
-  const goDetail = useCallback(
+  const goDetails = useCallback(
     (code) => {
       UIStore.setGoDetail(true);
       history.push(`/proper/${code}`);
