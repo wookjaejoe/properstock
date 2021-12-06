@@ -21,7 +21,7 @@ class GlobalStore {
     this.searchTickersByCode();
     this.setScrollStatus(0, 0);
     this.scrollContainer = scrollContainer;
-    this.initSocket();
+    // this.initSocket();
   }
 
   setScrollStatus(x, y) {
