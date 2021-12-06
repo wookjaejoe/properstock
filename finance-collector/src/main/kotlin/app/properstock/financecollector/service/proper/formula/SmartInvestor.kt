@@ -62,7 +62,6 @@ class SmartInvestor(
         return ProperPriceFormula.Output(
             value = ((businessValue + assetValue - nonCurrentLiability) / shares).toDouble(),
             arguments = mapOf(
-                "영업이익" to operatingProfitMap,
                 "영업이익평균" to operatingProfitAvg,
                 "법인세율" to corporateTaxRate,
                 "기대수익율" to fixedExpectedReturnRate.round(2),

@@ -77,7 +77,7 @@ remotes {
     val password = project.properties["password"]
     devServer = withGroovyBuilder {
         "create"("remoteName") {
-            setProperty("host", "home.jowookjae.in")
+            setProperty("host", "jowookjae.in")
             setProperty("user", user)
             setProperty("password", password)
         }
