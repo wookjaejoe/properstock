@@ -727,3 +727,11 @@ aside {
     background-color: #2e2e2e;
   }
 }
+
+.price-up {
+  border: 1px solid green;
+}
+
+.price-down {
+  border: 1px solid red;
+}

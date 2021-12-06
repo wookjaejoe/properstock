@@ -1,4 +1,5 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, toJS } from 'mobx';
+import { w3cwebsocket } from 'websocket';
 import ProperHttp from '../common/https/ProperHttp';
 
 class GlobalStore {
@@ -8,7 +9,7 @@ class GlobalStore {
   tickers = {};
   scroll = null;
   scrollContainer = null;
-
+  updown = {};
   constructor() {
     makeAutoObservable(this);
   }
@@ -20,6 +21,7 @@ class GlobalStore {
     this.searchTickersByCode();
     this.setScrollStatus(0, 0);
     this.scrollContainer = scrollContainer;
+    this.initSocket();
   }
 
   setScrollStatus(x, y) {
@@ -56,6 +58,46 @@ class GlobalStore {
       }
     });
     return find;
+  }
+
+  initSocket() {
+    const client = new w3cwebsocket('ws://jowookjae.in:9090');
+    client.onopen = () => {
+      console.log('WebSocket Client Connected');
+    };
+    client.onmessage = (message) => {
+      const priceArr = JSON.parse(message.data);
+      this.change(priceArr);
+    };
+  }
+
+  clearUpDown() {
+    this.updown = {};
+  }
+
+  getStatus(code) {
+    return this.updown[code];
+  }
+
+  change(priceArr) {
+    const tempUpdown = {};
+    priceArr.forEach((value) => {
+      const current = this.tickers[value.code];
+      if (current) {
+        if (current.price > value.price) {
+          tempUpdown[value.code] = 'price-up';
+        } else if (current.price < value.price) {
+          tempUpdown[value.code] = 'price-down';
+        } else {
+          tempUpdown[value.code] = '';
+        }
+        current.price = value.price;
+      }
+    });
+    this.updown = tempUpdown;
+    setTimeout(() => {
+      this.clearUpDown();
+    }, 1000);
   }
 
   *searchTickersByCode() {

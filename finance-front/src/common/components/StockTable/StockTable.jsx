@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import PropTypes from 'prop-types';
 import GlobalStore from '../../../store/GlobalStore';
+import { computed } from 'mobx';
 const StockTable = observer(({ properPriceList, onClick }) => {
   return (
     <div className="table__container">
@@ -24,8 +25,11 @@ const StockTable = observer(({ properPriceList, onClick }) => {
         <tbody>
           {properPriceList.map((price, idx) => {
             const ticker = GlobalStore.tickers[price.tickerCode];
-            const margin = price.value - ticker.price;
-            const marginRate = (margin / ticker.price) * 100;
+            if (!ticker) {
+              return <></>;
+            }
+            const margin = computed(() => price.value - ticker.price).get();
+            const marginRate = computed(() => (margin / ticker.price) * 100).get();
             return (
               <tr key={idx}>
                 <td className="pc-only">{price.tickerCode}</td>
@@ -35,7 +39,7 @@ const StockTable = observer(({ properPriceList, onClick }) => {
                 <td className="pc-only">
                   <span className={`badge ${ticker.market.toLowerCase()}`}>{ticker.market}</span>
                 </td>
-                <td className="number-cell">
+                <td className={`number-cell  ${GlobalStore.updown[price.tickerCode]}`}>
                   <span>{ticker.price.toLocaleString()}</span>
                 </td>
                 <td className="number-cell">

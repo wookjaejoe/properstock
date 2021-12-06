@@ -1,17 +1,17 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { observer } from 'mobx-react-lite';
 import React, { useRef } from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import GlobalStore from '../../store/GlobalStore';
 import AsideNav from '../AsideNav';
+import Main from '../Main';
 import ProperAllList from '../proper/ProperAllList';
+import ProperDetails from '../proper/ProperDetails';
 import ProperIndustry from '../proper/ProperIndustry';
 import ProperTheme from '../proper/ProperTheme';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import ProperTop100 from '../proper/ProperTop100';
-import Main from '../Main';
 import SearchBar from '../SearchBar';
-import ProperDetails from '../proper/ProperDetails';
-import { observer } from 'mobx-react-lite';
-import GlobalStore from '../../store/GlobalStore';
 
 const Dashboard = observer(() => {
   const containerRef = useRef();
