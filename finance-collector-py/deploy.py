@@ -23,7 +23,7 @@ def deploy():
     container_name = 'finance-collactor-py-pub'
     version = main.VERSION
     image_name = f'{registry}/{container_name}:{version}'
-    run_cmd = f'docker build -t {image_name} .'
+    run_cmd = f'docker build --platform linux/amd64 -t {image_name} .'
 
     print_hr()
     print(f'Run command at local: {run_cmd}')
