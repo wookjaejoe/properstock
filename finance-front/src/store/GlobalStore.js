@@ -21,7 +21,7 @@ class GlobalStore {
     this.searchTickersByCode();
     this.setScrollStatus(0, 0);
     this.scrollContainer = scrollContainer;
-    // this.initSocket();
+    this.initSocket();
   }
 
   setScrollStatus(x, y) {
@@ -61,14 +61,18 @@ class GlobalStore {
   }
 
   initSocket() {
-    const client = new w3cwebsocket('ws://jowookjae.in:9090');
-    client.onopen = () => {
-      console.log('WebSocket Client Connected');
-    };
-    client.onmessage = (message) => {
-      const priceArr = JSON.parse(message.data);
-      this.change(priceArr);
-    };
+    try {
+      const client = new w3cwebsocket('ws://jowookjae.in:9090');
+      client.onopen = () => {
+        console.log('WebSocket Client Connected');
+      };
+      client.onmessage = (message) => {
+        const priceArr = JSON.parse(message.data);
+        this.change(priceArr);
+      };
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   clearUpDown() {
