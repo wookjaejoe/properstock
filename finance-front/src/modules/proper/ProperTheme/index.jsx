@@ -52,11 +52,7 @@ const ProperTheme = observer(() => {
     <>
       <PageTitle title="적정주가 (테마 별 랭킹)" />
       <PageContents>
-        <FilterContainer
-          title="필터"
-          onSubmit={() => UIStore.sumbit()}
-          onClear={() => UIStore.clear()}
-        >
+        <FilterContainer title="필터" onClear={() => UIStore.clear()}>
           <FilterListItem
             title="테마"
             options={GlobalStore.theme}

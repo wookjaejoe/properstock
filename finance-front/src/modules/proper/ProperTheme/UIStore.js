@@ -5,7 +5,6 @@ class UIStore {
   selectedThemes = [];
   formulaSymbol = '';
   _properPriceByTheme = {};
-  showMoreFlag = [];
   goDetail = false;
   scrollPos = null;
   constructor() {
@@ -17,7 +16,6 @@ class UIStore {
     this.selectedThemes = [];
     this.formulaSymbol = '';
     this._properPriceByTheme = {};
-    this.showMoreFlag = [];
     this.goDetail = false;
   }
 
@@ -43,18 +41,12 @@ class UIStore {
     }
   }
 
-  sumbit() {
-    this.showMoreFlag = [];
-    this.searchProperPrice();
-  }
-
   clear() {
     this.selectedThemes = [];
     this.searchProperPrice();
   }
 
   changeType(type) {
-    this.showMoreFlag = [];
     this.formulaSymbol = type.symbol;
     this.searchProperPrice();
   }
@@ -77,10 +69,6 @@ class UIStore {
     this.selectedThemes = currentSelected;
 
     this.searchProperPrice();
-  }
-
-  changeShowMore(key) {
-    this.showMoreFlag = [...this.showMoreFlag, key];
   }
 
   setGoDetail(value) {

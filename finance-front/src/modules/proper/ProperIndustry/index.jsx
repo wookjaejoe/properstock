@@ -53,11 +53,7 @@ const ProperIndustry = observer(() => {
     <>
       <PageTitle title="적정주가 (업종 별 랭킹)" />
       <PageContents>
-        <FilterContainer
-          title="필터"
-          onSubmit={() => UIStore.sumbit()}
-          onClear={() => UIStore.clear()}
-        >
+        <FilterContainer title="필터" onClear={() => UIStore.clear()}>
           <FilterListItem
             title="업종"
             options={GlobalStore.industryNames}

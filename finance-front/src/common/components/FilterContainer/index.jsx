@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
-const FilterContainer = ({ title, onSubmit, onClear, children }) => {
+const FilterContainer = ({ title, onClear, children }) => {
   const [expanded, setExpanded] = useState(false);
 
   const handleChangeExpand = () => {
@@ -23,9 +23,6 @@ const FilterContainer = ({ title, onSubmit, onClear, children }) => {
       <div className={`search-area ${expanded ? 'show' : ''}`}>
         {children}
         <div className="search__button__area">
-          <button type="button" className="btn btn-primary" onClick={onSubmit}>
-            조회
-          </button>
           <button type="button" className="btn btn-outline-primary" onClick={onClear}>
             초기화
           </button>
@@ -38,7 +35,6 @@ const FilterContainer = ({ title, onSubmit, onClear, children }) => {
 FilterContainer.propTypes = {
   children: PropTypes.node.isRequired,
   title: PropTypes.string.isRequired,
-  onSubmit: PropTypes.func.isRequired,
   onClear: PropTypes.func.isRequired,
 };
 

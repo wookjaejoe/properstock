@@ -5,7 +5,6 @@ class UIStore {
   selectedIndustries = [];
   formulaSymbol = '';
   properPriceByIndustry = {};
-  showMoreFlag = [];
   goDetail = false;
   scrollPos = null;
   constructor() {
@@ -17,7 +16,6 @@ class UIStore {
     this.selectedIndustries = [];
     this.formulaSymbol = '';
     this.properPriceByIndustry = {};
-    this.showMoreFlag = [];
     this.goDetail = false;
   }
 
@@ -28,18 +26,12 @@ class UIStore {
     });
   }
 
-  sumbit() {
-    this.showMoreFlag = [];
-    this.searchProperPrice();
-  }
-
   clear() {
     this.selectedIndustries = [];
     this.searchProperPrice();
   }
 
   changeType(type) {
-    this.showMoreFlag = [];
     this.formulaSymbol = type.symbol;
     this.searchProperPrice();
   }
@@ -62,10 +54,6 @@ class UIStore {
     this.selectedIndustries = currentSelected;
 
     this.searchProperPrice();
-  }
-
-  changeShowMore(key) {
-    this.showMoreFlag = [...this.showMoreFlag, key];
   }
 
   setGoDetail(value) {

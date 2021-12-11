@@ -52,11 +52,7 @@ const ProperAllList = observer(() => {
     <>
       <PageTitle title="적정주가 (전체)" />
       <PageContents>
-        <FilterContainer
-          title="필터"
-          onSubmit={() => UIStore.searchProperPrice()}
-          onClear={() => UIStore.clear()}
-        >
+        <FilterContainer title="필터" onClear={() => UIStore.clear()}>
           <FilterListItem
             title="마켓"
             options={['KOSDAQ', 'KOSPI']}
@@ -88,17 +84,6 @@ const ProperAllList = observer(() => {
             properPriceList={UIStore.properPriceList}
             onClick={(code) => goDetails(code)}
           />
-
-          {/* <div className="pagination">
-            <span>
-              <FontAwesomeIcon icon={faAngleDoubleLeft} />
-            </span>
-            <span className="active">1</span>
-            <span>2</span>
-            <span>
-              <FontAwesomeIcon icon={faAngleDoubleRight} />
-            </span>
-          </div> */}
         </div>
       </PageContents>
     </>
