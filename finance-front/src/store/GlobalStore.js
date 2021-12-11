@@ -88,9 +88,9 @@ class GlobalStore {
     priceArr.forEach((value) => {
       const current = this.tickers[value.code];
       if (current) {
-        if (current.price > value.price) {
+        if (current.price < value.price) {
           tempUpdown[value.code] = 'price-up';
-        } else if (current.price < value.price) {
+        } else if (current.price > value.price) {
           tempUpdown[value.code] = 'price-down';
         } else {
           tempUpdown[value.code] = '';
