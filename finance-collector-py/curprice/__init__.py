@@ -19,9 +19,8 @@ class CurrentPricePublisher:
             cur_infos = self.fetcher.fetch()
 
             # fixme: temporary code for test
-            target = random.choices(cur_infos, k=random.randint(16, 32))
-            for x in target:
-                x.price = x.price + 10
+            for x in cur_infos[:350]:
+                x.price = x.price + random.randrange(1, 10)
             ############################################
 
             logger.info(f'{len(cur_infos)} prices fetched.')

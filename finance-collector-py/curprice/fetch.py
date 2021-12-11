@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass
-from datetime import date, timedelta
-from datetime import datetime, timezone
+from datetime import date
+from datetime import datetime
 from typing import *
 
 from pykrx import stock as krx
@@ -23,15 +23,7 @@ def nearest_business_date() -> date:
     """
     가까운 영업일을 구해서 반환
     """
-    curr = date_str(date.today())
-    prev = date_str(date.today() - timedelta(days=30))
-    df = krx.get_index_ohlcv_by_date(
-        prev,
-        curr,
-        "1001"
-    )
-
-    return df.index[-1]
+    return datetime.strptime(krx.get_nearest_business_day_in_a_week(), '%Y%m%d').date()
 
 
 @dataclass
@@ -55,8 +47,7 @@ class KrxCurrentPriceFetcher:
                 todate=ref_date_str,
                 market='ALL'
             )['종가'].to_dict()
-            now = datetime.utcnow()
-            return [KrxStockCurrentInfo(code, price, now) for code, price in prices_by_code.items()]
+            return [KrxStockCurrentInfo(code, price, datetime.utcnow()) for code, price in prices_by_code.items()]
         except BaseException as e:
             logger.warning(f'An error occurs while fetching current price from krx: {e}')
             raise e
