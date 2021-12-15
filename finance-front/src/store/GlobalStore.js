@@ -62,7 +62,7 @@ class GlobalStore {
 
   initSocket() {
     try {
-      const client = new w3cwebsocket('ws://jowookjae.in:9090');
+      const client = new w3cwebsocket('wss://jowookjae.in:9090');
       client.onopen = () => {
         console.log('WebSocket Client Connected');
       };
