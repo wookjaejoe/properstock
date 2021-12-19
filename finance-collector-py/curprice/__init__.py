@@ -10,7 +10,7 @@ from .server import *
 class CurrentPricePublisher:
     def __init__(self):
         self.fetcher = KrxCurrentPriceFetcher()
-        self.server = WebsocketServer(9090)
+        self.server = WebsocketServer(8080)
 
     def __start_publish(self):
         prev_infos: Dict[str, KrxStockCurrentInfo] = {}
