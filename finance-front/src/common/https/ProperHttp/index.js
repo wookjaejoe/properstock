@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const ProperHttp = {
-  servideURL: 'https://home.jowookjae.in:9443',
+  servideURL: 'https://ppst-api.jowookjae.in',
   searchTickersByCode() {
     return axios
       .get(`${this.servideURL}/tickers`)
