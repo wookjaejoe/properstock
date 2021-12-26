@@ -1,20 +1,9 @@
-http:
-  port: 8080
 server:
-  port: 8443
-  servlet:
-    session:
-      timeout: 30
-    encoding:
-      charset: UTF-8
-  ssl:
-    key-store: classpath:cert/keystore.p12
-    key-store-type: PKCS12
-    key-store-password: "qwe123"
+  port: 8080
 spring:
   data:
     mongodb:
-      host: home.jowookjae.in
+      host: jowookjae.in
       database: finance
       auto-index-creation: true
       username: admin

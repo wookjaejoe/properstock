@@ -1,4 +1,4 @@
 webdriver:
   chrome:
     remote:
-      url: http://home.jowookjae.in:4444
+      url: http://jowookjae.in:4444

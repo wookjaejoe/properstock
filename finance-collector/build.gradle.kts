@@ -3,9 +3,9 @@ import org.hidetake.groovy.ssh.session.SessionHandler
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.21"
-    kotlin("plugin.spring") version "1.5.21"
-    kotlin("kapt") version "1.5.31"
+    kotlin("jvm") version "1.5.30"
+    kotlin("plugin.spring") version "1.5.30"
+    kotlin("kapt") version "1.5.30"
 
     id("org.springframework.boot") version "2.5.5"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "app.properstock"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.1"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -59,7 +59,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val dockerImageName = "home.jowookjae.in:5000/ppst.finance-collector:${project.version}"
+val dockerImageName = "jowookjae.in:5000/${project.name}:${project.version}"
 
 tasks.bootBuildImage {
     docker.publishRegistry {
@@ -88,7 +88,7 @@ tasks.register("deploy.dev") {
     val runOptions = listOf(
         "-d",
         "-e SPRING_PROFILES_ACTIVE=dev",
-        "-p 9080:8080 -p 9443:8443",
+        "-p 9080:8080",
         "--name ${project.name}",
         "-v /etc/localtime:/etc/localtime:ro"
     ).joinToString(" ")
