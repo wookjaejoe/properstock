@@ -58,7 +58,7 @@ def deploy():
     execute(f'docker rm {container_name}')
     execute(f'docker rmi {container_name}')
     execute(f'docker pull {image_name}')
-    execute(f'docker run --restart unless-stopped -d -p 10080:8080 --name {container_name} {image_name}')
+    execute(f'docker run --restart unless-stopped -d -p 10080:8080 --name {container_name} -v /etc/localtime:/etc/localtime:ro {image_name}')
 
 
 if __name__ == '__main__':
