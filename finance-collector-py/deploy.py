@@ -19,7 +19,7 @@ def print_hr():
 
 def deploy():
     # 도커 이미지 제작
-    registry = 'home.jowookjae.in:5000'
+    registry = 'jowookjae.in:5000'
     container_name = 'finance-collactor-py-pub'
     version = main.VERSION
     image_name = f'{registry}/{container_name}:{version}'
@@ -37,7 +37,7 @@ def deploy():
     print_hr()
 
     # 도커 컨테이너 실행
-    host = 'home.jowookjae.in'
+    host = 'jowookjae.in'
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
     ssh.connect(host, username=user, password=pswd)
@@ -58,7 +58,7 @@ def deploy():
     execute(f'docker rm {container_name}')
     execute(f'docker rmi {container_name}')
     execute(f'docker pull {image_name}')
-    execute(f'docker run -d -p 10080:8080 --name {container_name} {image_name}')
+    execute(f'docker run --restart unless-stopped -d -p 10080:8080 --name {container_name} {image_name}')
 
 
 if __name__ == '__main__':

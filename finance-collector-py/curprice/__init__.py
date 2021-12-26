@@ -2,7 +2,7 @@ import time
 from threading import Thread
 
 import jsons
-import random
+
 from .fetch import *
 from .server import *
 
@@ -17,13 +17,8 @@ class CurrentPricePublisher:
 
         while True:
             cur_infos = self.fetcher.fetch()
-
-            # fixme: temporary code for test
-            for x in cur_infos[:350]:
-                x.price = x.price + random.randrange(1, 10)
-            ############################################
-
             logger.info(f'{len(cur_infos)} prices fetched.')
+
             updated_infos: Dict[str, KrxStockCurrentInfo] = {}
             for cur_info in cur_infos:
                 updated = False

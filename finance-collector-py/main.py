@@ -3,7 +3,7 @@ import log
 
 log.init()
 
-VERSION = '0.2.0-SNAPSHOT'
+VERSION = '0.2.0'
 
 
 def main():
