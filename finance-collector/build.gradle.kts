@@ -87,6 +87,7 @@ remotes {
 tasks.register("deploy.dev") {
     val runOptions = listOf(
         "-d",
+        "--restart unless-stopped",
         "-e SPRING_PROFILES_ACTIVE=dev",
         "-p 9080:8080",
         "--name ${project.name}",
