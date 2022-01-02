@@ -3,12 +3,14 @@ package app.properstock.financecollector.service.proper.formula
 import app.properstock.financecollector.model.CorpStat
 import app.properstock.financecollector.model.ProperPriceFormula
 import app.properstock.financecollector.repository.CorpStatRepository
+import app.properstock.financecollector.service.MarketAnalyzer
 import org.springframework.stereotype.Component
 import kotlin.math.floor
 
 @Component
 class EpsMultipliedByPer(
-    val corpStatRepository: CorpStatRepository
+    val corpStatRepository: CorpStatRepository,
+    val marketAnalyzer: MarketAnalyzer
 ) : ProperPriceFormula {
     override val symbol = "EPSPER"
     override val title = "순이익과 벨류에이션"
@@ -28,11 +30,9 @@ class EpsMultipliedByPer(
                 arguments = mapOf("연도별 EPS" to yearlyEps),
                 note = "연속 흑자 조건 미충족"
             )
-        val perList = corpStat.financeSummaries[CorpStat.FinanceSummary.Period.YEAR]!!.per.data.toSortedMap()
-        val per = calculatePerByAvgInSurplus(yearlyEps, perList, 3, 5).round(2)
-        if (per.isNaN()) return ProperPriceFormula.Output.dummy("PER 미확인")
+        val per = marketAnalyzer.avgOfPer.round(2)
         // EPS 계산: 당해년도 EPS
-        val eps = corpStat.financeSummaries[CorpStat.FinanceSummary.Period.YEAR]!!.eps.thisYearLast()
+        val eps = corpStat.financeSummaries[CorpStat.FinanceSummary.Period.YEAR]!!.eps.nearest()
             ?: return ProperPriceFormula.Output.dummy("EPS 미확인")
 
         // 결과 반환

@@ -1,12 +1,9 @@
 package app.properstock.financecollector.service.proper.formula
 
-import java.text.NumberFormat
 import java.time.YearMonth
 import java.util.*
 
 fun Double.round(offset: Int = 0): Double = String.format("%.${offset}f", this).toDouble()
-fun Long.formatMillion() = "${NumberFormat.getNumberInstance(Locale.KOREA).format(this / 1_0000_0000)}억"
-fun Long.format10Thousand() = "${NumberFormat.getNumberInstance(Locale.KOREA).format(this / 1_0000)}만"
 
 /**
  * 기업의 수익이 연속 흑자인 년도를 리스트로 반환한다.
@@ -54,6 +51,7 @@ fun checkSurplus(
  * 순이익이 연속 흑자 조건 만족하면 PER 반환
  * @return 연속 흑자 PER 평균
  */
+@Deprecated("사용하지 않음")
 fun calculatePerByAvgInSurplus(
     earningList: SortedMap<YearMonth, Long?>,
     perList: SortedMap<YearMonth, Double?>,

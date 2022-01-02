@@ -199,7 +199,7 @@ class FinanceUpdater(
                     ?.financeSummaries
                     ?.get(CorpStat.FinanceSummary.Period.QUARTER)
                     ?.roe
-                    ?.nearestFixed()
+                    ?.nearest()
                 if (roe != null && !roe.isNaN()) {
                     it.apply { it.roe = roe }
                 } else {

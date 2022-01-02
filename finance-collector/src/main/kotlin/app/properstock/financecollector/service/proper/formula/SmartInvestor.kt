@@ -47,16 +47,14 @@ class SmartInvestor(
 
         // 재산가치: 유동자산 - (유동부채 X 1.2) + 투자자산
         val finAnal = financeAnalRepository.findByCode(code) ?: return ProperPriceFormula.Output.dummy("재무분석 미확인")
-        val thisYearLastMonth = YearMonth.of(thisYear, 12)
-        val currentAsset = finAnal.financeStat.currentAssets.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("유동자산 미확인")
-        val currentLiability = finAnal.financeStat.currentLiabilities.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("유동부채 미확인")
-        val investmentAsset =
-            finAnal.financeStat.investmentAssets.data[YearMonth.of(thisYear - 1, 12)] ?: return ProperPriceFormula.Output.dummy("투자자산 미확인")
+        val currentAsset = finAnal.financeStat.currentAssets.nearest() ?: return ProperPriceFormula.Output.dummy("유동자산 미확인")
+        val currentLiability = finAnal.financeStat.currentLiabilities.nearest() ?: return ProperPriceFormula.Output.dummy("유동부채 미확인")
+        val investmentAsset = finAnal.financeStat.investmentAssets.nearest() ?: return ProperPriceFormula.Output.dummy("투자자산 미확인")
         val assetValue = (currentAsset - (currentLiability * 1.2) + investmentAsset).toLong()
 
         // 고정부채
         val nonCurrentLiability =
-            finAnal.financeStat.nonCurrentLiabilities.data[thisYearLastMonth] ?: return ProperPriceFormula.Output.dummy("고정부채 미확인")
+            finAnal.financeStat.nonCurrentLiabilities.nearest() ?: return ProperPriceFormula.Output.dummy("고정부채 미확인")
         // 발행주식수
         val shares = tickerRepository.findByCode(code)?.shares ?: return ProperPriceFormula.Output.dummy("상장주식수 미확인")
         return ProperPriceFormula.Output(
