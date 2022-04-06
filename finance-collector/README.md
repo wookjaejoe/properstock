@@ -17,5 +17,6 @@ Finance Collector Kt는 주식 데이터 크롤링, 가공, 적재, 조회 등�
 ## 배포
 1. 배포 스크립트가 Gradle 태스크로 구현되어 있습니다: `./gradlew deploy:{env}`
     1. (배포환경에 selenium standalone 실행중이라는 전제하에)
-    1. 개발환경은 `./gradlew deploy.dev -Puser=$USER -Ppassword=$PASSWORD`
-    1. 상용환경은 `준비중`입니다.
+    2. 개발환경은 `./gradlew deploy.dev -Puser=$USER -Ppassword=$PASSWORD`
+       1. `Cause: reject HostKey: jowookjae.in`와 같은 오류가 발생하면, `ssh-keyscan -t rsa jowookjae.in >> ~/.ssh/known_hosts`를 실행하라.
+    3. 상용환경은 `준비중`입니다.
