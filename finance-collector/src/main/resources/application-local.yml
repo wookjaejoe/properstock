@@ -1,4 +1,0 @@
-webdriver:
-  chrome:
-    remote:
-      url: http://localhost:4444

@@ -1,16 +1,22 @@
 server:
   port: 8080
+
 spring:
   data:
     mongodb:
-      host: jowookjae.in
-      database: finance
+      database: finance2
       auto-index-creation: true
-      username: admin
-      password: qwe123
+      host: # FILL ME
+      username: # FILL ME
+      password: # FILL ME
   jackson:
     serialization:
       indent_output: true
+
+webdriver:
+  chrome:
+    remote:
+      url: # FILL ME
 
 logging:
   level:

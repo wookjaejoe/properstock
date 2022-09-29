@@ -1,4 +1,0 @@
-webdriver:
-  chrome:
-    remote:
-      url: http://jowookjae.in:4444
