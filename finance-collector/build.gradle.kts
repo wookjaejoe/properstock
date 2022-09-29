@@ -10,10 +10,11 @@ plugins {
     id("org.springframework.boot") version "2.5.5"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     id("org.hidetake.ssh") version "2.10.1"
+    id("com.google.cloud.tools.jib") version "3.3.0"
 }
 
 group = "app.properstock"
-version = "0.1.1"
+version = "0.1.2"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -29,15 +30,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.springframework.boot:spring-boot-starter-amqp")
 
-    implementation("org.springdoc:springdoc-openapi-ui:1.5.11")
-    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.5.11")
-    implementation("org.springdoc:springdoc-openapi-kotlin:1.5.11")
-    implementation("org.seleniumhq.selenium:selenium-java:3.141.59")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.11")
+    implementation("org.springdoc:springdoc-openapi-webmvc-core:1.6.11")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.11")
+    implementation("org.seleniumhq.selenium:selenium-java:4.4.0")
 
-    implementation("org.jsoup:jsoup:1.14.3")
+    implementation("org.jsoup:jsoup:1.15.3")
     implementation("commons-io:commons-io:2.11.0")
-    implementation("org.mapstruct:mapstruct:1.4.2.Final")
-    kapt("org.mapstruct:mapstruct-processor:1.4.2.Final")
+    implementation("org.mapstruct:mapstruct:1.5.2.Final")
+    kapt("org.mapstruct:mapstruct-processor:1.5.2.Final")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
@@ -84,23 +85,47 @@ remotes {
     }
 }
 
+jib {
+    from {
+        image = "amazoncorretto:11.0.16-alpine3.16"
+    }
+    to {
+        image = dockerImageName
+        tags = setOf(project.version.toString())
+        setAllowInsecureRegistries(true)
+    }
+    container {
+        jvmFlags = listOf(
+            "-Dspring.data.mongodb.host=",
+            "-Dspring.data.mongodb.username=",
+            "-Dspring.data.mongodb.password=",
+            "-Dwebdriver.chrome.remote.url="
+        )
+        ports = listOf("8080")
+    }
+}
+
+fun SessionHandler.executeAndIgnoreError(commandLine: String): String? {
+    println(commandLine)
+    return execute(hashMapOf("ignoreError" to true), commandLine)
+}
+
+
 tasks.register("deploy.dev") {
     val runOptions = listOf(
         "-d",
         "--restart unless-stopped",
-        "-e SPRING_PROFILES_ACTIVE=dev",
         "-p 9080:8080",
         "--name ${project.name}",
         "-v /etc/localtime:/etc/localtime:ro"
     ).joinToString(" ")
-    dependsOn("bootBuildImage").doLast {
+    dependsOn("jib").doLast {
         ssh.run(delegateClosureOf<RunHandler> {
             session(
                 devServer,
                 delegateClosureOf<SessionHandler> {
-                    execute(hashMapOf("ignoreError" to true), "docker stop ${project.name}")
-                    execute(hashMapOf("ignoreError" to true), "docker rm ${project.name}")
-                    execute(hashMapOf("ignoreError" to true), "docker rmi $dockerImageName")
+                    executeAndIgnoreError("docker rm -f ${project.name}")
+                    executeAndIgnoreError("docker rmi $dockerImageName")
                     execute("docker run $runOptions $dockerImageName")
                 }
             )

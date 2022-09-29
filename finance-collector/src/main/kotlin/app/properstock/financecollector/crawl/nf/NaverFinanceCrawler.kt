@@ -77,7 +77,7 @@ class NaverFinanceCrawler {
         val table = Jsoup.parse(tableHtml)
         val headers = table.getElementsByTag("th").map { it.text() }
         return table.getElementsByTag("tr")
-            .filter { it.text().isNotBlank() }
+            .filter { ele -> ele.text().isNotBlank() }
             .map { it.getElementsByTag("td") }
             .filter { !it.isEmpty() }
             .map {
@@ -246,7 +246,7 @@ class NaverFinanceCrawler {
     private fun crawlThemes(contentTable: Element): List<NaverFinanceTheme> {
         return contentTable
             .getElementsByTag("tr")
-            .filter { it.getElementsByTag("td").text().trim().isNotEmpty() }
+            .filter { ele -> ele.getElementsByTag("td").text().trim().isNotEmpty() }
             .map {
                 val tdList = it.getElementsByTag("td")
                 NaverFinanceTheme(
@@ -308,7 +308,7 @@ class NaverFinanceCrawler {
         return Jsoup.parse(html)
             .getElementById("etfItemTable")!!
             .getElementsByTag("tr")
-            .filter { it.getElementsByTag("td").size > 0 }
+            .filter { ele -> ele.getElementsByTag("td").size > 0 }
             .filter { it.getElementsByTag("td")[0].getElementsByTag("a").size > 0 }
             .map {
                 it.getElementsByTag("td")[0]
@@ -326,7 +326,7 @@ class NaverFinanceCrawler {
         return Jsoup.parse(html)
             .getElementById("etnItemTable")!!
             .getElementsByTag("tr")
-            .filter { it.getElementsByTag("td").size > 0 }
+            .filter { ele -> ele.getElementsByTag("td").size > 0 }
             .filter { it.getElementsByTag("td")[0].getElementsByTag("a").size > 0 }
             .map {
                 it.getElementsByTag("td")[0]
@@ -369,7 +369,7 @@ class NaverFinanceCrawler {
         return table
             .getElementsByTag("tbody")[0]
             .getElementsByTag("tr")
-            .filter { !it.attr("style").contains("display: none;") }
+            .filter { ele -> !ele.attr("style").contains("display: none;") }
             .associate { element ->
                 val tdList = element.getElementsByTag("td")
                 val title = tdList[0].attr("title").trim()

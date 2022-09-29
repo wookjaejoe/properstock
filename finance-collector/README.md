@@ -13,14 +13,15 @@ Finance Collector Kt는 주식 데이터 크롤링, 가공, 적재, 조회 등�
 3. 개발 과정에서 http://localhost:7900 접속하여 웹 드라이버의 동작을 모니터링 할 수 있습니다.
 
 ## 실행
-다음 JVM 옵션과 함꼐 실행
+실행 시 다음 JVM 옵션을 필요로 한다.
 ```
 -Dspring.data.mongodb.host= -Dspring.data.mongodb.username= -Dspring.data.mongodb.password= -Dwebdriver.chrome.remote.url=
 ```
 
 ## 배포
 1. 배포 스크립트가 Gradle 태스크로 구현되어 있습니다: `./gradlew deploy:{env}`
-    1. (배포환경에 selenium standalone 실행중이라는 전제하에)
-    2. 개발환경은 `./gradlew deploy.dev -Puser=$USER -Ppassword=$PASSWORD`
-       1. `Cause: reject HostKey: jowookjae.in`와 같은 오류가 발생하면, `ssh-keyscan -t rsa jowookjae.in >> ~/.ssh/known_hosts`를 실행하라.
-    3. 상용환경은 `준비중`입니다.
+   1. (selenium standalone 실행)
+   2. `jib > container > jvmFlags` 누락된 VM 옵션 값 입력
+   3. 개발환경은 `./gradlew deploy.dev -Puser=$USER -Ppassword=$PASSWORD`
+      1. `Cause: reject HostKey: jowookjae.in`와 같은 오류가 발생하면, `ssh-keyscan -t rsa jowookjae.in >> ~/.ssh/known_hosts`를 실행하라.
+   4. 상용환경은 준비중입니다.

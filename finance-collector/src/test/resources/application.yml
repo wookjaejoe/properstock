@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      database: finance2
+      auto-index-creation: true
+      host: # FILL ME
+      username: # FILL ME
+      password: # FILL ME
+  jackson:
+    serialization:
+      indent_output: true
+
+webdriver:
+  chrome:
+    remote:
+      url: # FILL ME
+
+logging:
+  level:
+    org:
+      openqa:
+        selenium:
+          remote: warn
