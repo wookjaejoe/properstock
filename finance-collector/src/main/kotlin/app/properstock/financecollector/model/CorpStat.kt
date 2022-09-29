@@ -1,20 +1,19 @@
 package app.properstock.financecollector.model
 
 import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
 @Document
 data class CorpStat(
     @Id
-    val id: String? = null,
-    @Indexed(unique = true)
     var code: String,
     var financeSummaries: Map<FinanceSummary.Period, FinanceSummary>,  // fixme: 리스트로 바꾸자
     var investOpinion: InvestOpinion?,
     /** 마지막 업데이트 시각 */
-    var updated: Instant = Instant.now()
+    @LastModifiedDate
+    var timestamp: Instant = Instant.now()
 ) {
     data class InvestOpinion(
         val targetPrice: Int?,
@@ -27,7 +26,6 @@ data class CorpStat(
     )
 
     data class FinanceSummary(
-        val period: Period,
         /** 매출액 */
         val sales: TimeSeries<Long> = TimeSeries("매출액"),
         /** 당기순이익 */

@@ -15,16 +15,18 @@ class WebDriverConnector {
     @Value("\${webdriver.chrome.remote.url}")
     lateinit var chromeRemoteUrl: String
 
+    private val logger: Logger = LoggerFactory.getLogger(WebDriverConnector::class.java)
+
     fun <R> connect(todo: CloseableWebDriver.() -> R): R {
-        logger.debug("Connecting with remote webdriver: $chromeRemoteUrl")
+        logger.info("Connecting with remote webdriver: $chromeRemoteUrl")
         return CloseableWebDriver(
             URL(chromeRemoteUrl),
             ChromeOptions().apply {
                 this.setHeadless(true)
             }
         ).use {
-            it.manage().timeouts().pageLoadTimeout(15, TimeUnit.SECONDS)
-            it.manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS)
+            it.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS)
+            it.manage().timeouts().setScriptTimeout(60, TimeUnit.SECONDS)
             logger.debug("Remote webdriver connected.")
             todo(it)
         }
@@ -40,9 +42,5 @@ class WebDriverConnector {
         override fun close() {
             quit()
         }
-    }
-
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger(WebDriverConnector::class.java)
     }
 }

@@ -3,6 +3,7 @@ package app.properstock.financecollector.model
 import org.mapstruct.Mapper
 import org.mapstruct.factory.Mappers
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.index.CompoundIndexes
 import org.springframework.data.mongodb.core.mapping.Document
@@ -18,13 +19,13 @@ import java.time.Instant
 )
 data class ProperPrice(
     @Id
-    val id: String? = null,
     val tickerCode: String,
     val formulaSymbol: String,
     var value: Double,
     var arguments: Map<String, Any>?,
     var note: String? = null,
-    var updated: Instant = Instant.now()
+    @LastModifiedDate
+    var timestamp: Instant = Instant.now()
 ) {
     data class Dto(
         val tickerCode: String,
@@ -32,9 +33,9 @@ data class ProperPrice(
         val value: Double,
         val arguments: Map<String, Any>?,
         val note: String,
-        val updated: Instant,
+        val timestamp: Instant,
 
-        // Additionals
+        // Additional fields
         val currentPrice: Double,
         val tickerName: String,
         val tickerIndustry: String?,

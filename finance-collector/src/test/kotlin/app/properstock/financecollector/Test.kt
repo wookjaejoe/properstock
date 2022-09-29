@@ -1,20 +1,13 @@
 package app.properstock.financecollector
 
-import app.properstock.financecollector.service.MarketAnalyzer
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
+import app.properstock.financecollector.crawl.nf.parseDouble
 
-@SpringBootTest
-@ActiveProfiles("local")
-class Test {
-
-    @Autowired
-    lateinit var marketAnalyzer: MarketAnalyzer
-
-    @Test
-    fun test() {
-        println(marketAnalyzer.avgOfPer)
-    }
+fun main() {
+    println(listOf("", null).parseAnd100MillionTimes())
 }
+
+private fun String?.parseAnd100MillionTimes(): Long? =
+    this?.parseDouble()?.times(1_0000_0000)?.toLong()
+
+private fun Collection<String?>.parseAnd100MillionTimes(): List<Long?> =
+    this.map { it.parseAnd100MillionTimes() }

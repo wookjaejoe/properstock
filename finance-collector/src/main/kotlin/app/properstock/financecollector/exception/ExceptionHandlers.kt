@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class ExceptionHandlers {
 
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger(ExceptionHandlers::class.java)
-    }
+    private val logger: Logger = LoggerFactory.getLogger(ExceptionHandlers::class.java)
 
     fun handle(e: Throwable): ErrorMessage {
         logger.error(e.message, e)
@@ -33,5 +31,5 @@ class ExceptionHandlers {
 }
 
 data class ErrorMessage(
-    val message: String?
+    val message: String?,
 )

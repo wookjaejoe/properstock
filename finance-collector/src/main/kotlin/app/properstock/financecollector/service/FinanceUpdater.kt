@@ -6,6 +6,7 @@ import app.properstock.financecollector.model.Industry
 import app.properstock.financecollector.model.Theme
 import app.properstock.financecollector.repository.*
 import app.properstock.financecollector.service.proper.ProperPriceService
+import org.openqa.selenium.WebDriver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -19,16 +20,14 @@ class FinanceUpdater(
     val finAnalRepository: FinanceAnalRepository,
     val properPriceService: ProperPriceService,
     val industryRepository: IndustryRepository,
-    val themeRepository: ThemeRepository
+    val themeRepository: ThemeRepository,
 ) {
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger(FinanceUpdater::class.java)
-    }
+    private val logger: Logger = LoggerFactory.getLogger(FinanceUpdater::class.java)
 
-    fun updateTickers() {
+    fun updateTickers(webDriver: WebDriver) {
         logger.info("Starting to update tickers...")
         naverFinanceCrawler
-            .crawlAllTickers()
+            .crawlAllTickers(webDriver)
             .forEach {
                 val oldData = tickerRepository.findByCode(it.code)
                 if (oldData != null) {
@@ -49,10 +48,10 @@ class FinanceUpdater(
             }
     }
 
-    fun updateIndustries() {
+    fun updateIndustries(webDriver: WebDriver) {
         logger.info("Starting to update industries...")
         naverFinanceCrawler
-            .crawlIndustries()
+            .crawlIndustries(webDriver)
             .forEach { industry ->
                 val codes = industry.tickerRefs.map { tickerRef -> tickerRef.split("code=")[1] }
 
@@ -61,7 +60,7 @@ class FinanceUpdater(
                 if (oldData != null) {
                     oldData.tickerCodes = codes
                     oldData.marginRate = industry.marginRate
-                    oldData.updatedAt = Instant.now()
+                    oldData.timestamp = Instant.now()
                     industryRepository.save(oldData)
                     logger.info("Updated: $oldData")
                 } else {
@@ -86,9 +85,10 @@ class FinanceUpdater(
             }
     }
 
-    fun updateThemes() {
+    @Deprecated(message = "너무 오래 걸림")
+    fun updateThemes(webDriver: WebDriver) {
         logger.info("Starting to update themes...")
-        naverFinanceCrawler.crawlThemes()
+        naverFinanceCrawler.crawlThemes(webDriver)
             .forEach { theme ->
                 // 테마 업데이트
                 val codes = theme.tickerRefs.map { ref -> ref.split("code=")[1] }
@@ -97,7 +97,6 @@ class FinanceUpdater(
                     oldData.apply {
                         tickerCodes = codes
                         marginRate = theme.marginRate
-                        updatedAt = Instant.now()
                         themeRepository.save(this)
                         logger.info("Updated: $this")
                     }
@@ -119,15 +118,14 @@ class FinanceUpdater(
                 val themeNames = themes.filter { theme -> theme.tickerCodes.contains(ticker.code) }
                     .map { theme -> theme.name }
                 ticker.themes = themeNames
-                ticker.updated = Instant.now()
                 tickerRepository.save(ticker)
                 logger.info("Updated: $ticker")
             }
     }
 
-    private fun updateCorpStat(code: String): CorpStat {
+    private fun updateCorpStat(webDriver: WebDriver, code: String): CorpStat {
         // 기업현황 크롤링
-        val corpStat = naverFinanceCrawler.crawlCorpStat(code)
+        val corpStat = naverFinanceCrawler.crawlCorpStat(webDriver, code)
         // 이전 데이터
         val oldCorpStat = corpStatRepository.findByCode(code)
         return if (oldCorpStat != null) {
@@ -135,7 +133,6 @@ class FinanceUpdater(
                 this.code = corpStat.code
                 this.investOpinion = corpStat.investOpinion
                 this.financeSummaries = corpStat.financeSummaries
-                this.updated = Instant.now()
             }
             corpStatRepository.save(oldCorpStat)
         } else {
@@ -143,41 +140,37 @@ class FinanceUpdater(
         }
     }
 
-    private fun updateFinanceAnal(code: String) {
+    private fun updateFinanceAnal(webDriver: WebDriver, code: String) {
         // 재무분석 크롤링
-        val finAnal = naverFinanceCrawler.crawlFinanceAnal(code)
+        val finAnal = naverFinanceCrawler.crawlFinanceAnal(webDriver, code)
         val oldFinAnal = finAnalRepository.findByCode(code)
         if (oldFinAnal != null) {
-            oldFinAnal.apply {
-                this.code = finAnal.code
-                financeStat = finAnal.financeStat
-                updatedAt = Instant.now()
-            }
+            oldFinAnal.financeStat = finAnal.financeStat
             finAnalRepository.save(oldFinAnal)
         } else {
             finAnalRepository.save(finAnal)
         }
     }
 
-    fun updateFinanceData() {
-        val excludes = naverFinanceCrawler.run { crawlEtfCodes() + crawlEtnCodes() }
+    fun updateFinanceData(webDriver: WebDriver) {
+        val excludes = naverFinanceCrawler.run { crawlEtfCodes(webDriver) + crawlEtnCodes(webDriver) }
         val tickers = tickerRepository.findAll().filter { !excludes.contains(it.code) }
         tickers.forEachIndexed { index, ticker ->
             logger.info("[${index + 1}/${tickers.size}] Starting to update finance data for ${ticker.code}")
             try {
                 // 기업현황 업데이트
-                updateCorpStat(ticker.code).also {
-                    ticker.targetPrice = it.investOpinion?.targetPrice
-                }
+                val corpStat = updateCorpStat(webDriver, ticker.code)
+                ticker.targetPrice = corpStat.investOpinion?.targetPrice
+                tickerRepository.save(ticker)
             } catch (e: Throwable) {
-                logger.warn("Failed to update corpStat@${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
+                logger.warn("Failed to update corpStat@${ticker.code} caused by ${e.javaClass.simpleName}: ${e.message}")
             }
 
             try {
                 // 재무분석 업데이트
-                updateFinanceAnal(ticker.code)
+                updateFinanceAnal(webDriver, ticker.code)
             } catch (e: Throwable) {
-                logger.warn("Failed to update financeAnal@${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
+                logger.warn("Failed to update financeAnal@${ticker.code} caused by ${e.javaClass.simpleName}: ${e.message}")
             }
 
             try {
@@ -186,8 +179,6 @@ class FinanceUpdater(
             } catch (e: Throwable) {
                 logger.warn("Failed to update ${ticker.code} caused by ${e.javaClass.simpleName}:${e.message}")
             }
-
-            tickerRepository.save(ticker)
         }
     }
 

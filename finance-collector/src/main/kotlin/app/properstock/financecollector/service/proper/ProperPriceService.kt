@@ -7,23 +7,20 @@ import app.properstock.financecollector.repository.TickerRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 @Service
 class ProperPriceService(
-    val formulaList: List<ProperPriceFormula>,
-    val tickerRepository: TickerRepository,
-    val properPriceRepository: ProperPriceRepository,
+    private val formulaList: List<ProperPriceFormula>,
+    private val tickerRepository: TickerRepository,
+    private val properPriceRepository: ProperPriceRepository,
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(ProperPriceService::class.java)
+
     init {
         // 공식 심볼 중복 확인
         if (formulaList.map { it.symbol }.toSet().size != formulaList.size) {
             throw VerifyError("Some of the symbols of the formula are duplicated")
         }
-    }
-
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger(ProperPriceService::class.java)
     }
 
     fun updateAll() {
@@ -49,7 +46,6 @@ class ProperPriceService(
             oldData.value = formulaOut.value
             oldData.arguments = formulaOut.arguments
             oldData.note = formulaOut.note
-            oldData.updated = Instant.now()
             properPriceRepository.save(oldData)
         } else {
             val newData = ProperPrice(

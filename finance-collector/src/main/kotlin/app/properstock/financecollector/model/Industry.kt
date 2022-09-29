@@ -1,6 +1,7 @@
 package app.properstock.financecollector.model
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
@@ -17,5 +18,6 @@ data class Industry (
 
     var tickerCodes: List<String>,
 
-    var updatedAt: Instant = Instant.now()
+    @LastModifiedDate
+    var timestamp: Instant = Instant.now()
 )

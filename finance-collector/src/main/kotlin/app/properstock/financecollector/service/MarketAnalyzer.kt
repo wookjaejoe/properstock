@@ -1,7 +1,6 @@
 package app.properstock.financecollector.service
 
 import app.properstock.financecollector.TZ_KR
-import app.properstock.financecollector.exception.ExceptionHandlers
 import app.properstock.financecollector.repository.TickerRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,9 +11,7 @@ import org.springframework.stereotype.Component
 class MarketAnalyzer(
     val tickerRepository: TickerRepository
 ) {
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger(ExceptionHandlers::class.java)
-    }
+    private val logger: Logger = LoggerFactory.getLogger(MarketAnalyzer::class.java)
 
     final var avgOfPer: Double = avgOfPer()
 
@@ -23,7 +20,7 @@ class MarketAnalyzer(
 
     @Scheduled(cron = "0 * * * * *", zone = TZ_KR)
     fun update() {
-        logger.info("${MarketAnalyzer.javaClass.simpleName} - update()")
+        logger.info("${MarketAnalyzer::class.simpleName} - update()")
         this.avgOfPer = avgOfPer()
     }
 }

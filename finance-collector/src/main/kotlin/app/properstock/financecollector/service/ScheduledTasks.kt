@@ -1,6 +1,7 @@
 package app.properstock.financecollector.service
 
 import app.properstock.financecollector.TZ_KR
+import app.properstock.financecollector.crawl.WebDriverConnector
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -10,24 +11,27 @@ import org.springframework.stereotype.Service
 @Service
 @EnableScheduling
 class ScheduledTasks(
-    val financeUpdater: FinanceUpdater
+    val webDriverConnector: WebDriverConnector,
+    val financeUpdater: FinanceUpdater,
 ) {
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger(ScheduledTasks::class.java)
-    }
+    private val logger: Logger = LoggerFactory.getLogger(ScheduledTasks::class.java)
 
     @Scheduled(cron = "0 0 22 * * *", zone = TZ_KR)
     fun updateTickerSummary() {
         logger.info("Starting to update ticker summary")
-        financeUpdater.updateTickers()
-        financeUpdater.updateIndustries()
-        financeUpdater.updateThemes()
+        webDriverConnector.connect {
+            financeUpdater.updateTickers(this)
+            financeUpdater.updateIndustries(this)
+//            financeUpdater.updateThemes(this)
+        }
     }
 
     @Scheduled(cron = "0 0 0 * * *", zone = TZ_KR)
     fun updateFinanceData() {
-        FinanceUpdater.logger.info("Starting to update finance analysis...")
-        financeUpdater.updateFinanceData()
-        financeUpdater.updateTickerFromCorpStat()
+        logger.info("Starting to update finance analysis...")
+        webDriverConnector.connect {
+            financeUpdater.updateFinanceData(this)
+            financeUpdater.updateTickerFromCorpStat()
+        }
     }
 }

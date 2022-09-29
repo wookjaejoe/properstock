@@ -1,21 +1,19 @@
 package app.properstock.financecollector.model
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
 @Document
 data class Ticker(
+    /** 종목코드 */
     @Id
-    val id: String? = null,
+    var code: String,
 
     /** 마켓 */
     val market: Market,
-
-    /** 종목코드 */
-    @Indexed(unique = true)
-    var code: String,
 
     /** 종목명 */
     @Indexed(unique = true)
@@ -49,5 +47,6 @@ data class Ticker(
     var targetPrice: Int? = null,
 
     /** 마지막 업데이트 시각 */
-    var updated: Instant = Instant.now()
+    @LastModifiedDate
+    var timestamp: Instant = Instant.now()
 )

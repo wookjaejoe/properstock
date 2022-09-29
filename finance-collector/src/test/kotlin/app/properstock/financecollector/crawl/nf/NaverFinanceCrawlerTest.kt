@@ -1,5 +1,6 @@
 package app.properstock.financecollector.crawl.nf
 
+import app.properstock.financecollector.crawl.WebDriverConnector
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -7,48 +8,15 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest
 @ActiveProfiles("local")
-class NaverFinanceCrawlerTest {
-
-    @Autowired
-    lateinit var naverFinanceCrawler: NaverFinanceCrawler
-
-    @Test
-    fun crawlAllTickers() {
-    }
+class NaverFinanceCrawlerTest @Autowired constructor(
+    val naverFinanceCrawler: NaverFinanceCrawler,
+    val webDriverConnector: WebDriverConnector,
+) {
 
     @Test
-    fun crawlTickers() {
+    fun test() {
+        webDriverConnector.connect {
+            naverFinanceCrawler.crawlCorpStat(this, "034020")
+        }
     }
-
-    @Test
-    fun testCrawlTickers() {
-    }
-
-    @Test
-    fun crawlFinancialAnalysis() {
-    }
-
-    @Test
-    fun crawlIndustries() {
-        naverFinanceCrawler.crawlIndustries().forEach { println(it) }
-    }
-
-    @Test
-    fun crawlThemes() {
-        naverFinanceCrawler.crawlThemes().forEach { println(it) }
-    }
-
-    @Test
-    fun crawlEt() {
-        naverFinanceCrawler.crawlEtfCodes().forEach { println(it) }
-        naverFinanceCrawler.crawlEtnCodes().forEach { println(it) }
-    }
-
-    @Test
-    fun crawlFinanceAnal() {
-        val x = naverFinanceCrawler.crawlFinanceAnal("001530")
-        println(x)
-    }
-
-
 }
