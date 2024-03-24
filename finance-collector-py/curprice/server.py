@@ -31,4 +31,5 @@ class WebsocketServer:
             await asyncio.Future()  # run forever
 
     def start(self):
+
         asyncio.run(self.__start_async())

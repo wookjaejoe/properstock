@@ -26,4 +26,9 @@ class ScheduledTasksTest @Autowired constructor(
         scheduledTasks.updateTickerSummary()
         scheduledTasks.updateFinanceData()
     }
+
+    @Test
+    fun test() {
+        scheduledTasks.updateFnData()
+    }
 }

@@ -2,7 +2,6 @@ package app.properstock.financecollector.crawl.nf
 
 import app.properstock.financecollector.exception.NotSupportedException
 import app.properstock.financecollector.model.Market
-import org.springframework.stereotype.Component
 
 class NaverFinanceUrls {
 
