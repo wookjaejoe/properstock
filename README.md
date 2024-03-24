@@ -1,17 +1,25 @@
 # PROPERSTOCK
 
-## 구동 환경
-### Selenium Chrome
-```
-docker run -d --restart=always -p 4444:4444 -p 7900:7900 -e JAVA_OPTS="-Dwebdriver.chrome.whitelistedIps=" --name selenium-standalone-chrome selenium/standalone-chrome
-```
+재무 데이터를 통한 기업 벨류에이션 및 증권사 목표 주가 기반 퀀트 투자 도구
 
-### Docker Registry
-```
-docker run -d --restart=always -p 5000:5000 --name registry -v registry:2
-```
+## Features
 
-### Mongo DB
-```
-docker run -d --restart=always -p 27017:27017 --name mongodb-dev -v /data/dv/mongodb-dev/data/db:/data/db -v /etc/localtime:/etc/localtime:ro -e MONGO_INITDB_ROOT_USERNAME= -e MONGO_INITDB_ROOT_PASSWORD= mongo
-```
+- FnGuide 등 재무데이터 수집 및 웹 스크래핑
+- 기업가치 평가 모델을 이용한 적정주가 계산
+- 적정주가, 목표주가 산출 및 현재주가 괴리율 기반 종목 선정
+
+## Prerequisites
+
+- Selenium Chrome
+- Mongo DB
+- [Optional] Docker Registry
+
+## Structure
+
+- finance-collector
+    - 네이버 파이낸스, FnGuide 웹 스크래핑
+    - 재무 데이터 수집 API 제공
+- finance-collector-py
+    - 실시간 주가 데이터 수집 및 Websocket API 제공
+- finance-front
+    - 프론트엔드
